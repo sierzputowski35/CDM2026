@@ -260,7 +260,7 @@ body {
 .podium-base.p1 { height: 56px; background: linear-gradient(180deg,rgba(255,215,0,.12),rgba(255,215,0,.04)); border:1px solid rgba(255,215,0,.2); border-bottom:none; }
 .podium-base.p2 { height: 40px; background: linear-gradient(180deg,rgba(148,163,184,.08),rgba(148,163,184,.02)); border:1px solid rgba(148,163,184,.12); border-bottom:none; }
 .podium-base.p3 { height: 30px; background: linear-gradient(180deg,rgba(205,124,58,.08),rgba(205,124,58,.02)); border:1px solid rgba(205,124,58,.12); border-bottom:none; }
-.podium-rank { font-family:'Bebas Neue',sans-serif; font-size:18px; color:rgba(255,255,255,.25); }
+.podium-rank { font-family:Bebas Neue,sans-serif; font-size:18px; color:rgba(255,255,255,.25); }
 
 /* ══════════════════════════════════
    RANKING
@@ -2066,7 +2066,7 @@ function renderBracket(){
   }
 
   let html='<div class="card card-gold" style="margin-bottom:16px">'
-    +'<div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--gold);margin-bottom:4px">PHASES FINALES</div>'
+    +'<div style="font-family:Bebas Neue,sans-serif;font-size:20px;letter-spacing:2px;color:var(--gold);margin-bottom:4px">PHASES FINALES</div>'
     +'<div style="font-size:11px;color:var(--text3);margin-bottom:14px">Bracket officiel CDM 2026 · Se met à jour automatiquement</div>';
 
   // Afficher info meilleurs 3èmes
@@ -2096,7 +2096,7 @@ function renderBracket(){
       +'<div style="font-size:12px;color:var(--text);margin-bottom:4px">'+t1.flag+' '+t1.name+'</div>'
       +'<div style="font-size:9px;color:var(--text3);margin:3px 0">vs</div>'
       +'<div style="font-size:12px;color:var(--text)">'+t2.flag+' '+t2.name+'</div>'
-      +(real?'<div style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--green);margin-top:6px;letter-spacing:2px">'+real.s1+' - '+real.s2+'</div>':'')
+      +(real?'<div style="font-family:Bebas Neue,sans-serif;font-size:16px;color:var(--green);margin-top:6px;letter-spacing:2px">'+real.s1+' - '+real.s2+'</div>':'')
     +'</div>';
   });
 
