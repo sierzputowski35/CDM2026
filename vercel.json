@@ -1,9 +1,4 @@
 {
-  "functions": {
-    "api/scores.js": {
-      "runtime": "edge"
-    }
-  },
   "crons": [
     {
       "path": "/api/scores",
