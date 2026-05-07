@@ -206,6 +206,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 /* MODALES */
 .pwa-modal{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);display:flex;align-items:flex-end;justify-content:center;}
 .pwa-modal.hidden{display:none!important;}
+.hidden{display:none!important;}
 .pwa-modal-box{background:var(--bg2);border:1px solid var(--border2);border-radius:24px 24px 0 0;padding:24px 20px 40px;width:100%;max-width:480px;}
 .pwa-modal-title{font-family:'Oswald',sans-serif;font-size:18px;font-weight:600;color:var(--accent);text-align:center;margin-bottom:4px;letter-spacing:1px;}
 .pwa-modal-sub{font-size:12px;color:var(--text3);text-align:center;margin-bottom:20px;}
@@ -288,7 +289,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 </head>
 <body>
 
-<div class="loading-overlay" id="loading">
+<div id="loading" style="position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:12px;">
   <div class="loading-flags">⚽</div>
   <div class="loading-title">UNITED 2026</div>
   <div class="loading-spinner"></div>
