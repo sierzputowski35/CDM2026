@@ -1264,7 +1264,7 @@ function renderFeed(board){
     const stats=calcPlayerStats(p);
     if(stats.exact>0) events.push({emoji:'⭐',text:'<strong>'+p.pseudo+'</strong> a trouvé '+stats.exact+' score(s) exact(s)',pts:'+'+Math.round(stats.exact*5)+' pts',color:getAvatarColor(p.pseudo)});
     const streak=getStreak(p);
-    if(streak>=3) events.push({emoji:'🔥',text:'<strong>'+p.pseudo+'</strong> est en feu — '+streak+' bons pronostics d'affilée !',pts:'',color:getAvatarColor(p.pseudo)});
+    if(streak>=3) events.push({emoji:'🔥',text:'<strong>'+p.pseudo+'</strong> est en feu — '+streak+' bons pronostics d\'affilée !',pts:'',color:getAvatarColor(p.pseudo)});
   });
   
   // Ajouter positions
