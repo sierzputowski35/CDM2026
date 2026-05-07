@@ -256,6 +256,46 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 
 <div class="toast" id="toast"></div>
 
+<!-- MODALE PROFIL JOUEUR -->
+<div class="pwa-modal hidden" id="profil-modal" style="z-index:400">
+  <div class="pwa-modal-box" style="max-height:88vh;overflow-y:auto;border-radius:20px 20px 0 0;padding:0 0 40px">
+    <div style="position:sticky;top:0;background:var(--bg2);border-radius:20px 20px 0 0;padding:16px 16px 12px;border-bottom:1px solid var(--border);z-index:10">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div>
+          <div id="profil-pseudo" style="font-family:'Oswald',sans-serif;font-size:24px;font-weight:700;color:var(--accent)"></div>
+          <div id="profil-stats-summary" style="font-size:12px;color:var(--text3);margin-top:2px"></div>
+        </div>
+        <button onclick="closeProfil()" style="background:var(--surface);border:1px solid var(--border2);color:var(--text2);font-size:16px;width:36px;height:36px;border-radius:50%;cursor:pointer;flex-shrink:0">✕</button>
+      </div>
+      <div id="profil-badges" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+    </div>
+    <div id="profil-matchs-list" style="padding:0 16px"></div>
+  </div>
+</div>
+
+<!-- PWA BANNIÈRE -->
+<div class="pwa-banner hidden" id="pwa-banner">
+  <div class="pwa-icon"><img src="icon-192.png" alt="CDM 2026" onerror="this.parentElement.innerHTML='⚽'"></div>
+  <div class="pwa-text">
+    <div class="pwa-title">Installer l'app</div>
+    <div class="pwa-sub" id="pwa-sub">Ajoute CDM 2026 sur ton écran d'accueil</div>
+  </div>
+  <button class="pwa-btn" id="pwa-install-btn" onclick="handleInstall()">Installer</button>
+  <button class="pwa-close" onclick="closePwaBanner()">✕</button>
+</div>
+
+<!-- PWA MODALE iPhone -->
+<div class="pwa-modal hidden" id="pwa-modal">
+  <div class="pwa-modal-box">
+    <div class="pwa-modal-title">⚽ Installer CDM 2026</div>
+    <div class="pwa-modal-sub">Suis ces étapes pour ajouter l'app sur ton iPhone</div>
+    <div class="pwa-step"><div class="pwa-step-num">1</div><div class="pwa-step-text">Appuie sur le bouton <strong>Partager</strong> ⬆️ en bas de Safari</div></div>
+    <div class="pwa-step"><div class="pwa-step-num">2</div><div class="pwa-step-text">Appuie sur <strong>"Sur l'écran d'accueil"</strong> ➕</div></div>
+    <div class="pwa-step"><div class="pwa-step-num">3</div><div class="pwa-step-text">Appuie sur <strong>"Ajouter"</strong> en haut à droite</div></div>
+    <button class="pwa-modal-close" onclick="closePwaModal()">J'ai compris ✓</button>
+  </div>
+</div>
+
 <!-- ══ LOGIN ══ -->
 <div id="login-screen" class="hidden">
   <div class="login-wrap">
