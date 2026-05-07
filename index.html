@@ -626,6 +626,36 @@ const MATCHS = [
   {id:98, phase:'Demi-finales',   groupe:'',date:'15 juil. · 21h00',ts:20260715,venue:'Los Angeles',team1:'🏆',name1:'Vainqueur QF #3',team2:'🏆',name2:'Vainqueur QF #4'},
   {id:99, phase:'Finale',         groupe:'',date:'19 juil. · 21h00',ts:20260719,venue:'MetLife Stadium, New York',team1:'🏆',name1:'Finaliste 1',team2:'🏆',name2:'Finaliste 2'},
 ];
+
+// 48 ÉQUIPES qualifiées CDM 2026
+const EQUIPES = [
+  {nom:'Espagne',flag:'🇪🇸',pts:5},{nom:'France',flag:'🇫🇷',pts:5},
+  {nom:'Argentine',flag:'🇦🇷',pts:6},{nom:'Brésil',flag:'🇧🇷',pts:6},
+  {nom:'Angleterre',flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',pts:7},{nom:'Portugal',flag:'🇵🇹',pts:8},
+  {nom:'Allemagne',flag:'🇩🇪',pts:8},{nom:'Pays-Bas',flag:'🇳🇱',pts:10},
+  {nom:'Uruguay',flag:'🇺🇾',pts:12},{nom:'Belgique',flag:'🇧🇪',pts:12},
+  {nom:'Colombie',flag:'🇨🇴',pts:14},{nom:'États-Unis',flag:'🇺🇸',pts:16},
+  {nom:'Mexique',flag:'🇲🇽',pts:16},{nom:'Maroc',flag:'🇲🇦',pts:18},
+  {nom:'Japon',flag:'🇯🇵',pts:18},{nom:'Canada',flag:'🇨🇦',pts:18},
+  {nom:'Sénégal',flag:'🇸🇳',pts:20},{nom:'Suisse',flag:'🇨🇭',pts:20},
+  {nom:'Norvège',flag:'🇳🇴',pts:20},{nom:'Turquie',flag:'🇹🇷',pts:22},
+  {nom:'Autriche',flag:'🇦🇹',pts:22},{nom:'Danemark',flag:'🇩🇰',pts:24},
+  {nom:'Suède',flag:'🇸🇪',pts:24},{nom:'Corée du Sud',flag:'🇰🇷',pts:25},
+  {nom:'Équateur',flag:'🇪🇨',pts:25},{nom:'Australie',flag:'🇦🇺',pts:27},
+  {nom:'Écosse',flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿',pts:27},{nom:'Croatie',flag:'🇭🇷',pts:27},
+  {nom:'Algérie',flag:'🇩🇿',pts:28},{nom:'Italie',flag:'🇮🇹',pts:28},
+  {nom:'Côte d\'Ivoire',flag:'🇨🇮',pts:28},{nom:'Afrique du Sud',flag:'🇿🇦',pts:30},
+  {nom:'Qatar',flag:'🇶🇦',pts:30},{nom:'Ghana',flag:'🇬🇭',pts:30},
+  {nom:'Panama',flag:'🇵🇦',pts:30},{nom:'Arabie saoudite',flag:'🇸🇦',pts:30},
+  {nom:'Iran',flag:'🇮🇷',pts:30},{nom:'Paraguay',flag:'🇵🇾',pts:30},
+  {nom:'Jordanie',flag:'🇯🇴',pts:30},{nom:'Irak',flag:'🇮🇶',pts:30},
+  {nom:'Bolivie',flag:'🇧🇴',pts:30},{nom:'Haïti',flag:'🇭🇹',pts:30},
+  {nom:'Ouzbékistan',flag:'🇺🇿',pts:30},{nom:'Cap-Vert',flag:'🇨🇻',pts:30},
+  {nom:'Tunisie',flag:'🇹🇳',pts:30},{nom:'Nouvelle-Zélande',flag:'🇳🇿',pts:30},
+  {nom:'Curaçao',flag:'🇨🇼',pts:30},{nom:'Égypte',flag:'🇪🇬',pts:30},
+  {nom:'Tchéquie',flag:'🇨🇿',pts:30},
+];
+
 // BUTEUR — cotes bookmakers réelles
 const JOUEURS_BUTEUR = [
   {nom:'Kylian Mbappé',pays:'🇫🇷 France',pts:5},
@@ -1001,6 +1031,7 @@ function renderClassement(){
       <div class="rank-pts">${p.pts}<span>pts</span></div>
     </div>`;
   }).join('');
+  const rankList=document.getElementById('ranking-list');
   rankList.innerHTML=rows;
   // Event listeners pour les clics sur les profils
   rankList.querySelectorAll('[data-playerid]').forEach(function(el){
@@ -1815,7 +1846,7 @@ function initPWA() {
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
-      document.getElementById('pwa-sub').textContent = isAndroid ? "Ajoute-la sur ton écran d'accueil Android" : "Installe-la sur ton ordinateur";
+      const pwaSub=document.getElementById('pwa-sub'); if(pwaSub) pwaSub.textContent = isAndroid ? "Ajoute-la sur ton écran d'accueil Android" : "Installe-la sur ton ordinateur";
       setTimeout(() => {
         document.getElementById('pwa-banner').classList.remove('hidden');
       }, 2000);
@@ -1862,4 +1893,38 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 </body>
-</html>
+</html>function calcPlayerStats(joueur){
+  let pts=0,exact=0,bonDiff=0,bonVainqueur=0,rate=0,total=0;
+  const prog=joueur.pronostics||{};
+  for(const m of MATCHS){
+    const real=allScores[m.id];if(!real)continue;
+    const p=prog[m.id];total++;
+    if(!p){rate++;continue;}
+    const p1=parseInt(p.s1),p2=parseInt(p.s2),r1=parseInt(real.s1),r2=parseInt(real.s2);
+    if(isNaN(p1)||isNaN(p2)){rate++;continue;}
+    const mult=PHASES[m.phase]||1;
+    if(p1===r1&&p2===r2){pts+=Math.round(5*mult);exact++;}
+    else{
+      const rw=r1>r2?1:r1<r2?2:0,pw=p1>p2?1:p1<p2?2:0;
+      if(rw!==pw){rate++;}
+      else if(r1-r2===p1-p2){pts+=Math.round(3*mult);bonDiff++;}
+      else{pts+=Math.round(1*mult);bonVainqueur++;}
+    }
+  }
+  const glob=joueur.globaux||{};
+  for(const g of GLOBAUX_DEF){
+    const real=allGlobaux[g.id];if(!real)continue;
+    const val=glob[g.id];if(!val)continue;
+    if(val.trim().toLowerCase()===real.trim().toLowerCase()){
+      if(g.id==='vainqueur')pts+=15;
+      else if(g.id==='finaliste')pts+=10;
+      else if(g.id==='troisieme')pts+=8;
+      else if(g.liste){const item=g.liste.find(x=>x.nom.toLowerCase()===val.trim().toLowerCase());pts+=(item?item.pts:10);}
+      else if(g.type==='equipe'){const e=EQUIPES.find(x=>x.nom.toLowerCase()===val.trim().toLowerCase());pts+=(e?e.pts:10);}
+      else pts+=10;
+    }
+  }
+  return{pts,exact,bonDiff,bonVainqueur,rate,total};
+}
+
+
