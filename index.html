@@ -1018,24 +1018,25 @@ function renderClassement(){
     <div class="stat-card"><div class="stat-val">${matchsJoues}</div><div class="stat-lbl">Matchs joués</div></div>
     <div class="stat-card"><div class="stat-val">${board.length?board[0].pts:0}</div><div class="stat-lbl">Record pts</div></div>
     <div class="stat-card"><div class="stat-val">${allJoueurs.filter(j=>j.paid).length*MISE} €</div><div class="stat-lbl">Cagnotte</div></div>`;
-  const list=document.getElementById('ranking-list');
-  if(!board.length){list.innerHTML='<div style="text-align:center;color:var(--text3);padding:40px">Aucun joueur inscrit</div>';return;}
-  list.innerHTML=board.map((p,i)=>{
+  const rankList=document.getElementById('ranking-list');
+  if(!board.length){rankList.innerHTML='<div style="text-align:center;color:var(--text3);padding:40px">Aucun joueur inscrit</div>';return;}
+  const rows=board.map(function(p,i){
     const isMe=p.id===currentUser;
     const border=isMe?'border-color:var(--accent);':'';
-    return `<div class="ranking-row" style="${border}cursor:pointer" data-playerid="${p.id}" title="Voir les pronostics">
-      <div class="rank-pos p${i<3?i+1:''}">${i+1}</div>
-      <div class="rank-avatar">${p.pseudo.substring(0,2).toUpperCase()}</div>
-      <div style="flex:1"><div class="rank-name">${p.pseudo}${isMe?'<span class="me-badge">moi</span>':''}</div>
-      <div class="rank-sub">${Object.keys(p.pronostics||{}).length} pronostic(s) · <span style="color:var(--accent);font-size:10px">Voir le détail →</span></div></div>
-      <div class="rank-pts">${p.pts}<span>pts</span></div>
-    </div>`;
+    const nbProg=Object.keys(p.pronostics||{}).length;
+    return '<div class="ranking-row" style="'+border+'cursor:pointer" data-playerid="'+p.id+'">'
+      +'<div class="rank-pos'+(i<3?' p'+(i+1):'')+'">'+String(i+1)+'</div>'
+      +'<div class="rank-avatar">'+p.pseudo.substring(0,2).toUpperCase()+'</div>'
+      +'<div style="flex:1">'
+        +'<div class="rank-name">'+p.pseudo+(isMe?' <span class="me-badge">moi</span>':'')+'</div>'
+        +'<div class="rank-sub">'+nbProg+' pronostic(s) &nbsp;&middot;&nbsp; <span style="color:var(--accent);font-size:10px">Voir le d&eacute;tail &rarr;</span></div>'
+      +'</div>'
+      +'<div class="rank-pts">'+p.pts+'<span>pts</span></div>'
+      +'</div>';
   }).join('');
-  const rankList=document.getElementById('ranking-list');
   rankList.innerHTML=rows;
-  // Event listeners pour les clics sur les profils
   rankList.querySelectorAll('[data-playerid]').forEach(function(el){
-    el.addEventListener('click',function(){openProfil(this.dataset.playerid);});
+    el.addEventListener('click',function(){openProfil(this.getAttribute('data-playerid'));});
   });}
 
 // ══ FILTRE MATCHS ══
@@ -1846,10 +1847,10 @@ function openProfil(id){
       }
     }
   }
-  document.getElementById('profil-modal').classList.remove('hidden');
+  const pm=document.getElementById('profil-modal');if(pm)pm.classList.remove('hidden');
 }
 function closeProfil(){
-  document.getElementById('profil-modal').classList.add('hidden');
+  const pm2=document.getElementById('profil-modal');if(pm2)pm2.classList.add('hidden');
 }
 
 // ══ TOAST ══
@@ -1872,7 +1873,7 @@ function initPWA() {
     setTimeout(() => {
       document.getElementById('pwa-sub').textContent = "Ouvre-la comme une vraie app sur ton iPhone";
       document.getElementById('pwa-install-btn').textContent = "Voir comment";
-      document.getElementById('pwa-banner').classList.remove('hidden');
+      const pwaBanner=document.getElementById('pwa-banner');if(pwaBanner)pwaBanner.classList.remove('hidden');
     }, 2000);
   } else {
     // Android / Desktop — attendre l'event beforeinstallprompt
@@ -1881,7 +1882,7 @@ function initPWA() {
       deferredPrompt = e;
       const pwaSub=document.getElementById('pwa-sub'); if(pwaSub) pwaSub.textContent = isAndroid ? "Ajoute-la sur ton écran d'accueil Android" : "Installe-la sur ton ordinateur";
       setTimeout(() => {
-        document.getElementById('pwa-banner').classList.remove('hidden');
+        const b=document.getElementById('pwa-banner');if(b)b.classList.remove('hidden');
       }, 2000);
     });
     // Si déjà installée sur Android
@@ -1894,7 +1895,7 @@ function initPWA() {
 
 function handleInstall() {
   if (isIOS) {
-    document.getElementById('pwa-modal').classList.remove('hidden');
+    const pwam=document.getElementById('pwa-modal');if(pwam)pwam.classList.remove('hidden');
   } else if (deferredPrompt) {
     deferredPrompt.prompt();
     deferredPrompt.userChoice.then(() => {
@@ -1905,12 +1906,12 @@ function handleInstall() {
 }
 
 function closePwaBanner() {
-  document.getElementById('pwa-banner').classList.add('hidden');
+  const pwab=document.getElementById('pwa-banner');if(pwab)pwab.classList.add('hidden');
   localStorage.setItem('pwa-dismissed', '1');
 }
 
 function closePwaModal() {
-  document.getElementById('pwa-modal').classList.add('hidden');
+  const pwam2=document.getElementById('pwa-modal');if(pwam2)pwam2.classList.add('hidden');
   closePwaBanner();
 }
 
