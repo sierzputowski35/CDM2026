@@ -205,7 +205,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .pwa-step-icon{font-size:18px;margin-left:4px;}
 .pwa-modal-close{display:block;width:100%;background:var(--surface);border:1px solid var(--border2);color:var(--text2);font-family:'Oswald',sans-serif;font-size:14px;font-weight:600;padding:12px;border-radius:10px;cursor:pointer;margin-top:20px;letter-spacing:.5px;}
 
-.profil-match-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid var(--border);font-size:13px;gap:8px;}
+.profil-match-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--border);font-size:13px;gap:8px;transition:background .1s;}
 .profil-match-row:first-child{border-top:none;}
 .profil-teams{flex:1;color:var(--text2);font-size:12px;}
 .profil-prog{font-family:'Oswald',sans-serif;font-size:15px;font-weight:600;min-width:44px;text-align:center;}
@@ -216,9 +216,9 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .pb-win{background:rgba(58,127,201,.12);color:#60a5fa;border:1px solid rgba(58,127,201,.2);}
 .pb-miss{background:rgba(255,255,255,.05);color:var(--text3);border:1px solid var(--border);}
 .pb-none{background:transparent;color:var(--text3);font-style:italic;}
-.stat-badge{display:flex;flex-direction:column;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px;min-width:70px;}
-.stat-badge-val{font-family:'Oswald',sans-serif;font-size:22px;font-weight:700;}
-.stat-badge-lbl{font-size:10px;color:var(--text3);margin-top:2px;text-align:center;text-transform:uppercase;letter-spacing:.04em;}
+.stat-badge{display:flex;flex-direction:column;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;min-width:72px;flex:1;}
+.stat-badge-val{font-family:'Oswald',sans-serif;font-size:26px;font-weight:700;line-height:1;}
+.stat-badge-lbl{font-size:10px;color:var(--text3);margin-top:4px;text-align:center;text-transform:uppercase;letter-spacing:.04em;line-height:1.3;}
 
 .filter-btn{background:var(--surface);border:1px solid var(--border2);color:var(--text2);font-family:'Inter',sans-serif;font-size:11px;font-weight:500;padding:5px 10px;border-radius:20px;cursor:pointer;transition:all .15s;white-space:nowrap;}
 .filter-btn:hover{border-color:var(--accent);color:var(--accent);}
@@ -1023,11 +1023,11 @@ function renderClassement(){
   list.innerHTML=board.map((p,i)=>{
     const isMe=p.id===currentUser;
     const border=isMe?'border-color:var(--accent);':'';
-    return `<div class="ranking-row" style="${border}">
+    return `<div class="ranking-row" style="${border}cursor:pointer" data-playerid="${p.id}" title="Voir les pronostics">
       <div class="rank-pos p${i<3?i+1:''}">${i+1}</div>
       <div class="rank-avatar">${p.pseudo.substring(0,2).toUpperCase()}</div>
       <div style="flex:1"><div class="rank-name">${p.pseudo}${isMe?'<span class="me-badge">moi</span>':''}</div>
-      <div class="rank-sub">${Object.keys(p.pronostics||{}).length} pronostic(s)</div></div>
+      <div class="rank-sub">${Object.keys(p.pronostics||{}).length} pronostic(s) · <span style="color:var(--accent);font-size:10px">Voir le détail →</span></div></div>
       <div class="rank-pts">${p.pts}<span>pts</span></div>
     </div>`;
   }).join('');
@@ -1634,17 +1634,50 @@ function renderAdminCagnotte(){
 // ══ ADMIN JOUEURS ══
 function renderAdminJoueurs(){
   const board=getLeaderboard();
-  document.getElementById('admin-joueurs-list').innerHTML=board.length?board.map((p,i)=>`
-    <div class="ranking-row" style="flex-wrap:wrap;gap:8px">
-      <div class="rank-pos p${i<3?i+1:''}">${i+1}</div>
-      <div class="rank-avatar">${p.pseudo.substring(0,2).toUpperCase()}</div>
-      <div style="flex:1"><div class="rank-name">${p.pseudo} <span style="font-size:10px;color:var(--text3);letter-spacing:2px">${p.code||''}</span></div>
-      <div class="rank-sub">${Object.keys(p.pronostics||{}).length} matchs · ${Object.values(p.globaux||{}).filter(Boolean).length}/${GLOBAUX_DEF.length} globaux · ${p.paid?'✓ Payé':'En attente'}</div></div>
-      <div class="rank-pts">${p.pts}<span>pts</span></div>
-      <button onclick="supprimerJoueur('${p.id}')" style="background:rgba(178,34,52,.1);border:1px solid rgba(178,34,52,.2);color:#f87171;font-family:inherit;font-size:11px;padding:4px 10px;border-radius:6px;cursor:pointer;white-space:nowrap">🗑 Supprimer</button>
-    </div>`).join(''):'<div style="text-align:center;color:var(--text3);padding:40px">Aucun joueur</div>';
+  const container=document.getElementById('admin-joueurs-list');
+  if(!board.length){
+    container.innerHTML='<div style="text-align:center;color:var(--text3);padding:40px">Aucun joueur</div>';
+    return;
+  }
+  container.innerHTML='';
+  board.forEach(function(p,i){
+    const row=document.createElement('div');
+    row.className='ranking-row';
+    row.style.cssText='flex-wrap:wrap;gap:8px';
+    const pos=document.createElement('div');
+    pos.className='rank-pos'+(i<3?' p'+(i+1):'');
+    pos.textContent=String(i+1);
+    row.appendChild(pos);
+    const av=document.createElement('div');
+    av.className='rank-avatar';
+    av.textContent=p.pseudo.substring(0,2).toUpperCase();
+    row.appendChild(av);
+    const info=document.createElement('div');
+    info.style.flex='1';
+    const name=document.createElement('div');
+    name.className='rank-name';
+    name.textContent=p.pseudo+(p.code?' ['+p.code+']':'');
+    info.appendChild(name);
+    const sub=document.createElement('div');
+    sub.className='rank-sub';
+    const nbProg=Object.keys(p.pronostics||{}).length;
+    const nbGlob=Object.values(p.globaux||{}).filter(Boolean).length;
+    sub.textContent=nbProg+' matchs | '+nbGlob+'/'+GLOBAUX_DEF.length+' globaux | '+(p.paid?'Paye':'En attente');
+    info.appendChild(sub);
+    row.appendChild(info);
+    const ptsEl=document.createElement('div');
+    ptsEl.className='rank-pts';
+    ptsEl.innerHTML=p.pts+'<span>pts</span>';
+    row.appendChild(ptsEl);
+    const delBtn=document.createElement('button');
+    delBtn.style.cssText='background:rgba(178,34,52,.1);border:1px solid rgba(178,34,52,.2);color:#f87171;font-family:inherit;font-size:11px;padding:4px 10px;border-radius:6px;cursor:pointer;white-space:nowrap';
+    delBtn.textContent='Supprimer';
+    const pid=p.id;
+    delBtn.onclick=function(){supprimerJoueur(pid);};
+    row.appendChild(delBtn);
+    container.appendChild(row);
+  });
 }
-
 async function supprimerJoueur(id){
   if(!confirm('Supprimer ce joueur et tous ses pronostics ?')) return;
   await sb.from('joueurs').delete().eq('id',id);
