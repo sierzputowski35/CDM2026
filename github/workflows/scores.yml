@@ -1,1 +1,145 @@
+name: Scrape Flashscore Scores
 
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Scrape and update scores
+        run: |
+          python3 - << 'EOF'
+          import urllib.request, json, re
+
+          SUPABASE_URL = 'https://hqhosgwebucwtqtnlbqg.supabase.co'
+          SUPABASE_KEY = 'sb_publishable_O1tjA5w5G9jBQni9vA2wZg_NBKEu2jj'
+
+          # Scraper Flashscore
+          req = urllib.request.Request(
+            'https://d.flashscore.com/x/feed/f_2_219_2_en_1',
+            headers={
+              'X-Fsign': 'SW9D1eZo',
+              'User-Agent': 'Mozilla/5.0',
+              'Referer': 'https://www.flashscore.fr/'
+            }
+          )
+          try:
+            with urllib.request.urlopen(req, timeout=10) as r:
+              text = r.read().decode('utf-8')
+          except Exception as e:
+            print(f'Erreur scraping: {e}')
+            exit(0)
+
+          TEAM_MAP = {
+            'Mexico': 'Mexique', 'South Africa': 'Afrique du Sud',
+            'South Korea': 'Corée du Sud', 'Korea Republic': 'Corée du Sud',
+            'Czechia': 'Tchéquie', 'Czech Republic': 'Tchéquie',
+            'Italy': 'Italie', 'Switzerland': 'Suisse',
+            'Brazil': 'Brésil', 'Morocco': 'Maroc', 'Scotland': 'Écosse',
+            'Haiti': 'Haïti', 'USA': 'États-Unis', 'United States': 'États-Unis',
+            'Australia': 'Australie', 'Turkey': 'Turquie', 'Türkiye': 'Turquie',
+            'Germany': 'Allemagne', 'Ivory Coast': "Côte d'Ivoire",
+            'Ecuador': 'Équateur', 'Curacao': 'Curaçao',
+            'Netherlands': 'Pays-Bas', 'Japan': 'Japon', 'Sweden': 'Suède',
+            'Tunisia': 'Tunisie', 'Belgium': 'Belgique', 'Egypt': 'Égypte',
+            'New Zealand': 'Nouvelle-Zélande', 'Spain': 'Espagne',
+            'Cape Verde': 'Cap-Vert', 'Saudi Arabia': 'Arabie saoudite',
+            'Senegal': 'Sénégal', 'Norway': 'Norvège', 'Bolivia': 'Bolivie',
+            'Argentina': 'Argentine', 'Algeria': 'Algérie', 'Austria': 'Autriche',
+            'Jordan': 'Jordanie', 'Colombia': 'Colombie', 'Uzbekistan': 'Ouzbékistan',
+            'Iraq': 'Irak', 'England': 'Angleterre', 'Croatia': 'Croatie',
+          }
+
+          MATCHS = [
+            (1,'Mexique','Afrique du Sud'),(2,'Corée du Sud','Tchéquie'),
+            (3,'Mexique','Corée du Sud'),(4,'Afrique du Sud','Tchéquie'),
+            (5,'Mexique','Tchéquie'),(6,'Afrique du Sud','Corée du Sud'),
+            (7,'Canada','Italie'),(8,'Canada','Qatar'),
+            (9,'Italie','Suisse'),(10,'Suisse','Qatar'),
+            (11,'Canada','Suisse'),(12,'Italie','Qatar'),
+            (13,'Brésil','Maroc'),(14,'Écosse','Haïti'),
+            (15,'Brésil','Écosse'),(16,'Maroc','Haïti'),
+            (17,'Brésil','Haïti'),(18,'Écosse','Maroc'),
+            (19,'États-Unis','Paraguay'),(20,'Australie','Turquie'),
+            (21,'États-Unis','Australie'),(22,'Paraguay','Turquie'),
+            (23,'États-Unis','Turquie'),(24,'Australie','Paraguay'),
+            (25,'Allemagne',"Côte d'Ivoire"),(26,'Équateur','Curaçao'),
+            (27,'Allemagne','Curaçao'),(28,"Côte d'Ivoire",'Équateur'),
+            (29,'Allemagne','Équateur'),(30,'Curaçao',"Côte d'Ivoire"),
+            (31,'Pays-Bas','Japon'),(32,'Suède','Tunisie'),
+            (33,'Pays-Bas','Suède'),(34,'Japon','Tunisie'),
+            (35,'Pays-Bas','Tunisie'),(36,'Suède','Japon'),
+            (37,'Belgique','Égypte'),(38,'Iran','Nouvelle-Zélande'),
+            (39,'Belgique','Iran'),(40,'Égypte','Nouvelle-Zélande'),
+            (41,'Belgique','Nouvelle-Zélande'),(42,'Iran','Égypte'),
+            (43,'Espagne','Cap-Vert'),(44,'Arabie saoudite','Uruguay'),
+            (45,'Espagne','Arabie saoudite'),(46,'Cap-Vert','Uruguay'),
+            (47,'Espagne','Uruguay'),(48,'Arabie saoudite','Cap-Vert'),
+            (49,'France','Sénégal'),(50,'Norvège','Bolivie'),
+            (51,'France','Norvège'),(52,'Sénégal','Bolivie'),
+            (53,'France','Bolivie'),(54,'Norvège','Sénégal'),
+            (55,'Argentine','Algérie'),(56,'Autriche','Jordanie'),
+            (57,'Argentine','Autriche'),(58,'Algérie','Jordanie'),
+            (59,'Argentine','Jordanie'),(60,'Autriche','Algérie'),
+            (61,'Portugal','Colombie'),(62,'Ouzbékistan','Irak'),
+            (63,'Portugal','Ouzbékistan'),(64,'Colombie','Irak'),
+            (65,'Portugal','Irak'),(66,'Colombie','Ouzbékistan'),
+            (67,'Angleterre','Croatie'),(68,'Ghana','Panama'),
+            (69,'Angleterre','Ghana'),(70,'Croatie','Panama'),
+            (71,'Angleterre','Panama'),(72,'Ghana','Croatie'),
+          ]
+
+          def norm(name):
+            return TEAM_MAP.get(name.strip(), name.strip())
+
+          def find_match(t1, t2):
+            a, b = norm(t1), norm(t2)
+            for mid, n1, n2 in MATCHS:
+              if (n1==a and n2==b) or (n1==b and n2==a):
+                return mid, (n1==a)
+            return None, True
+
+          def upsert(mid, s1, s2):
+            data = json.dumps({'match_id': mid, 's1': str(s1), 's2': str(s2)}).encode()
+            req = urllib.request.Request(
+              f'{SUPABASE_URL}/rest/v1/scores_reels',
+              data=data,
+              method='POST',
+              headers={
+                'apikey': SUPABASE_KEY,
+                'Authorization': f'Bearer {SUPABASE_KEY}',
+                'Content-Type': 'application/json',
+                'Prefer': 'resolution=merge-duplicates,return=minimal'
+              }
+            )
+            try:
+              urllib.request.urlopen(req, timeout=10)
+            except Exception as e:
+              print(f'Erreur Supabase match {mid}: {e}')
+
+          segments = text.split('~AA÷')
+          updated = 0
+          for seg in segments[1:]:
+            status_m = re.search(r'DC÷([^¬]+)', seg)
+            if not status_m or status_m.group(1) not in ['FT','AET','AP','Finished']:
+              continue
+            s1_m = re.search(r'DE÷(\d+)', seg)
+            s2_m = re.search(r'DF÷(\d+)', seg)
+            t1_m = re.search(r'WU÷([^¬]+)', seg)
+            t2_m = re.search(r'WV÷([^¬]+)', seg)
+            if not all([s1_m, s2_m, t1_m, t2_m]):
+              continue
+            mid, direct = find_match(t1_m.group(1), t2_m.group(1))
+            if not mid:
+              continue
+            s1 = int(s1_m.group(1)) if direct else int(s2_m.group(1))
+            s2 = int(s2_m.group(1)) if direct else int(s1_m.group(1))
+            upsert(mid, s1, s2)
+            updated += 1
+            print(f'[OK] Match {mid}: {t1_m.group(1)} {s1}-{s2} {t2_m.group(1)}')
+
+          print(f'Total mis à jour: {updated}')
+          EOF
