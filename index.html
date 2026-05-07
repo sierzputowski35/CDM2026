@@ -1924,9 +1924,8 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js').catch(() => {});
   });
 }
-</script>
-</body>
-</html>function calcPlayerStats(joueur){
+
+function calcPlayerStats(joueur){
   let pts=0,exact=0,bonDiff=0,bonVainqueur=0,rate=0,total=0;
   const prog=joueur.pronostics||{};
   for(const m of MATCHS){
@@ -1961,3 +1960,6 @@ if ('serviceWorker' in navigator) {
 }
 
 
+</script>
+</body>
+</html>
