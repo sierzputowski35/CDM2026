@@ -848,10 +848,10 @@ body {
   </div>
   <div class="nav">
     <button class="nav-btn active" onclick="showPage('matchs',this)">⚡ Matchs</button>
+    <button class="nav-btn" onclick="showPage('globaux',this)">🎯 Globaux</button>
     <button class="nav-btn" onclick="showPage('classement',this)">🏆 Classement</button>
     <button class="nav-btn" onclick="showPage('groupes',this)">🌍 Groupes</button>
     <button class="nav-btn" onclick="showPage('chat',this)">💬 Chat</button>
-    <button class="nav-btn" onclick="showPage('globaux',this)">🎯 Globaux</button>
     <button class="nav-btn" onclick="showPage('cagnotte',this)">💰 Cagnotte</button>
   </div>
   <div class="main">
@@ -877,22 +877,10 @@ body {
       <div class="section-title">Mes pronostics</div>
       <div class="section-sub">Saisissez votre score avant le coup d'envoi · 0 pt si non rempli</div>
       <!-- FILTRES MATCHS -->
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
+      <div class="filter-bar">
         <button class="filter-btn active" id="f-tous" onclick="setFilter('tous',this)">Tous</button>
         <button class="filter-btn" id="f-prochain" onclick="setFilter('prochain',this)">⚡ À parier</button>
         <button class="filter-btn" id="f-joues" onclick="setFilter('joues',this)">✓ Terminés</button>
-        <button class="filter-btn" id="f-A" onclick="setFilter('A',this)">Gr. A</button>
-        <button class="filter-btn" id="f-B" onclick="setFilter('B',this)">Gr. B</button>
-        <button class="filter-btn" id="f-C" onclick="setFilter('C',this)">Gr. C</button>
-        <button class="filter-btn" id="f-D" onclick="setFilter('D',this)">Gr. D</button>
-        <button class="filter-btn" id="f-E" onclick="setFilter('E',this)">Gr. E</button>
-        <button class="filter-btn" id="f-F" onclick="setFilter('F',this)">Gr. F</button>
-        <button class="filter-btn" id="f-G" onclick="setFilter('G',this)">Gr. G</button>
-        <button class="filter-btn" id="f-H" onclick="setFilter('H',this)">Gr. H</button>
-        <button class="filter-btn" id="f-I" onclick="setFilter('I',this)">Gr. I</button>
-        <button class="filter-btn" id="f-J" onclick="setFilter('J',this)">Gr. J</button>
-        <button class="filter-btn" id="f-K" onclick="setFilter('K',this)">Gr. K</button>
-        <button class="filter-btn" id="f-L" onclick="setFilter('L',this)">Gr. L</button>
         <button class="filter-btn" id="f-elim" onclick="setFilter('elim',this)">Phases finales</button>
       </div>
       <div id="matchs-list"></div>
@@ -1545,7 +1533,7 @@ function showPage(id,btn){
   document.querySelectorAll('#app-screen .nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
   btn?.classList.add('active');
-  ({classement:renderClassement,matchs:renderMatchs,groupes:renderGroupes,chat:renderChatPage,globaux:renderGlobaux,cagnotte:renderCagnotte})[id]?.();
+  ({classement:renderClassement,matchs:renderMatchs,groupes:function(){renderGroupes();renderBracket();},chat:renderChatPage,globaux:renderGlobaux,cagnotte:renderCagnotte})[id]?.();
 }
 function showAdminPage(id,btn){
   document.querySelectorAll('#admin-app-screen .page').forEach(p=>p.classList.remove('active'));
@@ -1997,6 +1985,134 @@ function renderGroupes(){
     </div>`;
   }
   document.getElementById('groupes-list').innerHTML=html||'<div style="text-align:center;color:var(--text3);padding:40px">Aucun groupe</div>';
+}
+
+// ══ BRACKET PHASES FINALES ══
+function getBestThird(){
+  // Calcule les meilleurs 3èmes basés sur pts/diff/buts
+  const thirds=[];
+  for(const g of ['A','B','C','D','E','F','G','H','I','J','K','L']){
+    const standings=calcGroupeStandings(g);
+    if(standings.length>=3){
+      const t=standings[2];
+      t.groupe=g;
+      thirds.push(t);
+    }
+  }
+  // Trier par pts desc, diff desc, buts desc
+  thirds.sort((a,b)=>b.pts-a.pts||b.diff-a.diff||b.bp-a.bp);
+  return thirds.slice(0,8);
+}
+
+function getQualifiedTeams(){
+  const teams={};
+  for(const g of ['A','B','C','D','E','F','G','H','I','J','K','L']){
+    const st=calcGroupeStandings(g);
+    teams['1'+g]=st[0]?{name:st[0].name,flag:st[0].flag}:{name:'1er Gr.'+g,flag:'🏆'};
+    teams['2'+g]=st[1]?{name:st[1].name,flag:st[1].flag}:{name:'2e Gr.'+g,flag:'🥈'};
+  }
+  // Meilleurs 3èmes
+  const best8=getBestThird();
+  best8.forEach(function(t,i){
+    teams['3rd'+(i+1)]={name:t.name,flag:t.flag,groupe:t.groupe};
+  });
+  return teams;
+}
+
+function renderBracket(){
+  const teams=getQualifiedTeams();
+  const best8=getBestThird();
+  const best8groups=best8.map(t=>t.groupe);
+
+  function getTeam(key){
+    const t=teams[key];
+    return t?'<span>'+t.flag+'</span> '+t.name:'<span style="color:var(--text3)">À déterminer</span>';
+  }
+
+  // Matchs officiels Round of 32 (Wikipedia CDM 2026)
+  // Match 73: 2A vs 2B | Match 74: 1E vs Meilleur 3e A/B/C/D/F
+  // etc.
+  const r32=[
+    {id:73,  t1:'2A',  t2:'2B'},
+    {id:74,  t1:'1E',  t2:'3rd ABCDF'},
+    {id:75,  t1:'1F',  t2:'2C'},
+    {id:76,  t1:'1C',  t2:'2F'},
+    {id:77,  t1:'1I',  t2:'3rd CDFGH'},
+    {id:78,  t1:'2E',  t2:'2I'},
+    {id:79,  t1:'1A',  t2:'3rd CEFHI'},
+    {id:80,  t1:'1L',  t2:'3rd EHIJK'},
+    {id:81,  t1:'1D',  t2:'3rd BEFIJ'},
+    {id:82,  t1:'1G',  t2:'3rd AEHIJ'},
+    {id:83,  t1:'2K',  t2:'2L'},
+    {id:84,  t1:'1H',  t2:'2J'},
+    {id:85,  t1:'1B',  t2:'3rd EFGIJ'},
+    {id:86,  t1:'1J',  t2:'2H'},
+    {id:87,  t1:'1K',  t2:'3rd DEIJL'},
+    {id:88,  t1:'2D',  t2:'2G'},
+  ];
+
+  function resolveTeam(key){
+    if(key.startsWith('3rd')){
+      // Meilleur 3e parmi les groupes listés
+      const groups=key.replace('3rd ','').replace('3rd','').split('');
+      const candidates=best8.filter(t=>groups.includes(t.groupe));
+      if(candidates.length>0) return {name:candidates[0].name,flag:candidates[0].flag};
+      return {name:'Meilleur 3e ('+key.replace('3rd ','')+')',flag:'🏅'};
+    }
+    const pos=key[0];
+    const grp=key[1];
+    const t=teams[pos+grp];
+    return t||{name:pos+'er Gr.'+grp,flag:'🏆'};
+  }
+
+  let html='<div class="card card-gold" style="margin-bottom:16px">'
+    +'<div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--gold);margin-bottom:4px">PHASES FINALES</div>'
+    +'<div style="font-size:11px;color:var(--text3);margin-bottom:14px">Bracket officiel CDM 2026 · Se met à jour automatiquement</div>';
+
+  // Afficher info meilleurs 3èmes
+  if(best8.length>0){
+    html+='<div style="margin-bottom:14px">'
+      +'<div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;font-weight:700">Meilleurs 3es qualifiés ('+best8.length+'/8)</div>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:6px">'
+      +best8.map(function(t){
+        return '<div style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:5px 10px;font-size:12px">'
+          +t.flag+' '+t.name+' <span style="color:var(--gold);font-weight:700">Gr.'+t.groupe+'</span>'
+          +' <span style="color:var(--text3);font-size:10px">'+t.pts+'pts</span>'
+          +'</div>';
+      }).join('')
+      +'</div></div>';
+  }
+
+  // Bracket R32 en 2 colonnes
+  html+='<div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;font-weight:700">Huitièmes de finale (Round of 32)</div>';
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
+
+  r32.forEach(function(m){
+    const real=allScores[m.id];
+    const t1=resolveTeam(m.t1);
+    const t2=resolveTeam(m.t2);
+    html+='<div style="background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:10px">'
+      +'<div style="font-size:9px;color:var(--text3);margin-bottom:6px;font-weight:700;letter-spacing:.06em">MATCH '+m.id+'</div>'
+      +'<div style="font-size:12px;color:var(--text);margin-bottom:4px">'+t1.flag+' '+t1.name+'</div>'
+      +'<div style="font-size:9px;color:var(--text3);margin:3px 0">vs</div>'
+      +'<div style="font-size:12px;color:var(--text)">'+t2.flag+' '+t2.name+'</div>'
+      +(real?'<div style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--green);margin-top:6px;letter-spacing:2px">'+real.s1+' - '+real.s2+'</div>':'')
+    +'</div>';
+  });
+
+  html+='</div></div>';
+
+  // Insérer après les groupes
+  const container=document.getElementById('groupes-list');
+  if(container){
+    const bracketDiv=document.createElement('div');
+    bracketDiv.id='bracket-section';
+    bracketDiv.innerHTML=html;
+    // Supprimer l'ancien bracket si présent
+    const old=document.getElementById('bracket-section');
+    if(old) old.remove();
+    container.parentNode.insertBefore(bracketDiv, container.nextSibling);
+  }
 }
 
 // ══ CHAT ══
