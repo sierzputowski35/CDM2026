@@ -1,262 +1,176 @@
-
-// Vercel Function — scrape Flashscore et met à jour Supabase
-// S'exécute automatiquement toutes les 5 minutes via cron
-
 const SUPABASE_URL = 'https://hqhosgwebucwtqtnlbqg.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_O1tjA5w5G9jBQni9vA2wZg_NBKEu2jj';
 
-// Correspondance entre les noms Flashscore et nos noms d'équipes
 const TEAM_MAP = {
-  'Mexique': 'Mexique', 'Mexico': 'Mexique',
-  'Afrique du Sud': 'Afrique du Sud', 'South Africa': 'Afrique du Sud',
-  'Corée du Sud': 'Corée du Sud', 'South Korea': 'Corée du Sud', 'Korea Republic': 'Corée du Sud',
-  'Tchéquie': 'Tchéquie', 'Czech Republic': 'Tchéquie', 'Czechia': 'Tchéquie',
-  'Canada': 'Canada',
-  'Italie': 'Italie', 'Italy': 'Italie',
-  'Suisse': 'Suisse', 'Switzerland': 'Suisse',
-  'Qatar': 'Qatar',
-  'Brésil': 'Brésil', 'Brazil': 'Brésil',
-  'Maroc': 'Maroc', 'Morocco': 'Maroc',
-  'Écosse': 'Écosse', 'Scotland': 'Écosse',
-  'Haïti': 'Haïti', 'Haiti': 'Haïti',
-  'États-Unis': 'États-Unis', 'USA': 'États-Unis', 'United States': 'États-Unis',
-  'Paraguay': 'Paraguay',
-  'Australie': 'Australie', 'Australia': 'Australie',
-  'Turquie': 'Turquie', 'Turkey': 'Turquie', 'Türkiye': 'Turquie',
-  'Allemagne': 'Allemagne', 'Germany': 'Allemagne',
-  "Côte d'Ivoire": "Côte d'Ivoire", 'Ivory Coast': "Côte d'Ivoire",
-  'Équateur': 'Équateur', 'Ecuador': 'Équateur',
-  'Curaçao': 'Curaçao', 'Curacao': 'Curaçao',
-  'Pays-Bas': 'Pays-Bas', 'Netherlands': 'Pays-Bas', 'Holland': 'Pays-Bas',
-  'Japon': 'Japon', 'Japan': 'Japon',
-  'Suède': 'Suède', 'Sweden': 'Suède',
-  'Tunisie': 'Tunisie', 'Tunisia': 'Tunisie',
-  'Belgique': 'Belgique', 'Belgium': 'Belgique',
-  'Égypte': 'Égypte', 'Egypt': 'Égypte',
-  'Iran': 'Iran',
-  'Nouvelle-Zélande': 'Nouvelle-Zélande', 'New Zealand': 'Nouvelle-Zélande',
-  'Espagne': 'Espagne', 'Spain': 'Espagne',
-  'Cap-Vert': 'Cap-Vert', 'Cape Verde': 'Cap-Vert',
-  'Arabie saoudite': 'Arabie saoudite', 'Saudi Arabia': 'Arabie saoudite',
-  'Uruguay': 'Uruguay',
-  'France': 'France',
-  'Sénégal': 'Sénégal', 'Senegal': 'Sénégal',
-  'Norvège': 'Norvège', 'Norway': 'Norvège',
-  'Bolivie': 'Bolivie', 'Bolivia': 'Bolivie',
-  'Argentine': 'Argentine', 'Argentina': 'Argentine',
-  'Algérie': 'Algérie', 'Algeria': 'Algérie',
-  'Autriche': 'Autriche', 'Austria': 'Autriche',
-  'Jordanie': 'Jordanie', 'Jordan': 'Jordanie',
-  'Portugal': 'Portugal',
-  'Colombie': 'Colombie', 'Colombia': 'Colombie',
-  'Ouzbékistan': 'Ouzbékistan', 'Uzbekistan': 'Ouzbékistan',
-  'Irak': 'Irak', 'Iraq': 'Irak',
-  'Angleterre': 'Angleterre', 'England': 'Angleterre',
-  'Croatie': 'Croatie', 'Croatia': 'Croatie',
-  'Ghana': 'Ghana',
-  'Panama': 'Panama',
+  'Mexico': 'Mexique', 'Mexique': 'Mexique',
+  'South Africa': 'Afrique du Sud', 'Afrique du Sud': 'Afrique du Sud',
+  'South Korea': 'Corée du Sud', 'Korea Republic': 'Corée du Sud', 'Corée du Sud': 'Corée du Sud',
+  'Czech Republic': 'Tchéquie', 'Czechia': 'Tchéquie', 'Tchéquie': 'Tchéquie',
+  'Canada': 'Canada', 'Italy': 'Italie', 'Italie': 'Italie',
+  'Switzerland': 'Suisse', 'Suisse': 'Suisse', 'Qatar': 'Qatar',
+  'Brazil': 'Brésil', 'Brésil': 'Brésil',
+  'Morocco': 'Maroc', 'Maroc': 'Maroc',
+  'Scotland': 'Écosse', 'Écosse': 'Écosse',
+  'Haiti': 'Haïti', 'Haïti': 'Haïti',
+  'USA': 'États-Unis', 'United States': 'États-Unis', 'États-Unis': 'États-Unis',
+  'Paraguay': 'Paraguay', 'Australia': 'Australie', 'Australie': 'Australie',
+  'Turkey': 'Turquie', 'Türkiye': 'Turquie', 'Turquie': 'Turquie',
+  'Germany': 'Allemagne', 'Allemagne': 'Allemagne',
+  "Ivory Coast": "Côte d'Ivoire", "Côte d'Ivoire": "Côte d'Ivoire",
+  'Ecuador': 'Équateur', 'Équateur': 'Équateur',
+  'Curacao': 'Curaçao', 'Curaçao': 'Curaçao',
+  'Netherlands': 'Pays-Bas', 'Pays-Bas': 'Pays-Bas',
+  'Japan': 'Japon', 'Japon': 'Japon',
+  'Sweden': 'Suède', 'Suède': 'Suède',
+  'Tunisia': 'Tunisie', 'Tunisie': 'Tunisie',
+  'Belgium': 'Belgique', 'Belgique': 'Belgique',
+  'Egypt': 'Égypte', 'Égypte': 'Égypte',
+  'Iran': 'Iran', 'New Zealand': 'Nouvelle-Zélande', 'Nouvelle-Zélande': 'Nouvelle-Zélande',
+  'Spain': 'Espagne', 'Espagne': 'Espagne',
+  'Cape Verde': 'Cap-Vert', 'Cap-Vert': 'Cap-Vert',
+  'Saudi Arabia': 'Arabie saoudite', 'Arabie saoudite': 'Arabie saoudite',
+  'Uruguay': 'Uruguay', 'France': 'France',
+  'Senegal': 'Sénégal', 'Sénégal': 'Sénégal',
+  'Norway': 'Norvège', 'Norvège': 'Norvège',
+  'Bolivia': 'Bolivie', 'Bolivie': 'Bolivie',
+  'Argentina': 'Argentine', 'Argentine': 'Argentine',
+  'Algeria': 'Algérie', 'Algérie': 'Algérie',
+  'Austria': 'Autriche', 'Autriche': 'Autriche',
+  'Jordan': 'Jordanie', 'Jordanie': 'Jordanie',
+  'Portugal': 'Portugal', 'Colombia': 'Colombie', 'Colombie': 'Colombie',
+  'Uzbekistan': 'Ouzbékistan', 'Ouzbékistan': 'Ouzbékistan',
+  'Iraq': 'Irak', 'Irak': 'Irak',
+  'England': 'Angleterre', 'Angleterre': 'Angleterre',
+  'Croatia': 'Croatie', 'Croatie': 'Croatie',
+  'Ghana': 'Ghana', 'Panama': 'Panama',
 };
 
-// Liste des matchs CDM 2026 avec leurs équipes (pour faire la correspondance)
 const MATCHS = [
-  {id:1,  name1:'Mexique',       name2:'Afrique du Sud'},
-  {id:2,  name1:'Corée du Sud',  name2:'Tchéquie'},
-  {id:3,  name1:'Mexique',       name2:'Corée du Sud'},
-  {id:4,  name1:'Afrique du Sud',name2:'Tchéquie'},
-  {id:5,  name1:'Mexique',       name2:'Tchéquie'},
-  {id:6,  name1:'Afrique du Sud',name2:'Corée du Sud'},
-  {id:7,  name1:'Canada',        name2:'Italie'},
-  {id:8,  name1:'Canada',        name2:'Qatar'},
-  {id:9,  name1:'Italie',        name2:'Suisse'},
-  {id:10, name1:'Suisse',        name2:'Qatar'},
-  {id:11, name1:'Canada',        name2:'Suisse'},
-  {id:12, name1:'Italie',        name2:'Qatar'},
-  {id:13, name1:'Brésil',        name2:'Maroc'},
-  {id:14, name1:'Écosse',        name2:'Haïti'},
-  {id:15, name1:'Brésil',        name2:'Écosse'},
-  {id:16, name1:'Maroc',         name2:'Haïti'},
-  {id:17, name1:'Brésil',        name2:'Haïti'},
-  {id:18, name1:'Écosse',        name2:'Maroc'},
-  {id:19, name1:'États-Unis',    name2:'Paraguay'},
-  {id:20, name1:'Australie',     name2:'Turquie'},
-  {id:21, name1:'États-Unis',    name2:'Australie'},
-  {id:22, name1:'Paraguay',      name2:'Turquie'},
-  {id:23, name1:'États-Unis',    name2:'Turquie'},
-  {id:24, name1:'Australie',     name2:'Paraguay'},
-  {id:25, name1:'Allemagne',     name2:"Côte d'Ivoire"},
-  {id:26, name1:'Équateur',      name2:'Curaçao'},
-  {id:27, name1:'Allemagne',     name2:'Curaçao'},
-  {id:28, name1:"Côte d'Ivoire", name2:'Équateur'},
-  {id:29, name1:'Allemagne',     name2:'Équateur'},
-  {id:30, name1:'Curaçao',       name2:"Côte d'Ivoire"},
-  {id:31, name1:'Pays-Bas',      name2:'Japon'},
-  {id:32, name1:'Suède',         name2:'Tunisie'},
-  {id:33, name1:'Pays-Bas',      name2:'Suède'},
-  {id:34, name1:'Japon',         name2:'Tunisie'},
-  {id:35, name1:'Pays-Bas',      name2:'Tunisie'},
-  {id:36, name1:'Suède',         name2:'Japon'},
-  {id:37, name1:'Belgique',      name2:'Égypte'},
-  {id:38, name1:'Iran',          name2:'Nouvelle-Zélande'},
-  {id:39, name1:'Belgique',      name2:'Iran'},
-  {id:40, name1:'Égypte',        name2:'Nouvelle-Zélande'},
-  {id:41, name1:'Belgique',      name2:'Nouvelle-Zélande'},
-  {id:42, name1:'Iran',          name2:'Égypte'},
-  {id:43, name1:'Espagne',       name2:'Cap-Vert'},
-  {id:44, name1:'Arabie saoudite',name2:'Uruguay'},
-  {id:45, name1:'Espagne',       name2:'Arabie saoudite'},
-  {id:46, name1:'Cap-Vert',      name2:'Uruguay'},
-  {id:47, name1:'Espagne',       name2:'Uruguay'},
-  {id:48, name1:'Arabie saoudite',name2:'Cap-Vert'},
-  {id:49, name1:'France',        name2:'Sénégal'},
-  {id:50, name1:'Norvège',       name2:'Bolivie'},
-  {id:51, name1:'France',        name2:'Norvège'},
-  {id:52, name1:'Sénégal',       name2:'Bolivie'},
-  {id:53, name1:'France',        name2:'Bolivie'},
-  {id:54, name1:'Norvège',       name2:'Sénégal'},
-  {id:55, name1:'Argentine',     name2:'Algérie'},
-  {id:56, name1:'Autriche',      name2:'Jordanie'},
-  {id:57, name1:'Argentine',     name2:'Autriche'},
-  {id:58, name1:'Algérie',       name2:'Jordanie'},
-  {id:59, name1:'Argentine',     name2:'Jordanie'},
-  {id:60, name1:'Autriche',      name2:'Algérie'},
-  {id:61, name1:'Portugal',      name2:'Colombie'},
-  {id:62, name1:'Ouzbékistan',   name2:'Irak'},
-  {id:63, name1:'Portugal',      name2:'Ouzbékistan'},
-  {id:64, name1:'Colombie',      name2:'Irak'},
-  {id:65, name1:'Portugal',      name2:'Irak'},
-  {id:66, name1:'Colombie',      name2:'Ouzbékistan'},
-  {id:67, name1:'Angleterre',    name2:'Croatie'},
-  {id:68, name1:'Ghana',         name2:'Panama'},
-  {id:69, name1:'Angleterre',    name2:'Ghana'},
-  {id:70, name1:'Croatie',       name2:'Panama'},
-  {id:71, name1:'Angleterre',    name2:'Panama'},
-  {id:72, name1:'Ghana',         name2:'Croatie'},
+  {id:1,n1:'Mexique',n2:'Afrique du Sud'},{id:2,n1:'Corée du Sud',n2:'Tchéquie'},
+  {id:3,n1:'Mexique',n2:'Corée du Sud'},{id:4,n1:'Afrique du Sud',n2:'Tchéquie'},
+  {id:5,n1:'Mexique',n2:'Tchéquie'},{id:6,n1:'Afrique du Sud',n2:'Corée du Sud'},
+  {id:7,n1:'Canada',n2:'Italie'},{id:8,n1:'Canada',n2:'Qatar'},
+  {id:9,n1:'Italie',n2:'Suisse'},{id:10,n1:'Suisse',n2:'Qatar'},
+  {id:11,n1:'Canada',n2:'Suisse'},{id:12,n1:'Italie',n2:'Qatar'},
+  {id:13,n1:'Brésil',n2:'Maroc'},{id:14,n1:'Écosse',n2:'Haïti'},
+  {id:15,n1:'Brésil',n2:'Écosse'},{id:16,n1:'Maroc',n2:'Haïti'},
+  {id:17,n1:'Brésil',n2:'Haïti'},{id:18,n1:'Écosse',n2:'Maroc'},
+  {id:19,n1:'États-Unis',n2:'Paraguay'},{id:20,n1:'Australie',n2:'Turquie'},
+  {id:21,n1:'États-Unis',n2:'Australie'},{id:22,n1:'Paraguay',n2:'Turquie'},
+  {id:23,n1:'États-Unis',n2:'Turquie'},{id:24,n1:'Australie',n2:'Paraguay'},
+  {id:25,n1:'Allemagne',n2:"Côte d'Ivoire"},{id:26,n1:'Équateur',n2:'Curaçao'},
+  {id:27,n1:'Allemagne',n2:'Curaçao'},{id:28,n1:"Côte d'Ivoire",n2:'Équateur'},
+  {id:29,n1:'Allemagne',n2:'Équateur'},{id:30,n1:'Curaçao',n2:"Côte d'Ivoire"},
+  {id:31,n1:'Pays-Bas',n2:'Japon'},{id:32,n1:'Suède',n2:'Tunisie'},
+  {id:33,n1:'Pays-Bas',n2:'Suède'},{id:34,n1:'Japon',n2:'Tunisie'},
+  {id:35,n1:'Pays-Bas',n2:'Tunisie'},{id:36,n1:'Suède',n2:'Japon'},
+  {id:37,n1:'Belgique',n2:'Égypte'},{id:38,n1:'Iran',n2:'Nouvelle-Zélande'},
+  {id:39,n1:'Belgique',n2:'Iran'},{id:40,n1:'Égypte',n2:'Nouvelle-Zélande'},
+  {id:41,n1:'Belgique',n2:'Nouvelle-Zélande'},{id:42,n1:'Iran',n2:'Égypte'},
+  {id:43,n1:'Espagne',n2:'Cap-Vert'},{id:44,n1:'Arabie saoudite',n2:'Uruguay'},
+  {id:45,n1:'Espagne',n2:'Arabie saoudite'},{id:46,n1:'Cap-Vert',n2:'Uruguay'},
+  {id:47,n1:'Espagne',n2:'Uruguay'},{id:48,n1:'Arabie saoudite',n2:'Cap-Vert'},
+  {id:49,n1:'France',n2:'Sénégal'},{id:50,n1:'Norvège',n2:'Bolivie'},
+  {id:51,n1:'France',n2:'Norvège'},{id:52,n1:'Sénégal',n2:'Bolivie'},
+  {id:53,n1:'France',n2:'Bolivie'},{id:54,n1:'Norvège',n2:'Sénégal'},
+  {id:55,n1:'Argentine',n2:'Algérie'},{id:56,n1:'Autriche',n2:'Jordanie'},
+  {id:57,n1:'Argentine',n2:'Autriche'},{id:58,n1:'Algérie',n2:'Jordanie'},
+  {id:59,n1:'Argentine',n2:'Jordanie'},{id:60,n1:'Autriche',n2:'Algérie'},
+  {id:61,n1:'Portugal',n2:'Colombie'},{id:62,n1:'Ouzbékistan',n2:'Irak'},
+  {id:63,n1:'Portugal',n2:'Ouzbékistan'},{id:64,n1:'Colombie',n2:'Irak'},
+  {id:65,n1:'Portugal',n2:'Irak'},{id:66,n1:'Colombie',n2:'Ouzbékistan'},
+  {id:67,n1:'Angleterre',n2:'Croatie'},{id:68,n1:'Ghana',n2:'Panama'},
+  {id:69,n1:'Angleterre',n2:'Ghana'},{id:70,n1:'Croatie',n2:'Panama'},
+  {id:71,n1:'Angleterre',n2:'Panama'},{id:72,n1:'Ghana',n2:'Croatie'},
 ];
 
-async function supabaseUpsert(matchId, s1, s2) {
-  // Vérifier si le score existe déjà
-  const checkRes = await fetch(
-    `${SUPABASE_URL}/rest/v1/scores_reels?match_id=eq.${matchId}&select=match_id`,
-    { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
-  );
-  const existing = await checkRes.json();
-
-  if (existing.length > 0) {
-    // Mettre à jour
-    await fetch(
-      `${SUPABASE_URL}/rest/v1/scores_reels?match_id=eq.${matchId}`,
-      {
-        method: 'PATCH',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=minimal'
-        },
-        body: JSON.stringify({ s1: String(s1), s2: String(s2) })
-      }
-    );
-  } else {
-    // Insérer
-    await fetch(
-      `${SUPABASE_URL}/rest/v1/scores_reels`,
-      {
-        method: 'POST',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=minimal'
-        },
-        body: JSON.stringify({ match_id: matchId, s1: String(s1), s2: String(s2) })
-      }
-    );
-  }
+function normalize(name) {
+  return TEAM_MAP[name ? name.trim() : ''] || (name ? name.trim() : '');
 }
 
-function normalizeTeam(name) {
-  if (!name) return '';
-  const trimmed = name.trim();
-  return TEAM_MAP[trimmed] || trimmed;
+function findMatch(t1, t2) {
+  const a = normalize(t1), b = normalize(t2);
+  return MATCHS.find(m => (m.n1===a && m.n2===b) || (m.n1===b && m.n2===a));
 }
 
-function findMatch(team1, team2) {
-  const t1 = normalizeTeam(team1);
-  const t2 = normalizeTeam(team2);
-  return MATCHS.find(m =>
-    (m.name1 === t1 && m.name2 === t2) ||
-    (m.name1 === t2 && m.name2 === t1)
-  );
+async function upsertScore(id, s1, s2) {
+  const headers = {
+    'apikey': SUPABASE_KEY,
+    'Authorization': `Bearer ${SUPABASE_KEY}`,
+    'Content-Type': 'application/json',
+    'Prefer': 'resolution=merge-duplicates,return=minimal'
+  };
+  await fetch(`${SUPABASE_URL}/rest/v1/scores_reels`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ match_id: id, s1: String(s1), s2: String(s2) })
+  });
 }
 
-export default async function handler(req, res) {
-  // Vérification cron secret (sécurité basique)
-  const authHeader = req.headers.authorization;
-  if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-
+module.exports = async function handler(req, res) {
   try {
-    // Scraper Flashscore via leur API non-officielle
-    // Flashscore expose ses données via des requêtes XHR
-    const response = await fetch(
-      'https://www.flashscore.fr/x/req/m_1_219',
-      {
-        headers: {
-          'X-Fsign': 'SW9D1eZo',
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-          'Accept': '*/*',
-          'Referer': 'https://www.flashscore.fr/',
-        }
+    // Scraper l'API non-officielle de Flashscore
+    const r = await fetch('https://d.flashscore.com/x/feed/f_2_219_2_en_1', {
+      headers: {
+        'X-Fsign': 'SW9D1eZo',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Referer': 'https://www.flashscore.fr/',
+        'Accept': '*/*',
+        'Accept-Language': 'fr-FR,fr;q=0.9',
       }
-    );
+    });
 
-    if (!response.ok) {
-      throw new Error(`Flashscore HTTP ${response.status}`);
+    if (!r.ok) {
+      return res.status(200).json({ success: false, error: `HTTP ${r.status}`, timestamp: new Date().toISOString() });
     }
 
-    const text = await response.text();
-    
-    // Parser la réponse Flashscore (format propriétaire délimité par ~)
-    // Format: ¬~AA÷matchId¬AD÷timestamp¬AE÷status¬AF÷score1¬AG÷score2¬AH÷team1¬AI÷team2
+    const text = await r.text();
     const updated = [];
-    const errors = [];
+
+    // Format Flashscore: segments séparés par ¬
+    // Chercher les matchs terminés avec scores
+    // Pattern: ~AA÷ID¬...¬DC÷FT¬...¬DE÷SCORE1¬DF÷SCORE2¬...¬WU÷TEAM1¬WV÷TEAM2
+    const segments = text.split('~AA÷');
     
-    // Regex pour extraire les matchs terminés (status = Terminé/FT)
-    const matchRegex = /AA÷([^¬]+)¬.*?AE÷([^¬]+)¬.*?AF÷(\d+)¬AG÷(\d+)¬.*?AH÷([^¬]+)¬AI÷([^¬]+)/g;
-    let match;
-    
-    while ((match = matchRegex.exec(text)) !== null) {
-      const [, flashId, status, score1, score2, team1, team2] = match;
+    for (let i = 1; i < segments.length; i++) {
+      const seg = segments[i];
       
-      // Ne traiter que les matchs terminés
-      if (!['Terminé', 'FT', 'AP', 'AET'].includes(status)) continue;
+      // Statut du match (FT = terminé, AET = après prolongations, AP = après penalties)
+      const statusMatch = seg.match(/DC÷([^¬]+)/);
+      if (!statusMatch) continue;
+      const status = statusMatch[1];
+      if (!['FT', 'AET', 'AP', 'Finished'].includes(status)) continue;
       
-      const cdmMatch = findMatch(team1, team2);
-      if (!cdmMatch) continue;
+      // Scores
+      const s1Match = seg.match(/DE÷(\d+)/);
+      const s2Match = seg.match(/DF÷(\d+)/);
+      if (!s1Match || !s2Match) continue;
       
-      try {
-        await supabaseUpsert(cdmMatch.id, parseInt(score1), parseInt(score2));
-        updated.push(`Match ${cdmMatch.id}: ${team1} ${score1}-${score2} ${team2}`);
-      } catch(e) {
-        errors.push(`Erreur match ${cdmMatch.id}: ${e.message}`);
-      }
+      // Équipes
+      const t1Match = seg.match(/WU÷([^¬]+)/);
+      const t2Match = seg.match(/WV÷([^¬]+)/);
+      if (!t1Match || !t2Match) continue;
+      
+      const match = findMatch(t1Match[1], t2Match[1]);
+      if (!match) continue;
+      
+      await upsertScore(match.id, parseInt(s1Match[1]), parseInt(s2Match[1]));
+      updated.push(`[${match.id}] ${t1Match[1]} ${s1Match[1]}-${s2Match[1]} ${t2Match[1]}`);
     }
 
     return res.status(200).json({
       success: true,
       updated: updated.length,
       matches: updated,
-      errors,
+      raw_length: text.length,
       timestamp: new Date().toISOString()
     });
 
-  } catch (error) {
-    console.error('Scraping error:', error);
-    return res.status(500).json({
+  } catch (err) {
+    return res.status(200).json({
       success: false,
-      error: error.message,
+      error: err.message,
       timestamp: new Date().toISOString()
     });
   }
-}
+};
