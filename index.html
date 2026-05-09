@@ -7,1055 +7,332 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="CDM 2026">
-<meta name="theme-color" content="#0a0e1a">
-<title>CDM 2026 — Pronostics</title>
-<!-- manifest uniquement en prod - injecté sans document.write -->
-<script>
-(function(){
-  if(location.protocol!=='file:' && location.hostname!=='localhost'){
-    var l=document.createElement('link');
-    l.rel='manifest'; l.href='manifest.json';
-    document.head.appendChild(l);
-  }
-})();
-</script>
+<meta name="theme-color" content="#050816">
+<title>World Cup 2026 — Pronostics</title>
+<link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" onerror="this.remove()">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+
 <style>
-/* Fallback si Google Fonts indisponible (local / offline) */
-@font-face {
-  font-family: 'Bebas Neue';
-  src: local('Impact'), local('Arial Narrow');
-  font-weight: 400;
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap');
+:root{
+  --bg:#050816;--bg2:#0B1020;--bg3:#111827;--surface:#141926;--surface2:#1A2235;--surface3:#1f2840;
+  --gold:#F4C542;--gold2:#FFCC33;--gold-dark:#C99812;--gold-glow:rgba(244,197,66,.25);--gold-soft:rgba(244,197,66,.08);
+  --emerald:#22D16B;--crimson:#FF4D5A;--purple:#A855F7;--blue:#58C8FA;--orange:#FF8A3D;
+  --text:#FFFFFF;--text2:#B6C2CF;--text3:#718096;
+  --border:rgba(255,255,255,.05);--border2:rgba(255,255,255,.10);--border3:rgba(244,197,66,.25);
+  --red:#FF4D5A;--red2:#FF1744;--green:#22D16B;--accent:#F4C542;
+  --glow-gold:rgba(244,197,66,.20);--glow-red:rgba(255,77,90,.20);--glow-blue:rgba(88,200,250,.20);
+  --radius:10px;--radius-lg:18px;--radius-xl:26px;
 }
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:3px;}
+.hidden{display:none!important;}
+
+/* ── PARTICLES ── */
+.particles{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+.particle{position:absolute;border-radius:50%;background:var(--gold);animation:floatParticle linear infinite;opacity:0;}
+@keyframes floatParticle{0%{transform:translateY(100vh) scale(0);opacity:0;}10%{opacity:.3;}90%{opacity:.15;}100%{transform:translateY(-10vh) scale(1);opacity:0;}}
+
+/* ── AVATAR ── */
+.avatar-emoji{font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center;}
+
+/* ── MATCH MODAL ── */
+.match-modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.82);backdrop-filter:blur(10px);display:flex;align-items:flex-end;justify-content:center;}
+.match-modal-overlay.hidden{display:none!important;}
+.match-modal-box{background:linear-gradient(180deg,var(--bg2),var(--bg));border:1px solid var(--border3);border-radius:24px 24px 0 0;padding:20px 16px 40px;width:100%;max-width:480px;max-height:80vh;overflow-y:auto;box-shadow:0 -20px 60px rgba(244,197,66,.1);}
+.match-modal-title{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--gold);margin-bottom:4px;letter-spacing:2px;}
+.match-modal-score{font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--text);letter-spacing:6px;margin-bottom:14px;}
+.modal-player-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.modal-player-row:last-child{border-bottom:none;}
+.modal-player-av{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.modal-player-av.initials{font-family:'Bebas Neue',sans-serif;font-size:13px;color:var(--bg);}
+.modal-prono{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--text);letter-spacing:3px;margin-left:auto;flex-shrink:0;}
+.modal-pts{font-family:'Bebas Neue',sans-serif;font-size:18px;min-width:50px;text-align:right;flex-shrink:0;}
+
+/* ── FEED ── */
+.feed-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.feed-item:last-child{border-bottom:none;}
+.feed-av{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.feed-text{font-size:13px;color:var(--text2);line-height:1.4;flex:1;}
+.feed-text strong{color:var(--text);font-weight:700;}
+.feed-emoji{font-size:20px;flex-shrink:0;margin-top:1px;}
+
+/* ── HEADER ── */
+.header{position:sticky;top:0;z-index:100;background:rgba(5,8,22,.95);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid var(--border2);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-flags{display:flex;align-items:center;}
+.logo-text{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;background:linear-gradient(90deg,var(--gold),var(--gold2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.logo-sub{font-size:10px;font-weight:400;color:var(--text3);letter-spacing:.5px;}
+
+/* ── XP HEADER ── */
+.header-xp-wrap{display:flex;align-items:center;gap:8px;}
+.header-avatar-wrap{position:relative;width:38px;height:38px;flex-shrink:0;}
+.header-avatar{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:15px;color:var(--bg);flex-shrink:0;border:2px solid rgba(244,197,66,.45);box-shadow:0 0 16px rgba(244,197,66,.25);}
+.header-level-badge{position:absolute;bottom:-4px;right:-4px;width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-dark));display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:900;color:var(--bg);border:1.5px solid var(--bg);}
+.header-rank{font-size:10px;color:var(--gold);font-weight:700;letter-spacing:.04em;}
+.xp-bar-wrap{margin-top:3px;height:4px;background:var(--surface3);border-radius:4px;overflow:hidden;width:80px;}
+.xp-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--gold-dark),var(--gold));transition:width .8s cubic-bezier(.34,1.56,.64,1);box-shadow:0 0 8px rgba(244,197,66,.5);}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--emerald);display:inline-block;margin-right:5px;box-shadow:0 0 8px var(--emerald);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(5,8,22,.97);border-top:1px solid var(--border2);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);display:flex;align-items:stretch;padding:0 4px;padding-bottom:env(safe-area-inset-bottom,0px);box-shadow:0 -10px 30px rgba(0,0,0,.5);}
+.bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:10px 4px 8px;background:none;border:none;cursor:pointer;transition:all .2s;position:relative;min-height:60px;}
+.bnav-btn .bnav-icon{font-size:20px;line-height:1;transition:transform .2s;display:flex;align-items:center;justify-content:center;}
+.bnav-btn .bnav-label{font-family:'Inter',sans-serif;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);transition:color .2s;}
+.bnav-btn.active .bnav-label{color:var(--gold);}
+.bnav-btn.active .bnav-icon{transform:scale(1.18);}
+.bnav-active-pill{position:absolute;top:0;left:50%;transform:translateX(-50%);height:3px;width:32px;border-radius:0 0 4px 4px;background:linear-gradient(90deg,var(--gold),var(--gold2));box-shadow:0 0 10px rgba(244,197,66,.6);opacity:0;transition:opacity .2s;}
+.bnav-btn.active .bnav-active-pill{opacity:1;}
+
+/* ── LEGACY TOP NAV (admin) ── */
+.nav{background:rgba(5,8,22,.95);border-bottom:1px solid var(--border);padding:0 8px;display:flex;overflow-x:auto;scrollbar-width:none;gap:0;}
+.nav::-webkit-scrollbar{display:none;}
+.nav-btn{flex:1;min-width:68px;padding:13px 6px;background:none;border:none;border-bottom:2px solid transparent;color:var(--text3);font-family:'Inter',sans-serif;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.nav-btn.active{color:var(--gold);border-bottom-color:var(--gold);}
+.nav-btn:hover{color:var(--text2);}
+
+/* ── PAGES ── */
+.page{display:none;padding:16px;padding-bottom:90px;animation:fadeUp .25s ease;}
+.page.active{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.main{}
+
+/* ── STRIPE ── */
+.stripe{height:3px;background:linear-gradient(90deg,var(--crimson),var(--gold),var(--blue));border-radius:3px;margin-bottom:18px;}
+
+/* ── SECTION TITLES ── */
+.section-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;color:var(--text);margin-bottom:2px;}
+.section-sub{font-size:11px;color:var(--text3);margin-bottom:16px;letter-spacing:.03em;}
+
+/* ── CARDS ── */
+.card{background:linear-gradient(135deg,var(--surface),var(--bg3));border:1px solid var(--border2);border-radius:var(--radius-lg);padding:14px;margin-bottom:12px;box-shadow:0 4px 20px rgba(0,0,0,.3);}
+.card-gold{border-color:rgba(244,197,66,.25);background:linear-gradient(135deg,rgba(244,197,66,.06),var(--surface));box-shadow:0 0 30px rgba(244,197,66,.08),0 4px 20px rgba(0,0,0,.3);}
+.card-red{border-color:rgba(255,77,90,.2);background:linear-gradient(135deg,rgba(255,77,90,.06),var(--surface));}
+
+/* ── STATS GRID ── */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;}
+.stat-card{background:linear-gradient(135deg,var(--surface),var(--bg3));border:1px solid var(--border2);border-radius:var(--radius-lg);padding:14px 8px;text-align:center;position:relative;overflow:hidden;transition:transform .15s;box-shadow:0 4px 16px rgba(0,0,0,.25);}
+.stat-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gold),var(--gold2));opacity:.6;}
+.stat-val{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--gold);line-height:1;}
+.stat-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-top:4px;}
+
+/* ── PODIUM ── */
+.podium-wrap{display:flex;justify-content:center;align-items:flex-end;gap:6px;margin:0 0 20px;padding:0 4px;}
+.podium-item{display:flex;flex-direction:column;align-items:center;gap:5px;flex:1;max-width:115px;cursor:pointer;}
+.podium-avatar{border-radius:16px;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;color:var(--bg);position:relative;flex-shrink:0;font-size:16px;}
+.podium-avatar.p1{width:60px;height:60px;font-size:22px;background:linear-gradient(135deg,var(--gold),var(--gold-dark));box-shadow:0 0 28px rgba(244,197,66,.6),0 0 60px rgba(244,197,66,.15);}
+.podium-avatar.p2{width:48px;height:48px;background:linear-gradient(135deg,#94a3b8,#64748b);box-shadow:0 0 16px rgba(148,163,184,.3);}
+.podium-avatar.p3{width:44px;height:44px;background:linear-gradient(135deg,#cd7c3a,#a05c28);box-shadow:0 0 16px rgba(205,124,58,.3);}
+.podium-crown{position:absolute;top:-14px;font-size:18px;animation:crownFloat 2s ease-in-out infinite;}
+@keyframes crownFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-4px);}}
+.podium-name{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;color:var(--text);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;}
+.podium-pts{font-family:'Bebas Neue',sans-serif;font-size:15px;color:var(--gold);}
+.podium-base{border-radius:8px 8px 0 0;width:100%;display:flex;align-items:center;justify-content:center;}
+.podium-base.p1{height:60px;background:linear-gradient(180deg,rgba(244,197,66,.14),rgba(244,197,66,.04));border:1px solid rgba(244,197,66,.25);border-bottom:none;}
+.podium-base.p2{height:44px;background:linear-gradient(180deg,rgba(148,163,184,.1),rgba(148,163,184,.02));border:1px solid rgba(148,163,184,.15);border-bottom:none;}
+.podium-base.p3{height:32px;background:linear-gradient(180deg,rgba(205,124,58,.1),rgba(205,124,58,.02));border:1px solid rgba(205,124,58,.15);border-bottom:none;}
+.podium-rank{font-family:Bebas Neue,sans-serif;font-size:18px;color:rgba(255,255,255,.25);}
+
+/* ── RANKING ── */
+.ranking-row{background:linear-gradient(135deg,var(--surface),var(--bg3));border:1px solid var(--border2);border-radius:var(--radius-lg);padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all .2s;margin-bottom:8px;position:relative;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.2);}
+.ranking-row::before{content:'';position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,rgba(244,197,66,.08),transparent);transition:width .25s;}
+.ranking-row:hover::before{width:100%;}
+.ranking-row:hover{border-color:rgba(244,197,66,.25);transform:translateX(3px);}
+.ranking-row.me{border-color:rgba(244,197,66,.35);background:linear-gradient(135deg,rgba(244,197,66,.08),var(--surface));box-shadow:0 0 20px rgba(244,197,66,.1);}
+.ranking-row.me::after{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--gold),var(--gold-dark));}
+.rank-pos{font-family:'Bebas Neue',sans-serif;font-size:18px;min-width:28px;text-align:center;color:var(--text3);}
+.rank-pos.p1{color:var(--gold);text-shadow:0 0 16px rgba(244,197,66,.7);}
+.rank-pos.p2{color:#94a3b8;}
+.rank-pos.p3{color:#cd7c3a;}
+.rank-avatar{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:14px;color:var(--bg);flex-shrink:0;}
+.rank-name{font-size:14px;font-weight:700;color:var(--text);letter-spacing:.02em;}
+.rank-sub{font-size:11px;color:var(--text3);margin-top:2px;}
+.rank-pts{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--gold);margin-left:auto;}
+.rank-pts span{font-size:11px;color:var(--text3);margin-left:1px;font-family:'Inter';font-weight:400;}
+.me-badge{font-size:9px;background:rgba(244,197,66,.12);color:var(--gold);border:1px solid rgba(244,197,66,.25);padding:1px 7px;border-radius:20px;margin-left:6px;font-family:'Inter';font-weight:600;letter-spacing:.05em;vertical-align:middle;}
+
+/* ── BADGES ── */
+.badge-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px;}
+.badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;white-space:nowrap;letter-spacing:.04em;text-transform:uppercase;}
+.badge-exact{background:rgba(244,197,66,.15);color:var(--gold);border:1px solid rgba(244,197,66,.25);}
+.badge-diff{background:rgba(34,209,107,.12);color:var(--emerald);border:1px solid rgba(34,209,107,.2);}
+.badge-win{background:rgba(88,200,250,.12);color:var(--blue);border:1px solid rgba(88,200,250,.2);}
+.badge-miss{background:rgba(255,77,90,.1);color:#ff6b6b;border:1px solid rgba(255,77,90,.2);}
+.badge-streak{background:rgba(255,138,61,.15);color:var(--orange);border:1px solid rgba(255,138,61,.25);}
+.badge-award{background:rgba(168,85,247,.12);color:var(--purple);border:1px solid rgba(168,85,247,.2);}
+.badge-open{background:rgba(34,209,107,.1);color:var(--emerald);border:1px solid rgba(34,209,107,.2);padding:2px 8px;border-radius:4px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
+.badge-locked{background:rgba(255,255,255,.06);color:var(--text3);border:1px solid var(--border);padding:2px 8px;border-radius:4px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
+.badge-pts{background:rgba(244,197,66,.15);color:var(--gold);border:1px solid rgba(244,197,66,.25);padding:2px 8px;border-radius:4px;font-size:9px;font-weight:700;}
+.streak-badge{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;padding:2px 9px;border-radius:4px;background:rgba(255,138,61,.15);color:var(--orange);border:1px solid rgba(255,138,61,.25);letter-spacing:.04em;}
+
+/* ── CHAT ── */
+.chat-wrap{display:flex;flex-direction:column;height:420px;max-height:420px;}
+.chat-messages{flex:1;overflow-y:auto;padding:8px 0;display:flex;flex-direction:column;gap:4px;}
+.chat-msg{display:flex;gap:6px;align-items:flex-end;}
+.chat-msg.mine{flex-direction:row-reverse;}
+.chat-bubble{max-width:76%;padding:8px 12px;font-size:13px;line-height:1.35;word-break:break-word;border-radius:4px 16px 16px 16px;}
+.chat-bubble.other{background:var(--surface2);color:var(--text);border:1px solid var(--border2);}
+.chat-bubble.mine{background:linear-gradient(135deg,var(--gold-dark),var(--gold));color:var(--bg);border-radius:16px 4px 16px 16px;font-weight:600;}
+.chat-name{font-size:9px;color:var(--text3);margin-bottom:2px;font-weight:600;letter-spacing:.03em;}
+.chat-avatar{width:24px;height:24px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;line-height:1;}
+.chat-avatar.initials{font-family:'Bebas Neue',sans-serif;font-size:10px;color:var(--bg);}
+.chat-input-row{display:flex;gap:8px;padding-top:10px;border-top:1px solid var(--border2);}
+.chat-input{flex:1;background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:11px 16px;color:var(--text);font-family:'Inter';font-size:13px;outline:none;transition:all .2s;}
+.chat-input:focus{border-color:rgba(244,197,66,.35);box-shadow:0 0 0 3px rgba(244,197,66,.08);}
+.chat-input::placeholder{color:var(--text3);}
+.chat-send{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,var(--gold-dark),var(--gold));border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;transition:all .2s;box-shadow:0 4px 12px rgba(244,197,66,.3);}
+.chat-send:hover{opacity:.85;transform:scale(1.05);}
+.chat-send:active{transform:scale(.95);}
+
+/* ── MATCH CARDS ── */
+.match-card{background:linear-gradient(135deg,var(--surface),var(--bg3));border:1px solid var(--border2);border-radius:var(--radius-lg);padding:14px;margin-bottom:12px;transition:all .2s;box-shadow:0 4px 20px rgba(0,0,0,.25);}
+.match-card:hover{border-color:rgba(244,197,66,.25);transform:translateY(-1px);box-shadow:0 8px 30px rgba(0,0,0,.35);}
+.match-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.match-group{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;}
+.match-venue{font-size:10px;color:var(--text3);}
+.match-date{font-size:11px;color:var(--text2);font-weight:600;}
+.match-footer{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.teams-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.team-block{display:flex;flex-direction:column;align-items:center;gap:5px;flex:1;}
+.team-flag{font-size:32px;line-height:1;}
+.team-name{font-size:11px;color:var(--text2);text-align:center;font-weight:600;letter-spacing:.02em;}
+.vs-block{display:flex;flex-direction:column;align-items:center;gap:2px;padding:0 8px;}
+.vs-text{font-family:'Bebas Neue',sans-serif;font-size:14px;color:var(--text3);letter-spacing:2px;}
+.score-row{display:flex;align-items:center;justify-content:center;gap:8px;}
+.score-inp{width:56px;height:48px;background:var(--surface2);border:1px solid var(--border2);border-radius:14px;color:var(--text);font-family:'Bebas Neue',sans-serif;font-size:24px;text-align:center;outline:none;transition:all .2s;}
+.score-inp:focus{border-color:rgba(244,197,66,.45);box-shadow:0 0 0 3px rgba(244,197,66,.1);}
+.score-sep{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--text3);}
+.save-btn{padding:10px 22px;background:linear-gradient(90deg,var(--gold-dark),var(--gold));color:var(--bg);border:none;border-radius:12px;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;cursor:pointer;transition:all .2s;box-shadow:0 4px 14px rgba(244,197,66,.3);}
+.save-btn:hover{opacity:.9;transform:translateY(-1px);box-shadow:0 6px 20px rgba(244,197,66,.4);}
+.save-btn:active{transform:scale(.97);}
+.saved-score{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--emerald);letter-spacing:3px;}
+.locked-badge{font-size:10px;color:var(--text3);background:var(--surface2);padding:3px 10px;border-radius:6px;border:1px solid var(--border);}
+.phase-header{display:flex;align-items:center;gap:10px;margin:18px 0 10px;}
+.phase-tag{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--gold);letter-spacing:2px;}
+.phase-mult{font-size:10px;color:var(--text3);background:var(--surface);padding:2px 8px;border-radius:6px;border:1px solid var(--border2);font-weight:600;}
+.phase-line{flex:1;height:1px;background:var(--border2);}
+.filter-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+.filter-btn{background:var(--surface);border:1px solid var(--border2);color:var(--text3);font-family:'Inter';font-size:11px;font-weight:700;padding:6px 14px;border-radius:8px;cursor:pointer;transition:all .2s;white-space:nowrap;text-transform:uppercase;letter-spacing:.04em;}
+.filter-btn.active{background:linear-gradient(90deg,var(--gold-dark),var(--gold));border-color:transparent;color:var(--bg);box-shadow:0 4px 12px rgba(244,197,66,.3);}
+.filter-btn:hover{border-color:rgba(244,197,66,.35);color:var(--text2);}
+
+/* ── GLOBAUX ── */
+.global-card{background:linear-gradient(135deg,var(--surface),var(--bg3));border:1px solid var(--border2);border-radius:var(--radius-lg);padding:14px;margin-bottom:12px;box-shadow:0 4px 16px rgba(0,0,0,.2);}
+.global-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+.global-title{font-size:13px;font-weight:700;color:var(--text);letter-spacing:.02em;}
+.global-bonus{font-size:10px;color:var(--gold);background:rgba(244,197,66,.08);padding:2px 8px;border-radius:6px;border:1px solid rgba(244,197,66,.2);font-weight:600;}
+.global-input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:11px 14px;color:var(--text);font-family:'Inter';font-size:13px;outline:none;margin-top:4px;transition:all .2s;}
+.global-input:focus{border-color:rgba(244,197,66,.35);box-shadow:0 0 0 3px rgba(244,197,66,.08);}
+.btn-primary{padding:14px;width:100%;background:linear-gradient(90deg,var(--gold-dark),var(--gold));color:var(--bg);border:none;border-radius:14px;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;cursor:pointer;transition:all .2s;box-shadow:0 6px 20px rgba(244,197,66,.35);}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px);box-shadow:0 8px 28px rgba(244,197,66,.4);}
+.btn-primary:active{transform:scale(.98);}
+
+/* ── CAGNOTTE ── */
+.pot-hero{text-align:center;padding:20px 16px 14px;}
+.pot-amount{font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:2px;background:linear-gradient(90deg,var(--gold),var(--gold2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;}
+.pot-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-top:6px;}
+.pot-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--border);font-size:13px;}
+.pot-row:first-child{border-top:none;}
+
+/* ── ADMIN ── */
+.admin-inp{width:54px;height:48px;background:var(--surface2);border:1px solid var(--border2);border-radius:12px;color:var(--text);font-family:'Bebas Neue',sans-serif;font-size:24px;text-align:center;outline:none;}
+.admin-inp:focus{border-color:rgba(244,197,66,.45);box-shadow:0 0 0 3px rgba(244,197,66,.1);}
+.validate-btn{padding:9px 14px;background:var(--surface2);border:1px solid var(--border2);color:var(--text2);font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;cursor:pointer;border-radius:10px;transition:all .2s;}
+.validate-btn:hover{border-color:rgba(244,197,66,.35);color:var(--gold);}
+.validate-btn.validated{background:rgba(34,209,107,.08);border-color:rgba(34,209,107,.25);color:var(--emerald);}
+.btn-sm{padding:7px 16px;background:var(--surface2);border:1px solid var(--border2);color:var(--text2);font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:1px;cursor:pointer;border-radius:10px;transition:all .2s;}
+.btn-sm:hover{border-color:rgba(244,197,66,.3);color:var(--gold);}
+.admin-bar{display:flex;align-items:center;gap:8px;background:rgba(168,85,247,.08);border-bottom:1px solid rgba(168,85,247,.2);padding:10px 16px;font-size:12px;color:var(--purple);}
+.admin-dot{width:6px;height:6px;border-radius:50%;background:var(--purple);flex-shrink:0;box-shadow:0 0 8px var(--purple);animation:pulse 2s infinite;}
+.admin-label{font-weight:600;letter-spacing:.04em;}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:linear-gradient(135deg,var(--surface2),var(--surface));border:1px solid rgba(244,197,66,.3);color:var(--text);padding:10px 24px;border-radius:10px;font-size:13px;font-weight:600;z-index:300;opacity:0;transition:all .25s;pointer-events:none;white-space:nowrap;box-shadow:0 12px 40px rgba(0,0,0,.6);letter-spacing:.03em;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ── PWA ── */
+.pwa-modal{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.82);backdrop-filter:blur(10px);display:flex;align-items:flex-end;justify-content:center;}
+.pwa-modal.hidden{display:none!important;}
+.pwa-modal-box{background:linear-gradient(180deg,var(--bg2),var(--bg));border:1px solid var(--border3);border-radius:28px 28px 0 0;padding:24px 20px 40px;width:100%;max-width:480px;box-shadow:0 -20px 60px rgba(244,197,66,.08);}
+.pwa-modal-title{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--gold);text-align:center;margin-bottom:4px;letter-spacing:2px;}
+.pwa-modal-sub{font-size:12px;color:var(--text3);text-align:center;margin-bottom:20px;}
+.pwa-step{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--border);}
+.pwa-step-num{width:30px;height:30px;border-radius:10px;background:linear-gradient(135deg,var(--gold-dark),var(--gold));color:var(--bg);font-family:'Bebas Neue',sans-serif;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.pwa-step-text{font-size:13px;color:var(--text);line-height:1.4;}
+.pwa-modal-close{display:block;width:100%;background:var(--surface);border:1px solid var(--border2);color:var(--text2);font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1px;padding:14px;border-radius:14px;cursor:pointer;margin-top:20px;}
+.pwa-banner{position:fixed;bottom:64px;left:0;right:0;z-index:200;background:linear-gradient(135deg,var(--bg2),var(--surface));border-top:1px solid rgba(244,197,66,.2);padding:12px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 -6px 24px rgba(0,0,0,.5);}
+.pwa-banner.hidden{display:none!important;}
+.pwa-icon{width:44px;height:44px;border-radius:14px;overflow:hidden;flex-shrink:0;}
+.pwa-icon img{width:44px;height:44px;object-fit:cover;}
+.pwa-text{flex:1;}
+.pwa-title{font-family:'Bebas Neue',sans-serif;font-size:15px;color:var(--gold);letter-spacing:1px;}
+.pwa-sub{font-size:11px;color:var(--text2);margin-top:2px;}
+.pwa-btn{background:linear-gradient(90deg,var(--gold-dark),var(--gold));color:var(--bg);font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:1px;padding:9px 16px;border-radius:10px;border:none;cursor:pointer;white-space:nowrap;flex-shrink:0;box-shadow:0 4px 12px rgba(244,197,66,.3);}
+.pwa-close{background:none;border:none;color:var(--text3);font-size:22px;cursor:pointer;padding:0;flex-shrink:0;}
+
+/* ── PROFIL ── */
+.profil-match-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--border);font-size:13px;gap:8px;}
+.profil-match-row:first-child{border-top:none;}
+.profil-teams{flex:1;color:var(--text2);font-size:12px;}
+.profil-prog{font-family:'Bebas Neue',sans-serif;font-size:16px;min-width:44px;text-align:center;color:var(--text);}
+.profil-real{font-size:11px;color:var(--text3);min-width:44px;text-align:center;}
+.profil-badge{font-size:9px;font-weight:700;padding:3px 8px;border-radius:4px;white-space:nowrap;text-transform:uppercase;letter-spacing:.04em;}
+.pb-exact{background:rgba(244,197,66,.15);color:var(--gold);border:1px solid rgba(244,197,66,.25);}
+.pb-diff{background:rgba(34,209,107,.12);color:var(--emerald);border:1px solid rgba(34,209,107,.2);}
+.pb-win{background:rgba(88,200,250,.12);color:var(--blue);border:1px solid rgba(88,200,250,.2);}
+.pb-miss{background:rgba(255,77,90,.1);color:#ff6b6b;border:1px solid rgba(255,77,90,.2);}
+.pb-none{background:var(--surface);color:var(--text3);border:1px solid var(--border);font-style:italic;}
+.stat-badge{display:flex;flex-direction:column;align-items:center;background:linear-gradient(135deg,var(--surface),var(--bg3));border:1px solid var(--border2);border-radius:var(--radius);padding:10px 14px;min-width:72px;flex:1;}
+.stat-badge-val{font-family:'Bebas Neue',sans-serif;font-size:28px;line-height:1;}
+.stat-badge-lbl{font-size:9px;color:var(--text3);margin-top:4px;text-align:center;text-transform:uppercase;letter-spacing:.06em;}
+
+/* ── GROUPES ── */
+.group-card{background:linear-gradient(135deg,var(--surface),var(--bg3));border:1px solid var(--border2);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:14px;box-shadow:0 4px 16px rgba(0,0,0,.2);}
+.group-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--gold);margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;}
+.group-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:6px;}
+.group-table th{font-size:9px;color:var(--text3);font-weight:700;text-align:center;padding:4px 6px;letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid var(--border);}
+.group-table th:first-child{text-align:left;}
+.group-table td{padding:9px 6px;border-bottom:1px solid var(--border);text-align:center;color:var(--text2);}
+.group-table td:first-child{text-align:left;font-weight:600;color:var(--text);}
+.group-table tr:last-child td{border-bottom:none;}
+.group-table tr.qualified td:first-child{color:var(--emerald);}
+.group-match-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-top:1px solid var(--border);font-size:12px;color:var(--text2);}
+.group-match-row:first-of-type{border-top:none;}
+.group-score{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--text);min-width:40px;text-align:center;}
+
+/* ── LOADING ── */
+#loading{position:fixed;inset:0;background:radial-gradient(ellipse at 30% 20%,rgba(244,197,66,.05),transparent 50%),radial-gradient(ellipse at 70% 80%,rgba(88,200,250,.05),transparent 50%),var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:14px;}
+.loading-title{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:8px;background:linear-gradient(90deg,var(--gold),var(--gold2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:glow-pulse 2s ease-in-out infinite;}
+@keyframes glow-pulse{0%,100%{filter:brightness(1);}50%{filter:brightness(1.3);}}
+.loading-spinner{width:32px;height:32px;border:2px solid var(--border2);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── LOGIN ── */
+#login-screen,#admin-login-screen{position:fixed;inset:0;background:radial-gradient(ellipse at 30% 20%,rgba(255,77,90,.07),transparent 50%),radial-gradient(ellipse at 70% 80%,rgba(244,197,66,.05),transparent 50%),var(--bg);display:flex;align-items:center;justify-content:center;padding:20px;z-index:500;}
+.login-wrap{width:100%;max-width:360px;}
+.login-card{background:rgba(11,16,32,.92);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.08);border-radius:24px;padding:32px 24px;width:100%;box-shadow:0 30px 80px rgba(0,0,0,.7),0 0 0 1px rgba(244,197,66,.05);}
+.login-trophy{text-align:center;margin-bottom:8px;}
+.login-title{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:5px;text-align:center;margin-bottom:8px;background:linear-gradient(90deg,var(--gold),var(--gold2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.login-flags{text-align:center;font-size:13px;letter-spacing:3px;margin-bottom:8px;color:var(--text2);font-weight:600;}
+.login-trump{text-align:center;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:3px;color:var(--crimson);margin-bottom:24px;text-transform:uppercase;}
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);font-weight:700;margin-bottom:6px;}
+.field input{width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:13px 16px;color:var(--text);font-family:'Inter';font-size:15px;outline:none;transition:all .2s;}
+.field input:focus{border-color:rgba(244,197,66,.4);box-shadow:0 0 0 3px rgba(244,197,66,.08);}
+.field input::placeholder{color:var(--text3);}
+.btn-outline{display:block;width:100%;padding:13px;background:transparent;border:1px solid var(--border2);color:var(--text2);border-radius:14px;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1.5px;cursor:pointer;transition:all .2s;}
+.btn-outline:hover{border-color:rgba(244,197,66,.35);color:var(--gold);}
+.btn-gold{background:linear-gradient(90deg,var(--gold-dark),var(--gold));color:var(--bg);border-color:transparent;}
+.divider{display:flex;align-items:center;gap:10px;color:var(--text3);font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin:16px 0;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border2);}
+
+@media(max-width:380px){.stats-grid{grid-template-columns:repeat(2,1fr);}.podium-avatar.p1{width:52px;height:52px;}}
 </style>
-<script>
-window._IS_LOCAL = location.protocol === 'file:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-// En local : on ne charge PAS le SDK Supabase du tout (pas même via script dynamique)
-// L'init() sera appelé depuis le DOMContentLoaded en bas de page
-</script>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
-
-:root {
-  /* Palette Supercell x Canal+ Sport */
-  --bg:        #06080f;
-  --bg2:       #0b0f1a;
-  --bg3:       #101520;
-  --surface:   #141926;
-  --surface2:  #1a2133;
-  --surface3:  #1f2840;
-
-  /* Accents */
-  --gold:      #FFD700;
-  --gold2:     #FFA500;
-  --red:       #E5002B;
-  --red2:      #FF1744;
-  --blue:      #00A8FF;
-  --green:     #00E676;
-  --purple:    #7C4DFF;
-
-  /* Text */
-  --text:      #FFFFFF;
-  --text2:     #8B9DC3;
-  --text3:     #3D4F6E;
-
-  /* Borders */
-  --border:    rgba(255,255,255,0.05);
-  --border2:   rgba(255,255,255,0.10);
-  --border3:   rgba(255,215,0,0.25);
-
-  /* Glow */
-  --glow-gold: rgba(255,215,0,0.20);
-  --glow-red:  rgba(229,0,43,0.20);
-  --glow-blue: rgba(0,168,255,0.20);
-
-  --radius:    10px;
-  --radius-lg: 18px;
-  --radius-xl: 26px;
-}
-
-* { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
-
-body {
-  font-family: 'Inter', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
-/* ── SCROLLBAR ── */
-::-webkit-scrollbar { width: 3px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 3px; }
-
-/* ── HIDDEN ── */
-.hidden { display: none !important; }
-
-/* ── AVATAR EMOJI ── */
-.avatar-emoji { font-size: 18px; line-height: 1; display:flex; align-items:center; justify-content:center; }
-
-/* ── MODAL MATCH (qui a pris quoi) ── */
-.match-modal-overlay {
-  position: fixed; inset: 0; z-index: 500;
-  background: rgba(0,0,0,.75); backdrop-filter: blur(6px);
-  display: flex; align-items: flex-end; justify-content: center;
-}
-.match-modal-overlay.hidden { display: none !important; }
-.match-modal-box {
-  background: var(--bg2); border: 1px solid var(--border2);
-  border-radius: 20px 20px 0 0; padding: 20px 16px 40px;
-  width: 100%; max-width: 480px; max-height: 80vh; overflow-y: auto;
-}
-.match-modal-title {
-  font-family: 'Bebas Neue', sans-serif; font-size: 20px;
-  color: var(--gold); margin-bottom: 4px; letter-spacing: 2px;
-}
-.match-modal-score {
-  font-family: 'Bebas Neue', sans-serif; font-size: 36px;
-  color: var(--text); letter-spacing: 6px; margin-bottom: 14px;
-}
-.modal-player-row {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 0; border-bottom: 1px solid var(--border);
-}
-.modal-player-row:last-child { border-bottom: none; }
-.modal-player-av {
-  width: 34px; height: 34px; border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px; flex-shrink: 0;
-}
-.modal-player-av.initials {
-  font-family: 'Bebas Neue', sans-serif; font-size: 13px; color: var(--bg);
-}
-.modal-prono {
-  font-family: 'Bebas Neue', sans-serif; font-size: 18px;
-  color: var(--text); letter-spacing: 3px; margin-left: auto; flex-shrink: 0;
-}
-.modal-pts {
-  font-family: 'Bebas Neue', sans-serif; font-size: 18px;
-  min-width: 50px; text-align: right; flex-shrink: 0;
-}
-
-/* ── FEED SOCIAL ── */
-.feed-item {
-  display: flex; align-items: flex-start; gap: 10px;
-  padding: 10px 0; border-bottom: 1px solid var(--border);
-}
-.feed-item:last-child { border-bottom: none; }
-.feed-av {
-  width: 32px; height: 32px; border-radius: 9px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px; flex-shrink: 0;
-}
-.feed-av.initials {
-  font-family: 'Bebas Neue', sans-serif; font-size: 12px; color: var(--bg);
-}
-.feed-text { font-size: 13px; color: var(--text2); line-height: 1.4; flex: 1; }
-.feed-text strong { color: var(--text); font-weight: 700; }
-
-/* ══════════════════════════════════
-   HEADER
-══════════════════════════════════ */
-.app-header {
-  position: sticky; top: 0; z-index: 100;
-  background: rgba(6,8,15,0.92);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border-bottom: 1px solid var(--border2);
-  padding: 10px 16px;
-  display: flex; align-items: center; justify-content: space-between;
-}
-.logo-wrap { display: flex; align-items: center; gap: 10px; }
-.logo-icon { font-size: 22px; }
-.logo-text {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 22px; letter-spacing: 3px;
-  background: linear-gradient(90deg, var(--gold), var(--gold2));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-}
-.logo-sub {
-  font-size: 10px; font-weight: 400;
-  color: var(--text3); letter-spacing: .5px;
-  -webkit-text-fill-color: var(--text3);
-}
-.sync-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--green); display: inline-block;
-  margin-right: 5px;
-  box-shadow: 0 0 8px var(--green);
-  animation: pulse 2s infinite;
-}
-@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.4;} }
-
-.header-user { display: flex; align-items: center; gap: 8px; }
-.header-avatar {
-  width: 34px; height: 34px; border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'Bebas Neue', sans-serif; font-size: 14px;
-  color: var(--bg); flex-shrink: 0;
-  border: 1px solid rgba(255,215,0,0.3);
-}
-.header-name { font-size: 13px; font-weight: 600; color: var(--text); }
-.header-rank { font-size: 10px; color: var(--gold); font-weight: 600; letter-spacing: .03em; }
-
-/* ══════════════════════════════════
-   NAV — Bottom Nav CDM 2026
-══════════════════════════════════ */
-
-/* La .nav originale devient la bottom bar */
-.nav {
-  position: fixed !important;
-  bottom: 0; left: 0; right: 0;
-  z-index: 200;
-  background: rgba(6,8,15,0.97);
-  border-top: 1px solid rgba(255,215,0,0.18);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  padding: 0 4px env(safe-area-inset-bottom, 0px);
-  display: flex !important;
-  height: 68px;
-  overflow: visible !important;
-  box-shadow: 0 -4px 24px rgba(0,0,0,0.6);
-}
-
-/* Les boutons nav — cachés visuellement, remplacés par contenu SVG */
-.nav-btn {
-  flex: 1;
-  padding: 0;
-  background: none;
-  border: none;
-  border-bottom: none !important;
-  color: var(--text3);
-  font-family: 'Inter', sans-serif;
-  font-size: 8px; font-weight: 700;
-  letter-spacing: .06em; text-transform: uppercase;
-  cursor: pointer;
-  transition: all .18s;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  border-radius: 12px;
-  margin: 5px 2px;
-  position: relative;
-  white-space: nowrap;
-  overflow: visible;
-}
-
-.nav-btn .nav-icon-svg {
-  display: block;
-  width: 26px; height: 26px;
-  flex-shrink: 0;
-}
-
-/* état actif : fond gold translucide + bordure top gold */
-.nav-btn.active {
-  color: var(--gold) !important;
-  background: rgba(255,215,0,0.10);
-  box-shadow: inset 0 2px 0 var(--gold);
-  border-bottom: none !important;
-}
-
-/* Badges de notification sur les nav items */
-.nav-badge {
-  position: absolute;
-  top: 2px; right: 2px;
-  min-width: 15px; height: 15px;
-  border-radius: 8px;
-  background: var(--red);
-  color: #fff;
-  font-size: 8px; font-weight: 900;
-  display: flex; align-items: center; justify-content: center;
-  border: 1.5px solid var(--bg);
-  padding: 0 3px;
-  pointer-events: none;
-}
-.nav-badge.green-dot {
-  width: 8px; height: 8px; min-width: 8px;
-  background: var(--green);
-  top: 4px; right: 4px;
-  border-radius: 50%;
-}
-
-/* masquer le texte des boutons nav par défaut – sera remplacé par spans dédiés */
-.nav-btn-label {
-  font-size: 8px; font-weight: 700; letter-spacing: .05em;
-  text-transform: uppercase; line-height: 1;
-}
-
-/* ── admin nav reste en haut ── */
-#admin-app-screen .nav {
-  position: static !important;
-  height: auto;
-  background: rgba(6,8,15,0.95);
-  border-top: none;
-  border-bottom: 1px solid var(--border);
-  padding: 0 8px;
-  overflow-x: auto;
-  box-shadow: none;
-  backdrop-filter: none;
-}
-#admin-app-screen .nav-btn {
-  flex-direction: row;
-  gap: 0;
-  font-size: 10px;
-  padding: 13px 6px;
-  border-radius: 0;
-  margin: 0;
-  min-width: 68px;
-  border-bottom: 2px solid transparent;
-}
-#admin-app-screen .nav-btn .nav-icon-svg,
-#admin-app-screen .nav-btn .nav-badge { display: none; }
-#admin-app-screen .nav-btn.active {
-  background: none;
-  box-shadow: none;
-  border-bottom: 2px solid var(--gold) !important;
-  color: var(--gold) !important;
-}
-
-/* ══════════════════════════════════
-   PAGES
-══════════════════════════════════ */
-.page { display: none; padding: 16px; padding-bottom: 90px; animation: fadeUp .25s ease; }
-.page.active { display: block; }
-@keyframes fadeUp { from{opacity:0;transform:translateY(6px);} to{opacity:1;transform:translateY(0);} }
-
-.stripe {
-  height: 3px;
-  background: linear-gradient(90deg, var(--red), var(--gold), var(--blue));
-  border-radius: 3px; margin-bottom: 18px;
-}
-
-/* ══════════════════════════════════
-   SECTION TITLES
-══════════════════════════════════ */
-.section-title {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 28px; letter-spacing: 3px;
-  color: var(--text); margin-bottom: 2px;
-}
-.section-sub { font-size: 11px; color: var(--text3); margin-bottom: 16px; letter-spacing:.03em; }
-
-/* ══════════════════════════════════
-   CARDS
-══════════════════════════════════ */
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border2);
-  border-radius: var(--radius-lg);
-  padding: 14px; margin-bottom: 12px;
-}
-.card-gold {
-  border-color: rgba(255,215,0,.2);
-  background: linear-gradient(135deg, rgba(255,215,0,.05), transparent);
-  box-shadow: 0 0 30px rgba(255,215,0,.06);
-}
-.card-red {
-  border-color: rgba(229,0,43,.2);
-  background: linear-gradient(135deg, rgba(229,0,43,.05), transparent);
-}
-
-/* ══════════════════════════════════
-   STATS GRID
-══════════════════════════════════ */
-.stats-grid {
-  display: grid; grid-template-columns: repeat(4,1fr);
-  gap: 8px; margin-bottom: 16px;
-}
-.stat-card {
-  background: var(--surface);
-  border: 1px solid var(--border2);
-  border-radius: var(--radius-lg);
-  padding: 14px 8px; text-align: center;
-  position: relative; overflow: hidden;
-  transition: transform .15s;
-}
-.stat-card::after {
-  content: '';
-  position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
-  background: linear-gradient(90deg, var(--gold), var(--gold2));
-  opacity: .5;
-}
-.stat-val {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 24px; color: var(--gold); line-height: 1;
-}
-.stat-lbl {
-  font-size: 9px; text-transform: uppercase;
-  letter-spacing: .08em; color: var(--text3); margin-top: 4px;
-}
-
-/* ══════════════════════════════════
-   PODIUM
-══════════════════════════════════ */
-.podium-wrap {
-  display: flex; justify-content: center;
-  align-items: flex-end; gap: 6px;
-  margin: 0 0 20px; padding: 0 4px;
-}
-.podium-item {
-  display: flex; flex-direction: column;
-  align-items: center; gap: 5px;
-  flex: 1; max-width: 115px; cursor: pointer;
-}
-.podium-avatar {
-  border-radius: 14px;
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'Bebas Neue', sans-serif;
-  color: var(--bg); position: relative; flex-shrink: 0;
-  font-size: 16px;
-}
-.podium-avatar.p1 {
-  width: 58px; height: 58px; font-size: 20px;
-  background: linear-gradient(135deg, var(--gold), var(--gold2));
-  box-shadow: 0 0 24px rgba(255,215,0,.5), 0 0 60px rgba(255,215,0,.15);
-}
-.podium-avatar.p2 {
-  width: 46px; height: 46px;
-  background: linear-gradient(135deg, #94a3b8, #64748b);
-  box-shadow: 0 0 14px rgba(148,163,184,.3);
-}
-.podium-avatar.p3 {
-  width: 42px; height: 42px;
-  background: linear-gradient(135deg, #cd7c3a, #a05c28);
-  box-shadow: 0 0 14px rgba(205,124,58,.3);
-}
-.podium-crown { position: absolute; top: -12px; font-size: 16px; }
-.podium-name {
-  font-family: 'Bebas Neue', sans-serif; font-size: 13px;
-  letter-spacing: 1px; color: var(--text);
-  text-align: center; white-space: nowrap;
-  overflow: hidden; text-overflow: ellipsis; width: 100%;
-}
-.podium-pts { font-family: 'Bebas Neue', sans-serif; font-size: 15px; color: var(--gold); }
-.podium-base {
-  border-radius: 8px 8px 0 0; width: 100%;
-  display: flex; align-items: center; justify-content: center;
-}
-.podium-base.p1 { height: 56px; background: linear-gradient(180deg,rgba(255,215,0,.12),rgba(255,215,0,.04)); border:1px solid rgba(255,215,0,.2); border-bottom:none; }
-.podium-base.p2 { height: 40px; background: linear-gradient(180deg,rgba(148,163,184,.08),rgba(148,163,184,.02)); border:1px solid rgba(148,163,184,.12); border-bottom:none; }
-.podium-base.p3 { height: 30px; background: linear-gradient(180deg,rgba(205,124,58,.08),rgba(205,124,58,.02)); border:1px solid rgba(205,124,58,.12); border-bottom:none; }
-.podium-rank { font-family:Bebas Neue,sans-serif; font-size:18px; color:rgba(255,255,255,.25); }
-
-/* ══════════════════════════════════
-   RANKING
-══════════════════════════════════ */
-.ranking-row {
-  background: var(--surface);
-  border: 1px solid var(--border2);
-  border-radius: var(--radius-lg);
-  padding: 12px 14px;
-  display: flex; align-items: center; gap: 10px;
-  cursor: pointer; transition: all .15s;
-  margin-bottom: 8px; position: relative; overflow: hidden;
-}
-.ranking-row::before {
-  content: '';
-  position: absolute; left: 0; top: 0; bottom: 0; width: 0;
-  background: linear-gradient(90deg, rgba(255,215,0,.08), transparent);
-  transition: width .2s;
-}
-.ranking-row:hover::before { width: 100%; }
-.ranking-row:hover { border-color: rgba(255,215,0,.2); transform: translateX(2px); }
-.ranking-row.me {
-  border-color: rgba(255,215,0,.3);
-  background: linear-gradient(135deg, rgba(255,215,0,.07), transparent);
-}
-.ranking-row.me::after {
-  content: '';
-  position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
-  background: linear-gradient(180deg, var(--gold), var(--gold2));
-}
-.rank-pos {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 18px; min-width: 28px; text-align: center; color: var(--text3);
-}
-.rank-pos.p1 { color: var(--gold); text-shadow: 0 0 12px rgba(255,215,0,.5); }
-.rank-pos.p2 { color: #94a3b8; }
-.rank-pos.p3 { color: #cd7c3a; }
-.rank-avatar {
-  width: 38px; height: 38px; border-radius: 12px;
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'Bebas Neue', sans-serif; font-size: 14px;
-  color: var(--bg); flex-shrink: 0;
-}
-.rank-name { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: .02em; }
-.rank-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
-.rank-pts {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 24px; color: var(--gold); margin-left: auto;
-}
-.rank-pts span { font-size: 11px; color: var(--text3); margin-left: 1px; font-family:'Inter'; font-weight:400; }
-.me-badge {
-  font-size: 9px; background: rgba(255,215,0,.12); color: var(--gold);
-  border: 1px solid rgba(255,215,0,.2); padding: 1px 7px;
-  border-radius: 20px; margin-left: 6px;
-  font-family: 'Inter'; font-weight: 600; letter-spacing: .05em;
-  vertical-align: middle;
-}
-
-/* ══════════════════════════════════
-   BADGES
-══════════════════════════════════ */
-.badge-row { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 4px; }
-.badge {
-  font-size: 9px; font-weight: 700; padding: 2px 7px;
-  border-radius: 4px; white-space: nowrap; letter-spacing: .04em;
-  text-transform: uppercase;
-}
-.badge-exact { background: rgba(255,215,0,.15); color: var(--gold); border: 1px solid rgba(255,215,0,.25); }
-.badge-diff  { background: rgba(0,230,118,.12); color: var(--green); border: 1px solid rgba(0,230,118,.2); }
-.badge-win   { background: rgba(0,168,255,.12); color: var(--blue); border: 1px solid rgba(0,168,255,.2); }
-.badge-miss  { background: rgba(229,0,43,.1); color: #ff6b6b; border: 1px solid rgba(229,0,43,.2); }
-.badge-streak { background: rgba(255,165,0,.15); color: #FFA500; border: 1px solid rgba(255,165,0,.25); }
-.badge-award { background: rgba(124,77,255,.12); color: var(--purple); border: 1px solid rgba(124,77,255,.2); }
-
-.streak-badge {
-  display: inline-flex; align-items: center; gap: 3px;
-  font-size: 11px; font-weight: 700; padding: 2px 9px;
-  border-radius: 4px; background: rgba(255,165,0,.15);
-  color: #FFA500; border: 1px solid rgba(255,165,0,.25);
-  letter-spacing: .04em;
-}
-
-/* ══════════════════════════════════
-   FEED SOCIAL
-══════════════════════════════════ */
-.feed-item {
-  display: flex; align-items: flex-start; gap: 10px;
-  padding: 10px 0; border-bottom: 1px solid var(--border);
-}
-.feed-item:last-child { border-bottom: none; }
-.feed-emoji { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
-.feed-text { font-size: 13px; color: var(--text2); line-height: 1.4; flex: 1; }
-.feed-text strong { color: var(--text); font-weight: 700; }
-
-/* ══════════════════════════════════
-   CHAT — version compacte
-══════════════════════════════════ */
-.chat-wrap {
-  display: flex; flex-direction: column;
-  height: 420px; max-height: 420px;
-}
-.chat-messages {
-  flex: 1; overflow-y: auto; padding: 8px 0;
-  display: flex; flex-direction: column; gap: 4px;
-}
-.chat-msg { display: flex; gap: 6px; align-items: flex-end; }
-.chat-msg.mine { flex-direction: row-reverse; }
-.chat-bubble {
-  max-width: 76%; padding: 7px 11px;
-  font-size: 13px; line-height: 1.35; word-break: break-word;
-}
-.chat-bubble.other {
-  background: var(--surface2); color: var(--text);
-  border-radius: 4px 14px 14px 14px;
-  border: 1px solid var(--border2);
-}
-.chat-bubble.mine {
-  background: linear-gradient(135deg, var(--gold), var(--gold2));
-  color: var(--bg); border-radius: 14px 4px 14px 14px;
-  font-weight: 600;
-}
-.chat-name { font-size: 9px; color: var(--text3); margin-bottom: 2px; font-weight: 600; letter-spacing:.03em; }
-.chat-avatar {
-  width: 24px; height: 24px; border-radius: 7px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px; flex-shrink: 0; line-height: 1;
-}
-.chat-avatar.initials {
-  font-family: 'Bebas Neue', sans-serif; font-size: 10px;
-  color: var(--bg);
-}
-.chat-input-row {
-  display: flex; gap: 8px; padding-top: 10px;
-  border-top: 1px solid var(--border2);
-}
-.chat-input {
-  flex: 1; background: var(--surface);
-  border: 1px solid var(--border2); border-radius: 12px;
-  padding: 11px 16px; color: var(--text);
-  font-family: 'Inter'; font-size: 13px; outline: none; transition: border .15s;
-}
-.chat-input:focus { border-color: rgba(255,215,0,.3); }
-.chat-input::placeholder { color: var(--text3); }
-.chat-send {
-  width: 42px; height: 42px; border-radius: 12px;
-  background: linear-gradient(135deg, var(--gold), var(--gold2));
-  border: none; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 16px; flex-shrink: 0;
-  transition: opacity .15s;
-}
-.chat-send:hover { opacity: .85; }
-
-/* ══════════════════════════════════
-   MATCH CARDS
-══════════════════════════════════ */
-.match-card {
-  background: var(--surface);
-  border: 1px solid var(--border2); border-radius: var(--radius-lg);
-  padding: 14px; margin-bottom: 10px; transition: border-color .15s;
-}
-.match-card:hover { border-color: rgba(255,215,0,.2); }
-.match-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-.match-group { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .06em; }
-.match-venue { font-size: 10px; color: var(--text3); }
-.teams-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-.team-block { display: flex; flex-direction: column; align-items: center; gap: 5px; flex: 1; }
-.team-flag { font-size: 30px; line-height: 1; }
-.team-name { font-size: 11px; color: var(--text2); text-align: center; font-weight: 600; letter-spacing: .02em; }
-.vs-block { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 0 8px; }
-.vs-text { font-family: 'Bebas Neue', sans-serif; font-size: 13px; color: var(--text3); letter-spacing: 2px; }
-
-.score-row { display: flex; align-items: center; justify-content: center; gap: 8px; }
-.score-inp {
-  width: 54px; height: 44px;
-  background: var(--surface2); border: 1px solid var(--border2); border-radius: 12px;
-  color: var(--text); font-family: 'Bebas Neue', sans-serif; font-size: 22px;
-  text-align: center; outline: none; transition: all .15s;
-}
-.score-inp:focus { border-color: rgba(255,215,0,.4); box-shadow: 0 0 0 3px var(--glow-gold); }
-.score-sep { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--text3); }
-.save-btn {
-  padding: 9px 20px;
-  background: linear-gradient(90deg, var(--gold), var(--gold2));
-  color: var(--bg); border: none; border-radius: 10px;
-  font-family: 'Bebas Neue', sans-serif; font-size: 13px; letter-spacing: 1px;
-  cursor: pointer; transition: opacity .15s;
-}
-.save-btn:hover { opacity: .85; }
-.saved-score { font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--green); letter-spacing: 3px; }
-.locked-badge { font-size: 10px; color: var(--text3); background: var(--surface2); padding: 3px 10px; border-radius: 6px; border: 1px solid var(--border); }
-.phase-header { display: flex; align-items: center; gap: 10px; margin: 18px 0 10px; }
-.phase-tag { font-family: 'Bebas Neue', sans-serif; font-size: 15px; color: var(--gold); letter-spacing: 2px; }
-.phase-mult { font-size: 10px; color: var(--text3); background: var(--surface); padding: 2px 8px; border-radius: 6px; border: 1px solid var(--border2); font-weight:600; }
-.phase-line { flex: 1; height: 1px; background: var(--border2); }
-
-/* FILTRES */
-.filter-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
-.filter-btn {
-  background: var(--surface); border: 1px solid var(--border2);
-  color: var(--text3); font-family: 'Inter'; font-size: 11px; font-weight: 600;
-  padding: 5px 12px; border-radius: 6px; cursor: pointer; transition: all .15s;
-  white-space: nowrap; text-transform: uppercase; letter-spacing: .04em;
-}
-.filter-btn.active { background: var(--gold); border-color: var(--gold); color: var(--bg); }
-.filter-btn:hover { border-color: rgba(255,215,0,.3); color: var(--text2); }
-
-/* ══════════════════════════════════
-   GLOBAUX
-══════════════════════════════════ */
-.global-card {
-  background: var(--surface); border: 1px solid var(--border2);
-  border-radius: var(--radius-lg); padding: 14px; margin-bottom: 10px;
-}
-.global-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-.global-title { font-size: 13px; font-weight: 700; color: var(--text); letter-spacing: .02em; }
-.global-bonus {
-  font-size: 10px; color: var(--gold);
-  background: rgba(255,215,0,.08); padding: 2px 8px;
-  border-radius: 6px; border: 1px solid rgba(255,215,0,.2);
-  font-weight: 600;
-}
-.global-input {
-  width: 100%; background: var(--surface2);
-  border: 1px solid var(--border2); border-radius: 10px;
-  padding: 10px 12px; color: var(--text);
-  font-family: 'Inter'; font-size: 13px; outline: none; margin-top: 4px;
-  transition: border .15s;
-}
-.global-input:focus { border-color: rgba(255,215,0,.3); }
-.btn-primary {
-  padding: 13px; width: 100%;
-  background: linear-gradient(90deg, var(--gold), var(--gold2));
-  color: var(--bg); border: none; border-radius: 12px;
-  font-family: 'Bebas Neue', sans-serif; font-size: 15px; letter-spacing: 1.5px;
-  cursor: pointer; transition: opacity .15s;
-}
-.btn-primary:hover { opacity: .85; }
-
-/* ══════════════════════════════════
-   CAGNOTTE
-══════════════════════════════════ */
-.pot-hero { text-align: center; padding: 20px 16px 14px; }
-.pot-amount {
-  font-family: 'Bebas Neue', sans-serif; font-size: 52px; letter-spacing: 2px;
-  background: linear-gradient(90deg, var(--gold), var(--gold2));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  line-height: 1;
-}
-.pot-label {
-  font-size: 10px; color: var(--text3);
-  text-transform: uppercase; letter-spacing: .1em; margin-top: 6px;
-}
-.pot-row {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 0; border-top: 1px solid var(--border); font-size: 13px;
-}
-.pot-row:first-child { border-top: none; }
-
-/* ══════════════════════════════════
-   ADMIN
-══════════════════════════════════ */
-.admin-inp {
-  width: 54px; height: 44px; background: var(--surface2);
-  border: 1px solid var(--border2); border-radius: 10px;
-  color: var(--text); font-family: 'Bebas Neue', sans-serif; font-size: 22px;
-  text-align: center; outline: none;
-}
-.admin-inp:focus { border-color: rgba(255,215,0,.4); }
-.validate-btn {
-  padding: 9px 14px; background: var(--surface2);
-  border: 1px solid var(--border2); color: var(--text2);
-  font-family: 'Bebas Neue', sans-serif; font-size: 13px; letter-spacing: 1px;
-  cursor: pointer; border-radius: 8px; transition: all .15s;
-}
-.validate-btn:hover { border-color: rgba(255,215,0,.3); color: var(--gold); }
-.validate-btn.validated { background: rgba(0,230,118,.08); border-color: rgba(0,230,118,.25); color: var(--green); }
-.btn-sm {
-  padding: 6px 14px; background: var(--surface2);
-  border: 1px solid var(--border2); color: var(--text2);
-  font-family: 'Bebas Neue', sans-serif; font-size: 12px; letter-spacing: 1px;
-  cursor: pointer; border-radius: 8px;
-}
-
-/* ══════════════════════════════════
-   TOAST
-══════════════════════════════════ */
-.toast {
-  position: fixed; bottom: 80px; left: 50%;
-  transform: translateX(-50%) translateY(20px);
-  background: var(--surface2); border: 1px solid rgba(255,215,0,.25);
-  color: var(--text); padding: 10px 22px; border-radius: 8px;
-  font-size: 13px; font-weight: 600; z-index: 300;
-  opacity: 0; transition: all .25s; pointer-events: none;
-  white-space: nowrap; box-shadow: 0 8px 30px rgba(0,0,0,.5);
-  letter-spacing: .03em;
-}
-.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-/* ══════════════════════════════════
-   MODALS
-══════════════════════════════════ */
-.pwa-modal {
-  position: fixed; inset: 0; z-index: 300;
-  background: rgba(0,0,0,.75); backdrop-filter: blur(6px);
-  display: flex; align-items: flex-end; justify-content: center;
-}
-.pwa-modal.hidden { display: none !important; }
-.pwa-modal-box {
-  background: var(--bg2); border: 1px solid var(--border2);
-  border-radius: 24px 24px 0 0; padding: 24px 20px 40px;
-  width: 100%; max-width: 480px;
-}
-.pwa-modal-title {
-  font-family: 'Bebas Neue', sans-serif; font-size: 20px;
-  color: var(--gold); text-align: center; margin-bottom: 4px; letter-spacing: 2px;
-}
-.pwa-modal-sub { font-size: 12px; color: var(--text3); text-align: center; margin-bottom: 20px; }
-.pwa-step { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid var(--border); }
-.pwa-step-num {
-  width: 28px; height: 28px; border-radius: 8px;
-  background: linear-gradient(135deg, var(--gold), var(--gold2));
-  color: var(--bg); font-family: 'Bebas Neue', sans-serif; font-size: 16px;
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
-.pwa-step-text { font-size: 13px; color: var(--text); line-height: 1.4; }
-.pwa-modal-close {
-  display: block; width: 100%; background: var(--surface);
-  border: 1px solid var(--border2); color: var(--text2);
-  font-family: 'Bebas Neue', sans-serif; font-size: 15px; letter-spacing: 1px;
-  padding: 13px; border-radius: 12px; cursor: pointer; margin-top: 20px;
-}
-.pwa-banner {
-  position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
-  background: linear-gradient(135deg, var(--bg2), var(--surface));
-  border-top: 1px solid rgba(255,215,0,.2);
-  padding: 12px 16px; display: flex; align-items: center; gap: 12px;
-  box-shadow: 0 -6px 24px rgba(0,0,0,.5);
-}
-.pwa-banner.hidden { display: none !important; }
-.pwa-icon { width: 44px; height: 44px; border-radius: 12px; overflow: hidden; flex-shrink: 0; }
-.pwa-icon img { width: 44px; height: 44px; object-fit: cover; }
-.pwa-text { flex: 1; }
-.pwa-title { font-family: 'Bebas Neue', sans-serif; font-size: 15px; color: var(--gold); letter-spacing: 1px; }
-.pwa-sub { font-size: 11px; color: var(--text2); margin-top: 2px; }
-.pwa-btn {
-  background: linear-gradient(90deg, var(--gold), var(--gold2));
-  color: var(--bg); font-family: 'Bebas Neue', sans-serif;
-  font-size: 13px; letter-spacing: 1px; padding: 9px 16px;
-  border-radius: 8px; border: none; cursor: pointer; white-space: nowrap; flex-shrink: 0;
-}
-.pwa-close { background: none; border: none; color: var(--text3); font-size: 22px; cursor: pointer; padding: 0; flex-shrink: 0; }
-
-/* PROFIL */
-.profil-match-row {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 0; border-top: 1px solid var(--border); font-size: 13px; gap: 8px;
-}
-.profil-match-row:first-child { border-top: none; }
-.profil-teams { flex: 1; color: var(--text2); font-size: 12px; }
-.profil-prog { font-family: 'Bebas Neue', sans-serif; font-size: 16px; min-width: 44px; text-align: center; color: var(--text); }
-.profil-real { font-size: 11px; color: var(--text3); min-width: 44px; text-align: center; }
-.profil-badge { font-size: 9px; font-weight: 700; padding: 3px 8px; border-radius: 4px; white-space: nowrap; text-transform: uppercase; letter-spacing: .04em; }
-.pb-exact { background: rgba(255,215,0,.15); color: var(--gold); border: 1px solid rgba(255,215,0,.25); }
-.pb-diff  { background: rgba(0,230,118,.12); color: var(--green); border: 1px solid rgba(0,230,118,.2); }
-.pb-win   { background: rgba(0,168,255,.12); color: var(--blue); border: 1px solid rgba(0,168,255,.2); }
-.pb-miss  { background: rgba(229,0,43,.1); color: #ff6b6b; border: 1px solid rgba(229,0,43,.2); }
-.pb-none  { background: var(--surface); color: var(--text3); border: 1px solid var(--border); font-style: italic; }
-.stat-badge {
-  display: flex; flex-direction: column; align-items: center;
-  background: var(--surface); border: 1px solid var(--border2);
-  border-radius: var(--radius); padding: 10px 14px; min-width: 72px; flex: 1;
-}
-.stat-badge-val { font-family: 'Bebas Neue', sans-serif; font-size: 28px; line-height: 1; }
-.stat-badge-lbl { font-size: 9px; color: var(--text3); margin-top: 4px; text-align: center; text-transform: uppercase; letter-spacing: .06em; }
-
-/* GROUPES */
-.group-card {
-  background: var(--surface); border: 1px solid var(--border2);
-  border-radius: var(--radius-lg); padding: 14px 16px; margin-bottom: 14px;
-}
-.group-title {
-  font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 2px;
-  color: var(--gold); margin-bottom: 12px;
-  display: flex; justify-content: space-between; align-items: center;
-}
-.group-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 6px; }
-.group-table th {
-  font-size: 9px; color: var(--text3); font-weight: 700; text-align: center;
-  padding: 4px 6px; letter-spacing: .08em; text-transform: uppercase;
-  border-bottom: 1px solid var(--border);
-}
-.group-table th:first-child { text-align: left; }
-.group-table td { padding: 9px 6px; border-bottom: 1px solid var(--border); text-align: center; color: var(--text2); }
-.group-table td:first-child { text-align: left; font-weight: 600; color: var(--text); }
-.group-table tr:last-child td { border-bottom: none; }
-.group-table tr.qualified td:first-child { color: var(--green); }
-.group-match-row {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 6px 0; border-top: 1px solid var(--border); font-size: 12px; color: var(--text2);
-}
-.group-match-row:first-of-type { border-top: none; }
-.group-score { font-family: 'Bebas Neue', sans-serif; font-size: 15px; color: var(--text); min-width: 40px; text-align: center; }
-
-/* LOADING */
-#loading {
-  position: fixed; inset: 0; background: var(--bg);
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  z-index: 999; gap: 14px;
-}
-.loading-flags { font-size: 30px; letter-spacing: 10px; }
-.loading-title {
-  font-family: 'Bebas Neue', sans-serif; font-size: 32px; letter-spacing: 6px;
-  background: linear-gradient(90deg, var(--gold), var(--gold2));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-}
-.loading-spinner {
-  width: 30px; height: 30px;
-  border: 2px solid var(--border2); border-top-color: var(--gold);
-  border-radius: 50%; animation: spin .8s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* LOGIN */
-#login-screen, #admin-login-screen {
-  position: fixed; inset: 0;
-  background: radial-gradient(ellipse at 30% 20%, rgba(229,0,43,.08), transparent 50%),
-              radial-gradient(ellipse at 70% 80%, rgba(255,215,0,.06), transparent 50%),
-              var(--bg);
-  display: flex; align-items: center; justify-content: center;
-  padding: 20px; z-index: 500;
-}
-.login-card {
-  background: rgba(11,15,26,0.85);
-  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255,255,255,.08);
-  border-radius: 20px; padding: 32px 24px;
-  width: 100%; max-width: 360px;
-  box-shadow: 0 30px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(255,215,0,.05);
-}
-.login-trophy { text-align: center; margin-bottom: 6px; }
-.login-title {
-  font-family: 'Bebas Neue', sans-serif; font-size: 34px; letter-spacing: 4px;
-  text-align: center; margin-bottom: 8px;
-  background: linear-gradient(90deg, var(--gold), var(--gold2));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-}
-.login-flags {
-  text-align: center; font-size: 13px; letter-spacing: 3px;
-  margin-bottom: 8px; color: var(--text2); font-weight: 600;
-}
-.login-trump {
-  text-align: center; font-family: 'Bebas Neue', sans-serif;
-  font-size: 13px; letter-spacing: 3px; color: var(--red);
-  margin-bottom: 24px; text-transform: uppercase;
-}
-.field { margin-bottom: 16px; }
-.field label {
-  display: block; font-size: 9px; text-transform: uppercase;
-  letter-spacing: .1em; color: var(--text3); font-weight: 700; margin-bottom: 6px;
-}
-.field input {
-  width: 100%; background: var(--surface);
-  border: 1px solid var(--border2); border-radius: 10px;
-  padding: 13px 16px; color: var(--text);
-  font-family: 'Inter'; font-size: 15px; outline: none; transition: border .15s;
-}
-.field input:focus {
-  border-color: rgba(255,215,0,.35);
-  box-shadow: 0 0 0 3px rgba(255,215,0,.08);
-}
-.field input::placeholder { color: var(--text3); }
-
-/* ══════════════════════════════════
-   HEADER — CDM 2026 Premium
-══════════════════════════════════ */
-.header {
-  position: sticky; top: 0; z-index: 100;
-  background: rgba(6,8,15,0.95);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border-bottom: 1px solid rgba(255,215,0,0.15);
-  padding: 8px 16px;
-  display: flex; align-items: center; justify-content: space-between;
-  box-shadow: 0 2px 20px rgba(0,0,0,0.5);
-}
-
-.logo { display: flex; align-items: center; gap: 10px; }
-.logo-flags { display: flex; align-items: center; }
-.logo-text {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 22px; letter-spacing: 3px;
-  background: linear-gradient(90deg, var(--gold), var(--gold2));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-}
-.logo-sub {
-  font-size: 10px; font-weight: 500;
-  color: var(--text3); letter-spacing: .5px;
-  -webkit-text-fill-color: var(--text3);
-  display: flex; align-items: center;
-}
-
-/* XP bar under header — optionnel, activé par JS */
-.header-xp-bar {
-  height: 2px;
-  background: rgba(255,255,255,0.06);
-  position: relative; overflow: hidden;
-}
-.header-xp-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #C99812, #FFD700, #FFCC33);
-  transition: width .6s ease;
-}
-
-/* Bouton déconnexion restyled */
-.btn-sm {
-  padding: 6px 14px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.1);
-  color: var(--text3);
-  font-family: 'Bebas Neue', sans-serif; font-size: 12px; letter-spacing: 1px;
-  cursor: pointer; border-radius: 8px; transition: all .15s;
-}
-.btn-sm:hover { border-color: rgba(255,215,0,.3); color: var(--gold); }
-
-/* ══════════════════════════════════
-   CDM 2026 DESIGN SYSTEM TOKENS
-══════════════════════════════════ */
-
-/* Palette enrichie */
-:root {
-  --gold-glow: rgba(255,215,0,0.25);
-  --card-border-gold: rgba(255,215,0,0.18);
-}
-
-/* Cards premium */
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border2);
-  border-radius: var(--radius-lg);
-  padding: 14px; margin-bottom: 12px;
-  position: relative; overflow: hidden;
-}
-.card::before {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,215,0,0.15), transparent);
-}
-
-/* Match cards — glow au hover */
-.match-card:hover {
-  border-color: rgba(255,215,0,0.25);
-  box-shadow: 0 4px 20px rgba(255,215,0,0.06);
-}
-
-/* Ranking rows — micro-glow */
-.ranking-row.me {
-  border-color: rgba(255,215,0,.35);
-  background: linear-gradient(135deg, rgba(255,215,0,.08), transparent);
-  box-shadow: 0 2px 16px rgba(255,215,0,0.08);
-}
-
-/* Podium — glow renforcé */
-.podium-avatar.p1 {
-  box-shadow: 0 0 28px rgba(255,215,0,.55), 0 0 60px rgba(255,215,0,.18);
-}
-
-/* Score inputs — premium feel */
-.score-inp {
-  background: rgba(20,25,38,0.9);
-  border: 1px solid rgba(255,255,255,0.1);
-  transition: all .18s;
-}
-.score-inp:focus {
-  border-color: rgba(255,215,0,.5);
-  box-shadow: 0 0 0 3px rgba(255,215,0,.1);
-  background: rgba(30,35,50,0.95);
-}
-
-/* Toast repositionné au-dessus de la bottom nav */
-.toast {
-  bottom: 80px !important;
-}
-
-/* PWA banner — doit s'afficher au-dessus de la bottom nav */
-.pwa-banner {
-  bottom: 68px;
-  z-index: 250 !important;
-}
-
-/* Stripe tricolore enrichie */
-.stripe {
-  height: 3px;
-  background: linear-gradient(90deg, #E5002B, #FFD700, #00A8FF);
-  border-radius: 3px; margin-bottom: 18px;
-  box-shadow: 0 1px 8px rgba(255,215,0,0.15);
-}
-
-/* Section titles upgrade */
-.section-title {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 26px; letter-spacing: 3px;
-  color: var(--text); margin-bottom: 2px;
-  text-shadow: 0 0 20px rgba(255,215,0,0.1);
-}
-
-/* Scrollbar premium */
-::-webkit-scrollbar { width: 3px; height: 3px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255,215,0,0.2); border-radius: 3px; }
-
-@media(max-width:380px) {
-  .stats-grid { grid-template-columns: repeat(2,1fr); }
-  .podium-avatar.p1 { width: 50px; height: 50px; }
-}
-
 </head>
 <body>
 
@@ -1186,173 +463,38 @@ body {
 </div>
 
 <!-- ══ APP JOUEUR ══ -->
+
+<!-- ══ APP JOUEUR ══ -->
 <div id="app-screen" class="hidden">
-  <!-- Header CDM 2026 Premium -->
+
+  <!-- HEADER AAA -->
   <div class="header">
     <div class="logo">
       <div class="logo-flags">
-        <!-- Logo app CDM avec icône trophée SVG inline -->
-        <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,rgba(255,215,0,0.15),rgba(255,165,0,0.08));border:1px solid rgba(255,215,0,0.25);display:flex;align-items:center;justify-content:center;overflow:hidden">
-          <img src="icon-192.png" alt="CDM" style="width:34px;height:34px;border-radius:9px;display:block" onerror="this.outerHTML='<svg viewBox=\'0 0 24 24\' width=\'22\' height=\'22\' fill=\'none\'><polygon points=\'12,1 10,6 7,4 8.5,7 12,5.5 15.5,7 17,4 14,6\' fill=\'#FFD700\'/><path d=\'M5 7 Q4 12 6.5 15.5 Q9 19 12 19 Q15 19 17.5 15.5 Q20 12 19 7 Z\' fill=\'#FFD700\'/><path d=\'M5 8 Q3 8 3 11 Q3 14 5 13\' stroke=\'#FFD700\' stroke-width=\'1.5\' fill=\'none\'/><path d=\'M19 8 Q21 8 21 11 Q21 14 19 13\' stroke=\'#FFD700\' stroke-width=\'1.5\' fill=\'none\'/><rect x=\'10.5\' y=\'19\' width=\'3\' height=\'3\' fill=\'#FFD700\'/><rect x=\'8\' y=\'22\' width=\'8\' height=\'2.5\' rx=\'1.2\' fill=\'#FFD700\'/></svg>'">
+        <img src="icon-192.png" alt="" style="width:34px;height:34px;border-radius:10px;display:block" onerror="this.outerHTML='🏆'">
+      </div>
+      <div>
+        <div class="logo-text">UNITED 2026</div>
+        <div class="logo-sub"><span class="sync-dot"></span><span id="header-pseudo" style="font-family:'Inter',sans-serif;font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.03em;"></span></div>
+      </div>
+    </div>
+    <div class="header-xp-wrap">
+      <div style="min-width:0;text-align:right">
+        <div class="header-rank" id="header-rank"></div>
+        <div class="xp-bar-wrap" id="xp-bar-wrap">
+          <div class="xp-bar-fill" id="xp-bar-fill" style="width:0%"></div>
         </div>
       </div>
-      <div>
-        <div class="logo-text">CDM 2026</div>
-        <div class="logo-sub"><span class="sync-dot"></span><span id="header-pseudo"></span></div>
+      <div class="header-avatar-wrap">
+        <div class="header-avatar" id="header-avatar" onclick="openAvatarModal()" style="cursor:pointer;font-family:'Bebas Neue',sans-serif;font-size:15px;color:var(--bg);">?</div>
+        <div class="header-level-badge" id="header-level">1</div>
       </div>
     </div>
-    <div style="display:flex;align-items:center;gap:8px">
-      <!-- Avatar joueur + rang -->
-      <div id="header-avatar" style="width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:14px;color:var(--bg);flex-shrink:0;border:1.5px solid rgba(255,215,0,0.3);cursor:pointer" onclick="openAvatarModal()" title="Mon profil"></div>
-      <div>
-        <div id="header-rank" style="font-size:10px;color:var(--gold);font-weight:700;letter-spacing:.03em"></div>
-      </div>
-      <button class="btn-sm" onclick="logout()">✕</button>
-    </div>
   </div>
-  <!-- Bottom Nav CDM 2026 — icônes SVG fidèles aux assets du projet -->
-  <div class="nav">
 
-    <!-- MATCHS : Éclair + ballon football -->
-    <button class="nav-btn active" onclick="showPage('matchs',this)" title="Matchs">
-      <svg class="nav-icon-svg" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <linearGradient id="ni-matchs-g" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="currentColor"/>
-            <stop offset="100%" stop-color="currentColor"/>
-          </linearGradient>
-        </defs>
-        <!-- ballon de foot -->
-        <circle cx="16" cy="17" r="8" fill="#111827" stroke="currentColor" stroke-width="1.2"/>
-        <polygon points="16,11.5 18.5,14 17.8,17.5 14.2,17.5 13.5,14" fill="rgba(0,0,0,0.4)" stroke="currentColor" stroke-width="0.6"/>
-        <polygon points="21,13.5 23.5,16 22,19.5 19.5,19 19,15.5" fill="rgba(0,0,0,0.3)" stroke="currentColor" stroke-width="0.5"/>
-        <polygon points="11,13 13.5,11.5 16,13 15,17 11.5,17" fill="rgba(0,0,0,0.3)" stroke="currentColor" stroke-width="0.5"/>
-        <!-- éclair -->
-        <polygon points="14.5,2 9.5,12 13.5,12 11,22 20.5,9 16,9" fill="currentColor"/>
-        <polygon points="14.5,3.5 10.5,12 14,12 12,19.5 19,10 15.5,10" fill="rgba(0,0,0,0.2)"/>
-      </svg>
-      <span class="nav-btn-label">Matchs</span>
-    </button>
+  <!-- PAGES -->
+  <div>
 
-    <!-- GLOBAUX : Cible avec globe -->
-    <button class="nav-btn" onclick="showPage('globaux',this)" title="Pronostics globaux">
-      <svg class="nav-icon-svg" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <!-- globe -->
-        <circle cx="13" cy="13" r="10" stroke="currentColor" stroke-width="1.4" fill="none"/>
-        <!-- méridiens -->
-        <path d="M13 3 C13 3 9 8 9 13 C9 18 13 23 13 23" stroke="currentColor" stroke-width="1" fill="none"/>
-        <path d="M13 3 C13 3 17 8 17 13 C17 18 13 23 13 23" stroke="currentColor" stroke-width="1" fill="none"/>
-        <!-- parallèles -->
-        <path d="M3.5 10 Q13 8 22.5 10" stroke="currentColor" stroke-width="1" fill="none"/>
-        <path d="M3.5 16 Q13 18 22.5 16" stroke="currentColor" stroke-width="1" fill="none"/>
-        <!-- flèche cible -->
-        <line x1="19" y1="7" x2="15" y2="11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-        <polygon points="19,5 22,7 20,10 17,8" fill="currentColor"/>
-      </svg>
-      <span class="nav-btn-label">Globaux</span>
-    </button>
-
-    <!-- CLASSEMENT : Trophée CDM avec couronne — icône centrale surélevée -->
-    <button class="nav-btn" onclick="showPage('classement',this)" title="Classement" style="margin-top:-10px;">
-      <svg class="nav-icon-svg" viewBox="0 0 32 34" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:32px;height:34px;">
-        <defs>
-          <linearGradient id="trophee-g" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="currentColor" stop-opacity="1"/>
-            <stop offset="100%" stop-color="currentColor" stop-opacity="0.7"/>
-          </linearGradient>
-        </defs>
-        <!-- couronne -->
-        <polygon points="16,1 14,6.5 11,4 12.5,7.5 16,5.5 19.5,7.5 21,4 18,6.5" fill="currentColor"/>
-        <!-- coupe -->
-        <path d="M7 9 Q6 15.5 8.5 19.5 Q11 23 16 23 Q21 23 23.5 19.5 Q26 15.5 25 9 Z" fill="currentColor"/>
-        <path d="M8.5 9 Q7.5 14.5 9.8 18 Q12 21 16 21 Q20 21 22.2 18 Q24.5 14.5 23.5 9 Z" fill="rgba(0,0,0,0.25)"/>
-        <!-- highlight interne -->
-        <path d="M9.5 10.5 Q9 14 11 17" stroke="rgba(255,255,255,0.2)" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-        <!-- anses -->
-        <path d="M7 10 Q2 10 2 14.5 Q2 19 7 17.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
-        <path d="M25 10 Q30 10 30 14.5 Q30 19 25 17.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
-        <!-- tige -->
-        <rect x="14" y="23" width="4" height="4" fill="currentColor"/>
-        <rect x="11.5" y="26.5" width="9" height="2.5" rx="1" fill="currentColor"/>
-        <!-- socle -->
-        <rect x="8" y="29" width="16" height="4" rx="2" fill="currentColor"/>
-        <rect x="8" y="29" width="16" height="2" rx="2" fill="rgba(255,255,255,0.15)"/>
-      </svg>
-      <span class="nav-btn-label">Classement</span>
-    </button>
-
-    <!-- GROUPES : Stade isométrique -->
-    <button class="nav-btn" onclick="showPage('groupes',this)" title="Groupes">
-      <svg class="nav-icon-svg" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <!-- stade oval isométrique -->
-        <ellipse cx="13" cy="17" rx="11" ry="6" fill="currentColor" opacity="0.15"/>
-        <ellipse cx="13" cy="15.5" rx="11" ry="6" fill="none" stroke="currentColor" stroke-width="1.2"/>
-        <!-- pelouse intérieure -->
-        <ellipse cx="13" cy="15.5" rx="7" ry="3.8" fill="#1a4a1a" stroke="currentColor" stroke-width="0.8" opacity="0.9"/>
-        <ellipse cx="13" cy="15.5" rx="3.5" ry="1.8" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.7"/>
-        <line x1="13" y1="11.7" x2="13" y2="19.3" stroke="currentColor" stroke-width="0.5" opacity="0.7"/>
-        <!-- gradins latéraux -->
-        <path d="M2 15.5 L2 18 Q13 23 24 18 L24 15.5" fill="currentColor" opacity="0.2"/>
-        <path d="M2 15.5 Q13 20 24 15.5" stroke="currentColor" stroke-width="0.6" fill="none" opacity="0.5"/>
-        <!-- lumières -->
-        <circle cx="4.5" cy="12" r="1.2" fill="currentColor"/>
-        <circle cx="21.5" cy="12" r="1.2" fill="currentColor"/>
-        <circle cx="8" cy="10.5" r="0.9" fill="currentColor" opacity="0.7"/>
-        <circle cx="18" cy="10.5" r="0.9" fill="currentColor" opacity="0.7"/>
-        <!-- mâts -->
-        <line x1="4.5" y1="12" x2="4.5" y2="8" stroke="currentColor" stroke-width="1" opacity="0.6"/>
-        <line x1="21.5" y1="12" x2="21.5" y2="8" stroke="currentColor" stroke-width="1" opacity="0.6"/>
-      </svg>
-      <span class="nav-btn-label">Groupes</span>
-    </button>
-
-    <!-- SOCIAL : Bulle chat + 3 dots -->
-    <button class="nav-btn" onclick="showPage('social',this)" title="Social">
-      <div class="nav-badge green-dot"></div>
-      <svg class="nav-icon-svg" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <linearGradient id="ni-club-g" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="currentColor"/>
-            <stop offset="100%" stop-color="currentColor" stop-opacity="0.7"/>
-          </linearGradient>
-        </defs>
-        <!-- corps de la bulle — style ton image : large, arrondie -->
-        <rect x="2" y="3" width="20" height="14" rx="5" fill="currentColor"/>
-        <rect x="2" y="3" width="20" height="14" rx="5" fill="rgba(0,0,0,0.15)"/>
-        <!-- queue de la bulle en bas-gauche -->
-        <path d="M6 17 L3 23 L12 17 Z" fill="currentColor"/>
-        <!-- 3 dots noirs -->
-        <circle cx="9" cy="10" r="1.8" fill="var(--bg)"/>
-        <circle cx="13" cy="10" r="1.8" fill="var(--bg)"/>
-        <circle cx="17" cy="10" r="1.8" fill="var(--bg)"/>
-        <!-- highlight -->
-        <path d="M4 5 Q13 4 21 5" stroke="rgba(255,255,255,0.2)" stroke-width="0.8" fill="none" stroke-linecap="round"/>
-      </svg>
-      <span class="nav-btn-label">Social</span>
-    </button>
-
-    <!-- CAGNOTTE : Pile de pièces avec flèche haussière -->
-    <button class="nav-btn" onclick="showPage('cagnotte',this)" title="Cagnotte">
-      <svg class="nav-icon-svg" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <!-- pièces empilées -->
-        <ellipse cx="12" cy="20" rx="7" ry="2.5" fill="currentColor" opacity="0.4"/>
-        <ellipse cx="12" cy="18" rx="7" ry="2.5" fill="currentColor" opacity="0.6"/>
-        <rect x="5" y="15" width="14" height="3" fill="currentColor" opacity="0.7"/>
-        <ellipse cx="12" cy="15" rx="7" ry="2.5" fill="currentColor"/>
-        <ellipse cx="12" cy="15" rx="5" ry="1.7" fill="rgba(0,0,0,0.2)"/>
-        <text x="12" y="16" text-anchor="middle" font-size="5" font-weight="900" fill="var(--bg)" font-family="Arial">€</text>
-        <!-- flèche haussière -->
-        <path d="M17 11 L20 8 L23 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/>
-        <polygon points="23,4 26,7 22,8" fill="currentColor"/>
-        <!-- petite flèche verte -->
-        <circle cx="21" cy="6" r="2.5" fill="var(--green)" opacity="0.9"/>
-        <path d="M20 7 L21 5.5 L22 7" stroke="white" stroke-width="0.8" fill="none" stroke-linecap="round"/>
-      </svg>
-      <span class="nav-btn-label">Cagnotte</span>
-    </button>
-
-  </div>
-  <div class="main">
     <div id="page-classement" class="page">
       <div class="stripe"></div>
       <div class="section-title">Classement</div>
@@ -1442,7 +584,42 @@ body {
       <div id="pot-total-val"></div>
       <div id="pot-cagnotte-content"></div>
     </div>
-  </div>
+  </div>  </div>
+
+  <!-- BOTTOM NAV AAA -->
+  <nav class="bottom-nav" id="bottom-nav">
+    <button class="bnav-btn active" onclick="bnavGo('matchs',this)">
+      <div class="bnav-active-pill"></div>
+      <div class="bnav-icon">⚡</div>
+      <div class="bnav-label">Matchs</div>
+    </button>
+    <button class="bnav-btn" onclick="bnavGo('classement',this)">
+      <div class="bnav-active-pill"></div>
+      <div class="bnav-icon">🏆</div>
+      <div class="bnav-label">Classement</div>
+    </button>
+    <button class="bnav-btn" onclick="bnavGo('globaux',this)">
+      <div class="bnav-active-pill"></div>
+      <div class="bnav-icon">🎯</div>
+      <div class="bnav-label">Globaux</div>
+    </button>
+    <button class="bnav-btn" onclick="bnavGo('groupes',this)">
+      <div class="bnav-active-pill"></div>
+      <div class="bnav-icon">🌍</div>
+      <div class="bnav-label">Groupes</div>
+    </button>
+    <button class="bnav-btn" onclick="bnavGo('social',this)">
+      <div class="bnav-active-pill"></div>
+      <div class="bnav-icon">💬</div>
+      <div class="bnav-label">Social</div>
+    </button>
+    <button class="bnav-btn" onclick="bnavGo('cagnotte',this)">
+      <div class="bnav-active-pill"></div>
+      <div class="bnav-icon">💰</div>
+      <div class="bnav-label">Cagnotte</div>
+    </button>
+  </nav>
+
 </div>
 
 <!-- ══ APP ADMIN ══ -->
@@ -1505,48 +682,16 @@ body {
   </div>
 </div>
 
+
+<div class="particles" aria-hidden="true"></div>
+
 <script>
 // ══════════════════════════════════════════
-// SUPABASE + MODE LOCAL
+// SUPABASE
 // ══════════════════════════════════════════
 const SUPABASE_URL = 'https://hqhosgwebucwtqtnlbqg.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_O1tjA5w5G9jBQni9vA2wZg_NBKEu2jj';
-const IS_LOCAL = window._IS_LOCAL || false;
-
-// Stub Supabase pour le mode local — aucun appel réseau, aucune iframe
-const _sbStub = {
-  from: () => ({
-    select: ()  => Promise.resolve({data:[],error:null}),
-    insert: ()  => Promise.resolve({data:null,error:null}),
-    update: ()  => ({eq: () => Promise.resolve({data:null,error:null})}),
-    delete: ()  => ({eq: () => Promise.resolve({data:null,error:null})}),
-    upsert: ()  => Promise.resolve({data:null,error:null}),
-    order:  (c,o) => ({ limit: () => Promise.resolve({data:[],error:null}) }),
-  }),
-  channel: () => ({ on: function(){ return this; }, subscribe: function(){ return this; } })
-};
-
-let sb; // sera défini ci-dessous
-
-if (IS_LOCAL) {
-  // Pas de SDK, pas d'iframe, pas de réseau — tout en mémoire
-  sb = _sbStub;
-  document.addEventListener('DOMContentLoaded', () => init());
-} else {
-  // Charger le SDK Supabase dynamiquement, PUIS lancer init()
-  const s = document.createElement('script');
-  s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
-  s.onload = () => {
-    sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    init();
-  };
-  s.onerror = () => {
-    // Fallback si CDN inaccessible (mauvaise connexion) : mode stub
-    sb = _sbStub;
-    init();
-  };
-  document.head.appendChild(s);
-}
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const ADMIN_PASSWORD = 'cdm2026admin';
 const MISE = 10;
@@ -1600,12 +745,6 @@ function selectAvatar(emoji) {
 
 async function saveAvatar() {
   if (!pendingAvatar) { document.getElementById('avatar-modal').classList.add('hidden'); return; }
-  if(IS_LOCAL){
-    const joueur=allJoueurs.find(j=>j.id===currentUser);
-    if(joueur) joueur.avatar=pendingAvatar;
-    document.getElementById('avatar-modal').classList.add('hidden');
-    showToast('Avatar mis à jour !'); updateHeaderUser(); return;
-  }
   const { error } = await sb.from('joueurs').update({ avatar: pendingAvatar }).eq('id', currentUser);
   if (error) { showToast('Erreur lors de la sauvegarde'); return; }
   await loadData();
@@ -1995,32 +1134,7 @@ const GLOBAUX_DEF = [
 // ══ STATE ══
 let currentUser=null,isAdmin=false,allJoueurs=[],allScores={},allGlobaux={};
 
-// ── MODE DÉMO (file:// ou offline) ────────────────────────────
-// IS_LOCAL déjà défini plus haut via window._IS_LOCAL
-
-function loadDemoData(){
-  allJoueurs=[
-    {id:'MEHDI-demo',  pseudo:'MEHDI',  code:'demo', paid:true, avatar:'⚽', pronostics:{}, globaux:{}},
-    {id:'KARIM-demo',  pseudo:'KARIM',  code:'demo', paid:true, avatar:'🏆', pronostics:{}, globaux:{}},
-    {id:'SARAH-demo',  pseudo:'SARAH',  code:'demo', paid:true, avatar:'🔥', pronostics:{}, globaux:{}},
-    {id:'NASSER-demo', pseudo:'NASSER', code:'demo', paid:true, avatar:'⚡', pronostics:{}, globaux:{}},
-    {id:'LEO-demo',    pseudo:'LEO',    code:'demo', paid:true, avatar:'🎯', pronostics:{}, globaux:{}},
-  ];
-  allScores={};
-  allGlobaux={};
-}
-
 async function init(){
-  if(IS_LOCAL){
-    loadDemoData();
-    hide('loading');
-    const u=localStorage.getItem('cdm2026_user');
-    const a=localStorage.getItem('cdm2026_admin');
-    if(a==='true'){ isAdmin=true; openAdminApp(); }
-    else if(u && allJoueurs.find(j=>j.id===u)){ currentUser=u; openApp(); }
-    else { showLoginScreen(); }
-    return;
-  }
   try{
     await loadData();
     hide('loading');
@@ -2029,10 +1143,12 @@ async function init(){
     if(a==='true'){
       isAdmin=true;openAdminApp();
     } else if(u){
+      // Vérifier que le joueur existe encore en base
       const joueurExiste=allJoueurs.find(j=>j.id===u);
       if(joueurExiste){
         currentUser=u;openApp();
       } else {
+        // Joueur supprimé ou base réinitialisée
         localStorage.removeItem('cdm2026_user');
         showLoginScreen();
         showToast('Session expirée, reconnecte-toi avec ton code');
@@ -2092,25 +1208,6 @@ async function doLogin(){
   if(pwd.length<4){showToast('Mot de passe trop court (min 4 caractères)');return;}
   const btn=document.getElementById('login-btn');
   btn.disabled=true;btn.textContent='Connexion...';
-
-  // Mode local / demo : login sans Supabase
-  if(IS_LOCAL){
-    const existing=allJoueurs.find(j=>j.pseudo.toUpperCase()===pseudo);
-    if(existing){
-      currentUser=existing.id;
-      localStorage.setItem('cdm2026_user',existing.id);
-      btn.disabled=false;btn.textContent='Rejoindre le tournoi ⚽';
-      openApp();return;
-    }
-    // Créer joueur local
-    const newId=pseudo+'-'+Date.now();
-    const newJ={id:newId,pseudo,code:pwd,paid:false,avatar:'⚽',pronostics:{},globaux:{}};
-    allJoueurs.push(newJ);
-    currentUser=newId;localStorage.setItem('cdm2026_user',newId);
-    btn.disabled=false;btn.textContent='Rejoindre le tournoi ⚽';
-    openApp();return;
-  }
-
   // Chercher le joueur par pseudo
   const joueurExistant=allJoueurs.find(j=>j.pseudo.toUpperCase()===pseudo);
   if(joueurExistant){
@@ -2152,7 +1249,7 @@ function logout(){currentUser=null;isAdmin=false;localStorage.removeItem('cdm202
 function openApp(){
   ['login-screen','admin-login-screen','admin-app-screen'].forEach(hide);show('app-screen');
   updateHeaderUser();
-  renderMatchs();showPage('matchs',document.querySelector('#app-screen .nav-btn'));
+  renderMatchs();showPage('matchs',document.querySelector('.bnav-btn'));
 }
 
 function updateHeaderUser(){
@@ -2181,6 +1278,7 @@ function openAdminApp(){
 function showPage(id,btn){
   document.querySelectorAll('#app-screen .page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('#app-screen .nav-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
   btn?.classList.add('active');
   ({classement:renderClassement,matchs:renderMatchs,groupes:function(){renderGroupes();renderBracket();},social:renderSocialPage,globaux:renderGlobaux,cagnotte:renderCagnotte})[id]?.();
@@ -2532,15 +1630,6 @@ async function savePronostic(id){
   btn.disabled=true;btn.textContent='Sauvegarde...';
   const joueur=allJoueurs.find(j=>j.id===currentUser);
   const newProg={...(joueur?.pronostics||{}),[id]:{s1,s2}};
-  if(IS_LOCAL){
-    // Sauvegarder localement sans Supabase
-    joueur.pronostics=newProg;
-    const stored=JSON.parse(localStorage.getItem('cdm2026_pronostics')||'{}');
-    stored[currentUser]=newProg;
-    localStorage.setItem('cdm2026_pronostics',JSON.stringify(stored));
-    btn.classList.add('saved');btn.textContent='✓ Enregistré';
-    btn.disabled=false;showToast('Pronostic sauvegardé localement !');return;
-  }
   const{error}=await sb.from('joueurs').update({pronostics:newProg}).eq('id',currentUser);
   if(error){showToast('Erreur');btn.disabled=false;btn.textContent='Enregistrer ce pronostic';return;}
   await loadData();btn.classList.add('saved');btn.textContent='✓ Enregistré';showToast('Pronostic sauvegardé !');
@@ -2602,10 +1691,6 @@ async function saveGlobaux(){
     const inp=document.getElementById('gi-'+g.id);
     if(inp) newGlob[g.id]=inp.value.trim();
   });
-  if(IS_LOCAL){
-    joueur.globaux=newGlob;
-    showToast('Pronostics globaux enregistrés localement !');renderGlobaux();return;
-  }
   const{error}=await sb.from('joueurs').update({globaux:newGlob}).eq('id',currentUser);
   if(error){showToast('Erreur');return;}
   await loadData();showToast('Pronostics globaux enregistrés !');renderGlobaux();
@@ -2905,13 +1990,6 @@ async function sendMessage(){
   const joueur=allJoueurs.find(j=>j.id===currentUser);
   const pseudo=joueur?joueur.pseudo:'?';
   input.value='';
-  if(IS_LOCAL){
-    // Simuler le message localement
-    const fakeMsg={id:Date.now(),user_id:currentUser,pseudo,content,created_at:new Date().toISOString()};
-    allMessages=[...allMessages,fakeMsg];
-    if(document.getElementById('chat-messages')) renderChat();
-    return;
-  }
   const{error}=await sb.from('messages').insert({
     user_id:currentUser,
     pseudo:pseudo,
@@ -3552,11 +2630,10 @@ function closePwaModal() {
 
 initPWA();
 
-// init() est maintenant appelé par le chargement du SDK Supabase (onload)
-// ou par DOMContentLoaded en mode local — ne pas appeler ici
+init();
 
 // PWA Service Worker
-if ('serviceWorker' in navigator && !IS_LOCAL) {
+if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').catch(() => {});
   });
@@ -3596,6 +2673,70 @@ function calcPlayerStats(joueur){
   return{pts,exact,bonDiff,bonVainqueur,rate,total};
 }
 
+
+</script>
+</body>
+</html>
+
+<script>
+
+// ══ BOTTOM NAV ══
+function bnavGo(id, btn) {
+  showPage(id, btn);
+  if (navigator.vibrate) navigator.vibrate(8);
+}
+
+// ══ XP SYSTEM ══
+function calcXP(pts) {
+  const level = Math.floor(pts / 20) + 1;
+  const xpInLevel = pts % 20;
+  const pct = Math.round((xpInLevel / 20) * 100);
+  return { level, pct };
+}
+
+function updateHeaderXP() {
+  const board = getLeaderboard();
+  const pos = board.findIndex(p => p.id === currentUser);
+  const pts = pos >= 0 ? board[pos].pts : 0;
+  const { level, pct } = calcXP(pts);
+  const rankEl = document.getElementById('header-rank');
+  const fillEl = document.getElementById('xp-bar-fill');
+  const levelEl = document.getElementById('header-level');
+  if (rankEl) rankEl.textContent = '#' + (pos + 1) + ' · ' + pts + ' pts';
+  if (fillEl) { fillEl.style.width = '0%'; setTimeout(() => { fillEl.style.width = pct + '%'; }, 300); }
+  if (levelEl) levelEl.textContent = level;
+}
+
+// ══ PARTICLES ══
+function initParticles() {
+  const container = document.querySelector('.particles');
+  if (!container) return;
+  for (let i = 0; i < 10; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = Math.random() * 3 + 2;
+    p.style.cssText = 'width:' + size + 'px;height:' + size + 'px;left:' + (Math.random() * 100) + '%;animation-duration:' + (Math.random() * 15 + 12) + 's;animation-delay:' + (Math.random() * 10) + 's;opacity:0;';
+    container.appendChild(p);
+  }
+}
+
+// ══ PATCH updateHeaderUser ══
+const _origUpdateHeader = updateHeaderUser;
+updateHeaderUser = function() {
+  _origUpdateHeader();
+  updateHeaderXP();
+};
+
+// ══ BUTTON PRESS MICRO-ANIMATION ══
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('button');
+  if (!btn || btn.classList.contains('bnav-btn')) return;
+  btn.style.transform = 'scale(0.95)';
+  setTimeout(() => { btn.style.transform = ''; }, 120);
+});
+
+// Init
+initParticles();
 
 </script>
 </body>
