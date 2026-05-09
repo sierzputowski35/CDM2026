@@ -11,9 +11,9 @@
 <title>World Cup 2026 — Pronostics</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
+/* FIX #1 : Un seul import Google Fonts — toutes les polices en une seule requête */
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
@@ -52,6 +52,9 @@
   --radius:    10px;
   --radius-lg: 18px;
   --radius-xl: 26px;
+
+  /* FIX #2 : Variables manquantes — référencées dans le JS mais absentes du :root */
+  --accent:    #FFD700; /* alias de --gold, utilisé dans calcPlayerStats et profil */
 }
 
 * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
@@ -1238,7 +1241,7 @@ const JOUEURS_BUTEUR = [
   {nom:'Edinson Cavani',pays:'🇺🇾 Uruguay',pts:27},
   {nom:'Ciro Immobile',pays:'🇮🇹 Italie',pts:28},
   {nom:'Ricardo Adé Jr.',pays:'🇳🇱 Pays-Bas',pts:29},
-  {nom:'Adam Idah',pays:'🇮🇪 Irlande',pts:30},
+  // FIX #11 : Adam Idah (Irlande non qualifiée) supprimé
   {nom:'Yaw Yeboah',pays:'🇬🇭 Ghana',pts:30},
 ];
 
@@ -1327,7 +1330,7 @@ const JOUEURS_JOUEUR = [
   {nom:'Duván Zapata',pays:'🇨🇴 Colombie',pts:28},
   {nom:'Carlos Vela',pays:'🇲🇽 Mexique',pts:29},
   {nom:'Ferdi Kadioglu',pays:'🇹🇷 Turquie',pts:30},
-  {nom:'Adam Idah',pays:'🇮🇪 Irlande',pts:30},
+  // FIX #11 : Adam Idah (Irlande non qualifiée) supprimé
 ];
 
 // MEILLEUR JEUNE — cotes bookmakers (moins de 23 ans au 1er juin 2026)
@@ -1354,7 +1357,7 @@ const JOUEURS_JEUNE = [
   {nom:'Leny Yoro',pays:'🇫🇷 France',pts:16},
   {nom:'Roony Bardghji',pays:'🇸🇪 Suède',pts:17},
   {nom:'Diego Moreira',pays:'🇵🇹 Portugal',pts:18},
-  {nom:'Evan Ferguson',pays:'🇮🇪 Irlande',pts:19},
+  {nom:'Evan Ferguson',pays:'🇮🇪 Irlande',pts:19}, // FIX #11 : gardé car potentiellement qualifié via play-offs
   {nom:'Estêvão',pays:'🇧🇷 Brésil',pts:20},
   {nom:'Maximo Perrone',pays:'🇦🇷 Argentine',pts:21},
   {nom:'Cyle Larin',pays:'🇨🇦 Canada',pts:22},
@@ -1363,11 +1366,11 @@ const JOUEURS_JEUNE = [
   {nom:'Ilias Akhomach',pays:'🇲🇦 Maroc',pts:25},
   {nom:'Ilaix Moriba',pays:'🇬🇳 Guinée',pts:26},
   {nom:'Yaw Yeboah',pays:'🇬🇭 Ghana',pts:27},
-  {nom:'Adam Idah',pays:'🇮🇪 Irlande',pts:27},
+  // FIX #11 : Adam Idah (Irlande non qualifiée) supprimé
   {nom:'Yerlan Abenov',pays:'🇰🇿 Kazakhstan',pts:28},
   {nom:'Tino Anjorin',pays:'🏴󠁧󠁢󠁥󠁮󠁧󠁿 Angleterre',pts:28},
-  {nom:'Victor Osimhen',pays:'🇳🇬 Nigéria',pts:29},
-  {nom:'Arsen Zakharyan',pays:'🇷🇺 Russie',pts:29},
+  // FIX #11 : Victor Osimhen (Nigéria non qualifié) supprimé
+  // FIX #11 : Arsen Zakharyan (Russie suspendue FIFA) supprimé
   {nom:'Hamed Traoré',pays:'🇧🇫 Burkina Faso',pts:30},
   {nom:'Anass Zaroury',pays:'🇲🇦 Maroc',pts:30},
   {nom:'Yunus Akgün',pays:'🇹🇷 Turquie',pts:30},
@@ -1543,36 +1546,47 @@ function showAdminPage(id,btn){
   ({'admin-matchs':renderAdminMatchs,'admin-globaux':renderAdminGlobaux,'admin-cagnotte':renderAdminCagnotte,'admin-joueurs':renderAdminJoueurs,'admin-codes':renderAdminCodes})[id]?.();
 }
 
-// ══ POINTS ══
-function calcPoints(j){
-  let pts=0;
-  const prog=j.pronostics||{},glob=j.globaux||{};
+// ══ POINTS — FIX #3 : calcPoints et calcPlayerStats fusionnés en une seule fonction ══
+// Cela évite la désynchronisation du barème entre les deux anciennes fonctions.
+// calcPlayerStats() retourne { pts, exact, bonDiff, bonVainqueur, rate, total }
+// calcPoints()      retourne uniquement pts (utilisé pour le classement)
+function calcPlayerStats(joueur){
+  let pts=0,exact=0,bonDiff=0,bonVainqueur=0,rate=0,total=0;
+  const prog=joueur.pronostics||{},glob=joueur.globaux||{};
+
+  // ── Matchs ──
   for(const m of MATCHS){
     const real=allScores[m.id];if(!real)continue;
-    const p=prog[m.id];if(!p)continue;
+    const p=prog[m.id];total++;
+    if(!p){rate++;continue;}
     const p1=parseInt(p.s1),p2=parseInt(p.s2),r1=parseInt(real.s1),r2=parseInt(real.s2);
-    if(isNaN(p1)||isNaN(p2))continue;
+    if(isNaN(p1)||isNaN(p2)){rate++;continue;}
     const mult=PHASES[m.phase]||1;
-    if(p1===r1&&p2===r2){pts+=Math.round(5*mult);continue;}
+    if(p1===r1&&p2===r2){pts+=Math.round(5*mult);exact++;continue;}
     const rw=r1>r2?1:r1<r2?2:0,pw=p1>p2?1:p1<p2?2:0;
-    if(rw!==pw)continue;
-    pts+=Math.round((r1-r2===p1-p2)?3*mult:1*mult);
+    if(rw!==pw){rate++;continue;}
+    if(r1-r2===p1-p2){pts+=Math.round(3*mult);bonDiff++;}
+    else{pts+=Math.round(1*mult);bonVainqueur++;}
   }
+
+  // ── Pronostics globaux ──
   for(const g of GLOBAUX_DEF){
     const real=allGlobaux[g.id];if(!real)continue;
     const val=glob[g.id];if(!val)continue;
     if(val.trim().toLowerCase()===real.trim().toLowerCase()){
-      if(g.id==='vainqueur') pts+=15;
-      else if(g.id==='finaliste') pts+=10;
-      else if(g.id==='troisieme') pts+=8;
-      else if(g.liste){
-        const item=g.liste.find(j=>j.nom.toLowerCase()===val.trim().toLowerCase());
-        pts+=(item?item.pts:10);
-      } else pts+=10;
+      if(g.id==='vainqueur')pts+=15;
+      else if(g.id==='finaliste')pts+=10;
+      else if(g.id==='troisieme')pts+=8;
+      else if(g.liste){const item=g.liste.find(x=>x.nom.toLowerCase()===val.trim().toLowerCase());pts+=(item?item.pts:10);}
+      else if(g.type==='equipe'){const e=EQUIPES.find(x=>x.nom.toLowerCase()===val.trim().toLowerCase());pts+=(e?e.pts:10);}
+      else pts+=10;
     }
   }
-  return pts;
+  return{pts,exact,bonDiff,bonVainqueur,rate,total};
 }
+
+// Wrapper léger pour le classement — utilise calcPlayerStats comme source unique
+function calcPoints(j){return calcPlayerStats(j).pts;}
 
 function getLeaderboard(){return allJoueurs.map(j=>({...j,pts:calcPoints(j)})).sort((a,b)=>b.pts-a.pts);}
 
@@ -2806,39 +2820,7 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-function calcPlayerStats(joueur){
-  let pts=0,exact=0,bonDiff=0,bonVainqueur=0,rate=0,total=0;
-  const prog=joueur.pronostics||{};
-  for(const m of MATCHS){
-    const real=allScores[m.id];if(!real)continue;
-    const p=prog[m.id];total++;
-    if(!p){rate++;continue;}
-    const p1=parseInt(p.s1),p2=parseInt(p.s2),r1=parseInt(real.s1),r2=parseInt(real.s2);
-    if(isNaN(p1)||isNaN(p2)){rate++;continue;}
-    const mult=PHASES[m.phase]||1;
-    if(p1===r1&&p2===r2){pts+=Math.round(5*mult);exact++;}
-    else{
-      const rw=r1>r2?1:r1<r2?2:0,pw=p1>p2?1:p1<p2?2:0;
-      if(rw!==pw){rate++;}
-      else if(r1-r2===p1-p2){pts+=Math.round(3*mult);bonDiff++;}
-      else{pts+=Math.round(1*mult);bonVainqueur++;}
-    }
-  }
-  const glob=joueur.globaux||{};
-  for(const g of GLOBAUX_DEF){
-    const real=allGlobaux[g.id];if(!real)continue;
-    const val=glob[g.id];if(!val)continue;
-    if(val.trim().toLowerCase()===real.trim().toLowerCase()){
-      if(g.id==='vainqueur')pts+=15;
-      else if(g.id==='finaliste')pts+=10;
-      else if(g.id==='troisieme')pts+=8;
-      else if(g.liste){const item=g.liste.find(x=>x.nom.toLowerCase()===val.trim().toLowerCase());pts+=(item?item.pts:10);}
-      else if(g.type==='equipe'){const e=EQUIPES.find(x=>x.nom.toLowerCase()===val.trim().toLowerCase());pts+=(e?e.pts:10);}
-      else pts+=10;
-    }
-  }
-  return{pts,exact,bonDiff,bonVainqueur,rate,total};
-}
+// FIX #3 : calcPlayerStats est désormais définie plus haut (fonction unique, source de vérité)
 
 
 </script>

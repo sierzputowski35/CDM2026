@@ -1,21 +1,79 @@
-const CACHE = 'cdm2026-v1';
-const ASSETS = ['/', '/index.html', '/icon-192.png', '/icon-512.png'];
+// ─────────────────────────────────────────────────────────────────
+// FIX #13 : Numéro de version à incrémenter à chaque déploiement
+// (ex: cdm2026-v2, cdm2026-v3 ...) pour forcer le rafraîchissement
+// du cache sur tous les appareils des utilisateurs.
+// ─────────────────────────────────────────────────────────────────
+const CACHE = 'cdm2026-v2';
 
-self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
+// FIX #8 : Les polices Google Fonts sont maintenant mises en cache
+// pour que l'app reste belle en mode hors-ligne.
+// Note : les polices Google Fonts ont des URLs variables selon le
+// navigateur (User-Agent). On utilise la stratégie "cache then network"
+// dans le handler fetch pour les capturer dynamiquement au premier chargement.
+const STATIC_ASSETS = [
+  '/',
+  '/index.html',
+  '/icon-192.png',
+  '/icon-512.png',
+];
+
+// ── Install : mise en cache des assets statiques ──
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE).then(cache => cache.addAll(STATIC_ASSETS))
+  );
   self.skipWaiting();
 });
 
-self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(keys =>
-    Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-  ));
+// ── Activate : suppression des anciens caches ──
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(
+        keys
+          .filter(k => k !== CACHE)
+          .map(k => {
+            console.log('[SW] Suppression ancien cache :', k);
+            return caches.delete(k);
+          })
+      )
+    )
+  );
   self.clients.claim();
 });
 
-self.addEventListener('fetch', e => {
-  if (e.request.url.includes('supabase.co')) return;
-  e.respondWith(
-    fetch(e.request).catch(() => caches.match(e.request))
+// ── Fetch : stratégie adaptée selon le type de ressource ──
+self.addEventListener('fetch', event => {
+  const url = new URL(event.request.url);
+
+  // Supabase : toujours réseau (données en temps réel — ne jamais cacher)
+  if (url.hostname.includes('supabase.co')) return;
+
+  // Google Fonts (CSS et polices .woff2) : cache-first avec fallback réseau
+  // FIX #8 : capture des polices au premier chargement pour le mode hors-ligne
+  if (
+    url.hostname === 'fonts.googleapis.com' ||
+    url.hostname === 'fonts.gstatic.com'
+  ) {
+    event.respondWith(
+      caches.open(CACHE).then(cache =>
+        cache.match(event.request).then(cached => {
+          if (cached) return cached;
+          return fetch(event.request).then(response => {
+            // Ne cacher que les réponses valides
+            if (response && response.status === 200) {
+              cache.put(event.request, response.clone());
+            }
+            return response;
+          });
+        })
+      )
+    );
+    return;
+  }
+
+  // Autres ressources : réseau d'abord, cache en fallback hors-ligne
+  event.respondWith(
+    fetch(event.request).catch(() => caches.match(event.request))
   );
 });
