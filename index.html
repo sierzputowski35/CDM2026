@@ -8,11 +8,32 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="CDM 2026">
 <meta name="theme-color" content="#0a0e1a">
-<title>World Cup 2026 — Pronostics</title>
-<link rel="manifest" href="manifest.json">
+<title>CDM 2026 — Pronostics</title>
+<!-- manifest uniquement en prod - injecté sans document.write -->
+<script>
+(function(){
+  if(location.protocol!=='file:' && location.hostname!=='localhost'){
+    var l=document.createElement('link');
+    l.rel='manifest'; l.href='manifest.json';
+    document.head.appendChild(l);
+  }
+})();
+</script>
 <link rel="apple-touch-icon" href="icon-192.png">
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" onerror="this.remove()">
+<style>
+/* Fallback si Google Fonts indisponible (local / offline) */
+@font-face {
+  font-family: 'Bebas Neue';
+  src: local('Impact'), local('Arial Narrow');
+  font-weight: 400;
+}
+</style>
+<script>
+window._IS_LOCAL = location.protocol === 'file:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+// En local : on ne charge PAS le SDK Supabase du tout (pas même via script dynamique)
+// L'init() sera appelé depuis le DOMContentLoaded en bas de page
+</script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
@@ -180,25 +201,121 @@ body {
 .header-rank { font-size: 10px; color: var(--gold); font-weight: 600; letter-spacing: .03em; }
 
 /* ══════════════════════════════════
-   NAV
+   NAV — Bottom Nav CDM 2026
 ══════════════════════════════════ */
-.nav-bar {
+
+/* La .nav originale devient la bottom bar */
+.nav {
+  position: fixed !important;
+  bottom: 0; left: 0; right: 0;
+  z-index: 200;
+  background: rgba(6,8,15,0.97);
+  border-top: 1px solid rgba(255,215,0,0.18);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  padding: 0 4px env(safe-area-inset-bottom, 0px);
+  display: flex !important;
+  height: 68px;
+  overflow: visible !important;
+  box-shadow: 0 -4px 24px rgba(0,0,0,0.6);
+}
+
+/* Les boutons nav — cachés visuellement, remplacés par contenu SVG */
+.nav-btn {
+  flex: 1;
+  padding: 0;
+  background: none;
+  border: none;
+  border-bottom: none !important;
+  color: var(--text3);
+  font-family: 'Inter', sans-serif;
+  font-size: 8px; font-weight: 700;
+  letter-spacing: .06em; text-transform: uppercase;
+  cursor: pointer;
+  transition: all .18s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border-radius: 12px;
+  margin: 5px 2px;
+  position: relative;
+  white-space: nowrap;
+  overflow: visible;
+}
+
+.nav-btn .nav-icon-svg {
+  display: block;
+  width: 26px; height: 26px;
+  flex-shrink: 0;
+}
+
+/* état actif : fond gold translucide + bordure top gold */
+.nav-btn.active {
+  color: var(--gold) !important;
+  background: rgba(255,215,0,0.10);
+  box-shadow: inset 0 2px 0 var(--gold);
+  border-bottom: none !important;
+}
+
+/* Badges de notification sur les nav items */
+.nav-badge {
+  position: absolute;
+  top: 2px; right: 2px;
+  min-width: 15px; height: 15px;
+  border-radius: 8px;
+  background: var(--red);
+  color: #fff;
+  font-size: 8px; font-weight: 900;
+  display: flex; align-items: center; justify-content: center;
+  border: 1.5px solid var(--bg);
+  padding: 0 3px;
+  pointer-events: none;
+}
+.nav-badge.green-dot {
+  width: 8px; height: 8px; min-width: 8px;
+  background: var(--green);
+  top: 4px; right: 4px;
+  border-radius: 50%;
+}
+
+/* masquer le texte des boutons nav par défaut – sera remplacé par spans dédiés */
+.nav-btn-label {
+  font-size: 8px; font-weight: 700; letter-spacing: .05em;
+  text-transform: uppercase; line-height: 1;
+}
+
+/* ── admin nav reste en haut ── */
+#admin-app-screen .nav {
+  position: static !important;
+  height: auto;
   background: rgba(6,8,15,0.95);
+  border-top: none;
   border-bottom: 1px solid var(--border);
   padding: 0 8px;
-  display: flex; overflow-x: auto; scrollbar-width: none; gap: 0;
+  overflow-x: auto;
+  box-shadow: none;
+  backdrop-filter: none;
 }
-.nav-bar::-webkit-scrollbar { display: none; }
-.nav-btn {
-  flex: 1; min-width: 68px; padding: 13px 6px;
-  background: none; border: none; border-bottom: 2px solid transparent;
-  color: var(--text3);
-  font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 600;
-  letter-spacing: .08em; text-transform: uppercase;
-  cursor: pointer; transition: all .2s; white-space: nowrap;
+#admin-app-screen .nav-btn {
+  flex-direction: row;
+  gap: 0;
+  font-size: 10px;
+  padding: 13px 6px;
+  border-radius: 0;
+  margin: 0;
+  min-width: 68px;
+  border-bottom: 2px solid transparent;
 }
-.nav-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
-.nav-btn:hover { color: var(--text2); }
+#admin-app-screen .nav-btn .nav-icon-svg,
+#admin-app-screen .nav-btn .nav-badge { display: none; }
+#admin-app-screen .nav-btn.active {
+  background: none;
+  box-shadow: none;
+  border-bottom: 2px solid var(--gold) !important;
+  color: var(--gold) !important;
+}
 
 /* ══════════════════════════════════
    PAGES
@@ -796,11 +913,149 @@ body {
 }
 .field input::placeholder { color: var(--text3); }
 
+/* ══════════════════════════════════
+   HEADER — CDM 2026 Premium
+══════════════════════════════════ */
+.header {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(6,8,15,0.95);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1px solid rgba(255,215,0,0.15);
+  padding: 8px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.5);
+}
+
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-flags { display: flex; align-items: center; }
+.logo-text {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px; letter-spacing: 3px;
+  background: linear-gradient(90deg, var(--gold), var(--gold2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.logo-sub {
+  font-size: 10px; font-weight: 500;
+  color: var(--text3); letter-spacing: .5px;
+  -webkit-text-fill-color: var(--text3);
+  display: flex; align-items: center;
+}
+
+/* XP bar under header — optionnel, activé par JS */
+.header-xp-bar {
+  height: 2px;
+  background: rgba(255,255,255,0.06);
+  position: relative; overflow: hidden;
+}
+.header-xp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #C99812, #FFD700, #FFCC33);
+  transition: width .6s ease;
+}
+
+/* Bouton déconnexion restyled */
+.btn-sm {
+  padding: 6px 14px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text3);
+  font-family: 'Bebas Neue', sans-serif; font-size: 12px; letter-spacing: 1px;
+  cursor: pointer; border-radius: 8px; transition: all .15s;
+}
+.btn-sm:hover { border-color: rgba(255,215,0,.3); color: var(--gold); }
+
+/* ══════════════════════════════════
+   CDM 2026 DESIGN SYSTEM TOKENS
+══════════════════════════════════ */
+
+/* Palette enrichie */
+:root {
+  --gold-glow: rgba(255,215,0,0.25);
+  --card-border-gold: rgba(255,215,0,0.18);
+}
+
+/* Cards premium */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-lg);
+  padding: 14px; margin-bottom: 12px;
+  position: relative; overflow: hidden;
+}
+.card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,215,0,0.15), transparent);
+}
+
+/* Match cards — glow au hover */
+.match-card:hover {
+  border-color: rgba(255,215,0,0.25);
+  box-shadow: 0 4px 20px rgba(255,215,0,0.06);
+}
+
+/* Ranking rows — micro-glow */
+.ranking-row.me {
+  border-color: rgba(255,215,0,.35);
+  background: linear-gradient(135deg, rgba(255,215,0,.08), transparent);
+  box-shadow: 0 2px 16px rgba(255,215,0,0.08);
+}
+
+/* Podium — glow renforcé */
+.podium-avatar.p1 {
+  box-shadow: 0 0 28px rgba(255,215,0,.55), 0 0 60px rgba(255,215,0,.18);
+}
+
+/* Score inputs — premium feel */
+.score-inp {
+  background: rgba(20,25,38,0.9);
+  border: 1px solid rgba(255,255,255,0.1);
+  transition: all .18s;
+}
+.score-inp:focus {
+  border-color: rgba(255,215,0,.5);
+  box-shadow: 0 0 0 3px rgba(255,215,0,.1);
+  background: rgba(30,35,50,0.95);
+}
+
+/* Toast repositionné au-dessus de la bottom nav */
+.toast {
+  bottom: 80px !important;
+}
+
+/* PWA banner — doit s'afficher au-dessus de la bottom nav */
+.pwa-banner {
+  bottom: 68px;
+  z-index: 250 !important;
+}
+
+/* Stripe tricolore enrichie */
+.stripe {
+  height: 3px;
+  background: linear-gradient(90deg, #E5002B, #FFD700, #00A8FF);
+  border-radius: 3px; margin-bottom: 18px;
+  box-shadow: 0 1px 8px rgba(255,215,0,0.15);
+}
+
+/* Section titles upgrade */
+.section-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 26px; letter-spacing: 3px;
+  color: var(--text); margin-bottom: 2px;
+  text-shadow: 0 0 20px rgba(255,215,0,0.1);
+}
+
+/* Scrollbar premium */
+::-webkit-scrollbar { width: 3px; height: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,215,0,0.2); border-radius: 3px; }
+
 @media(max-width:380px) {
   .stats-grid { grid-template-columns: repeat(2,1fr); }
   .podium-avatar.p1 { width: 50px; height: 50px; }
 }
-</style>
+
 </head>
 <body>
 
@@ -932,23 +1187,170 @@ body {
 
 <!-- ══ APP JOUEUR ══ -->
 <div id="app-screen" class="hidden">
+  <!-- Header CDM 2026 Premium -->
   <div class="header">
     <div class="logo">
-      <div class="logo-flags"><img src="icon-192.png" alt="" style="width:32px;height:32px;border-radius:9px;display:block" onerror="this.outerHTML='🏆'"></div>
+      <div class="logo-flags">
+        <!-- Logo app CDM avec icône trophée SVG inline -->
+        <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,rgba(255,215,0,0.15),rgba(255,165,0,0.08));border:1px solid rgba(255,215,0,0.25);display:flex;align-items:center;justify-content:center;overflow:hidden">
+          <img src="icon-192.png" alt="CDM" style="width:34px;height:34px;border-radius:9px;display:block" onerror="this.outerHTML='<svg viewBox=\'0 0 24 24\' width=\'22\' height=\'22\' fill=\'none\'><polygon points=\'12,1 10,6 7,4 8.5,7 12,5.5 15.5,7 17,4 14,6\' fill=\'#FFD700\'/><path d=\'M5 7 Q4 12 6.5 15.5 Q9 19 12 19 Q15 19 17.5 15.5 Q20 12 19 7 Z\' fill=\'#FFD700\'/><path d=\'M5 8 Q3 8 3 11 Q3 14 5 13\' stroke=\'#FFD700\' stroke-width=\'1.5\' fill=\'none\'/><path d=\'M19 8 Q21 8 21 11 Q21 14 19 13\' stroke=\'#FFD700\' stroke-width=\'1.5\' fill=\'none\'/><rect x=\'10.5\' y=\'19\' width=\'3\' height=\'3\' fill=\'#FFD700\'/><rect x=\'8\' y=\'22\' width=\'8\' height=\'2.5\' rx=\'1.2\' fill=\'#FFD700\'/></svg>'">
+        </div>
+      </div>
       <div>
-        <div class="logo-text">UNITED 2026</div>
+        <div class="logo-text">CDM 2026</div>
         <div class="logo-sub"><span class="sync-dot"></span><span id="header-pseudo"></span></div>
       </div>
     </div>
-    <button class="btn-sm" onclick="logout()">Déconnexion</button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <!-- Avatar joueur + rang -->
+      <div id="header-avatar" style="width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:14px;color:var(--bg);flex-shrink:0;border:1.5px solid rgba(255,215,0,0.3);cursor:pointer" onclick="openAvatarModal()" title="Mon profil"></div>
+      <div>
+        <div id="header-rank" style="font-size:10px;color:var(--gold);font-weight:700;letter-spacing:.03em"></div>
+      </div>
+      <button class="btn-sm" onclick="logout()">✕</button>
+    </div>
   </div>
+  <!-- Bottom Nav CDM 2026 — icônes SVG fidèles aux assets du projet -->
   <div class="nav">
-    <button class="nav-btn active" onclick="showPage('matchs',this)">⚡ Matchs</button>
-    <button class="nav-btn" onclick="showPage('globaux',this)">🎯 Globaux</button>
-    <button class="nav-btn" onclick="showPage('classement',this)">🏆 Classement</button>
-    <button class="nav-btn" onclick="showPage('groupes',this)">🌍 Groupes</button>
-    <button class="nav-btn" onclick="showPage('social',this)">💬 Social</button>
-    <button class="nav-btn" onclick="showPage('cagnotte',this)">💰 Cagnotte</button>
+
+    <!-- MATCHS : Éclair + ballon football -->
+    <button class="nav-btn active" onclick="showPage('matchs',this)" title="Matchs">
+      <svg class="nav-icon-svg" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="ni-matchs-g" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="currentColor"/>
+            <stop offset="100%" stop-color="currentColor"/>
+          </linearGradient>
+        </defs>
+        <!-- ballon de foot -->
+        <circle cx="16" cy="17" r="8" fill="#111827" stroke="currentColor" stroke-width="1.2"/>
+        <polygon points="16,11.5 18.5,14 17.8,17.5 14.2,17.5 13.5,14" fill="rgba(0,0,0,0.4)" stroke="currentColor" stroke-width="0.6"/>
+        <polygon points="21,13.5 23.5,16 22,19.5 19.5,19 19,15.5" fill="rgba(0,0,0,0.3)" stroke="currentColor" stroke-width="0.5"/>
+        <polygon points="11,13 13.5,11.5 16,13 15,17 11.5,17" fill="rgba(0,0,0,0.3)" stroke="currentColor" stroke-width="0.5"/>
+        <!-- éclair -->
+        <polygon points="14.5,2 9.5,12 13.5,12 11,22 20.5,9 16,9" fill="currentColor"/>
+        <polygon points="14.5,3.5 10.5,12 14,12 12,19.5 19,10 15.5,10" fill="rgba(0,0,0,0.2)"/>
+      </svg>
+      <span class="nav-btn-label">Matchs</span>
+    </button>
+
+    <!-- GLOBAUX : Cible avec globe -->
+    <button class="nav-btn" onclick="showPage('globaux',this)" title="Pronostics globaux">
+      <svg class="nav-icon-svg" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- globe -->
+        <circle cx="13" cy="13" r="10" stroke="currentColor" stroke-width="1.4" fill="none"/>
+        <!-- méridiens -->
+        <path d="M13 3 C13 3 9 8 9 13 C9 18 13 23 13 23" stroke="currentColor" stroke-width="1" fill="none"/>
+        <path d="M13 3 C13 3 17 8 17 13 C17 18 13 23 13 23" stroke="currentColor" stroke-width="1" fill="none"/>
+        <!-- parallèles -->
+        <path d="M3.5 10 Q13 8 22.5 10" stroke="currentColor" stroke-width="1" fill="none"/>
+        <path d="M3.5 16 Q13 18 22.5 16" stroke="currentColor" stroke-width="1" fill="none"/>
+        <!-- flèche cible -->
+        <line x1="19" y1="7" x2="15" y2="11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <polygon points="19,5 22,7 20,10 17,8" fill="currentColor"/>
+      </svg>
+      <span class="nav-btn-label">Globaux</span>
+    </button>
+
+    <!-- CLASSEMENT : Trophée CDM avec couronne — icône centrale surélevée -->
+    <button class="nav-btn" onclick="showPage('classement',this)" title="Classement" style="margin-top:-10px;">
+      <svg class="nav-icon-svg" viewBox="0 0 32 34" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:32px;height:34px;">
+        <defs>
+          <linearGradient id="trophee-g" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="currentColor" stop-opacity="1"/>
+            <stop offset="100%" stop-color="currentColor" stop-opacity="0.7"/>
+          </linearGradient>
+        </defs>
+        <!-- couronne -->
+        <polygon points="16,1 14,6.5 11,4 12.5,7.5 16,5.5 19.5,7.5 21,4 18,6.5" fill="currentColor"/>
+        <!-- coupe -->
+        <path d="M7 9 Q6 15.5 8.5 19.5 Q11 23 16 23 Q21 23 23.5 19.5 Q26 15.5 25 9 Z" fill="currentColor"/>
+        <path d="M8.5 9 Q7.5 14.5 9.8 18 Q12 21 16 21 Q20 21 22.2 18 Q24.5 14.5 23.5 9 Z" fill="rgba(0,0,0,0.25)"/>
+        <!-- highlight interne -->
+        <path d="M9.5 10.5 Q9 14 11 17" stroke="rgba(255,255,255,0.2)" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+        <!-- anses -->
+        <path d="M7 10 Q2 10 2 14.5 Q2 19 7 17.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <path d="M25 10 Q30 10 30 14.5 Q30 19 25 17.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <!-- tige -->
+        <rect x="14" y="23" width="4" height="4" fill="currentColor"/>
+        <rect x="11.5" y="26.5" width="9" height="2.5" rx="1" fill="currentColor"/>
+        <!-- socle -->
+        <rect x="8" y="29" width="16" height="4" rx="2" fill="currentColor"/>
+        <rect x="8" y="29" width="16" height="2" rx="2" fill="rgba(255,255,255,0.15)"/>
+      </svg>
+      <span class="nav-btn-label">Classement</span>
+    </button>
+
+    <!-- GROUPES : Stade isométrique -->
+    <button class="nav-btn" onclick="showPage('groupes',this)" title="Groupes">
+      <svg class="nav-icon-svg" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- stade oval isométrique -->
+        <ellipse cx="13" cy="17" rx="11" ry="6" fill="currentColor" opacity="0.15"/>
+        <ellipse cx="13" cy="15.5" rx="11" ry="6" fill="none" stroke="currentColor" stroke-width="1.2"/>
+        <!-- pelouse intérieure -->
+        <ellipse cx="13" cy="15.5" rx="7" ry="3.8" fill="#1a4a1a" stroke="currentColor" stroke-width="0.8" opacity="0.9"/>
+        <ellipse cx="13" cy="15.5" rx="3.5" ry="1.8" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.7"/>
+        <line x1="13" y1="11.7" x2="13" y2="19.3" stroke="currentColor" stroke-width="0.5" opacity="0.7"/>
+        <!-- gradins latéraux -->
+        <path d="M2 15.5 L2 18 Q13 23 24 18 L24 15.5" fill="currentColor" opacity="0.2"/>
+        <path d="M2 15.5 Q13 20 24 15.5" stroke="currentColor" stroke-width="0.6" fill="none" opacity="0.5"/>
+        <!-- lumières -->
+        <circle cx="4.5" cy="12" r="1.2" fill="currentColor"/>
+        <circle cx="21.5" cy="12" r="1.2" fill="currentColor"/>
+        <circle cx="8" cy="10.5" r="0.9" fill="currentColor" opacity="0.7"/>
+        <circle cx="18" cy="10.5" r="0.9" fill="currentColor" opacity="0.7"/>
+        <!-- mâts -->
+        <line x1="4.5" y1="12" x2="4.5" y2="8" stroke="currentColor" stroke-width="1" opacity="0.6"/>
+        <line x1="21.5" y1="12" x2="21.5" y2="8" stroke="currentColor" stroke-width="1" opacity="0.6"/>
+      </svg>
+      <span class="nav-btn-label">Groupes</span>
+    </button>
+
+    <!-- SOCIAL : Bulle chat + 3 dots -->
+    <button class="nav-btn" onclick="showPage('social',this)" title="Social">
+      <div class="nav-badge green-dot"></div>
+      <svg class="nav-icon-svg" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="ni-club-g" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="currentColor"/>
+            <stop offset="100%" stop-color="currentColor" stop-opacity="0.7"/>
+          </linearGradient>
+        </defs>
+        <!-- corps de la bulle — style ton image : large, arrondie -->
+        <rect x="2" y="3" width="20" height="14" rx="5" fill="currentColor"/>
+        <rect x="2" y="3" width="20" height="14" rx="5" fill="rgba(0,0,0,0.15)"/>
+        <!-- queue de la bulle en bas-gauche -->
+        <path d="M6 17 L3 23 L12 17 Z" fill="currentColor"/>
+        <!-- 3 dots noirs -->
+        <circle cx="9" cy="10" r="1.8" fill="var(--bg)"/>
+        <circle cx="13" cy="10" r="1.8" fill="var(--bg)"/>
+        <circle cx="17" cy="10" r="1.8" fill="var(--bg)"/>
+        <!-- highlight -->
+        <path d="M4 5 Q13 4 21 5" stroke="rgba(255,255,255,0.2)" stroke-width="0.8" fill="none" stroke-linecap="round"/>
+      </svg>
+      <span class="nav-btn-label">Social</span>
+    </button>
+
+    <!-- CAGNOTTE : Pile de pièces avec flèche haussière -->
+    <button class="nav-btn" onclick="showPage('cagnotte',this)" title="Cagnotte">
+      <svg class="nav-icon-svg" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- pièces empilées -->
+        <ellipse cx="12" cy="20" rx="7" ry="2.5" fill="currentColor" opacity="0.4"/>
+        <ellipse cx="12" cy="18" rx="7" ry="2.5" fill="currentColor" opacity="0.6"/>
+        <rect x="5" y="15" width="14" height="3" fill="currentColor" opacity="0.7"/>
+        <ellipse cx="12" cy="15" rx="7" ry="2.5" fill="currentColor"/>
+        <ellipse cx="12" cy="15" rx="5" ry="1.7" fill="rgba(0,0,0,0.2)"/>
+        <text x="12" y="16" text-anchor="middle" font-size="5" font-weight="900" fill="var(--bg)" font-family="Arial">€</text>
+        <!-- flèche haussière -->
+        <path d="M17 11 L20 8 L23 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+        <polygon points="23,4 26,7 22,8" fill="currentColor"/>
+        <!-- petite flèche verte -->
+        <circle cx="21" cy="6" r="2.5" fill="var(--green)" opacity="0.9"/>
+        <path d="M20 7 L21 5.5 L22 7" stroke="white" stroke-width="0.8" fill="none" stroke-linecap="round"/>
+      </svg>
+      <span class="nav-btn-label">Cagnotte</span>
+    </button>
+
   </div>
   <div class="main">
     <div id="page-classement" class="page">
@@ -1105,11 +1507,46 @@ body {
 
 <script>
 // ══════════════════════════════════════════
-// SUPABASE
+// SUPABASE + MODE LOCAL
 // ══════════════════════════════════════════
 const SUPABASE_URL = 'https://hqhosgwebucwtqtnlbqg.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_O1tjA5w5G9jBQni9vA2wZg_NBKEu2jj';
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const IS_LOCAL = window._IS_LOCAL || false;
+
+// Stub Supabase pour le mode local — aucun appel réseau, aucune iframe
+const _sbStub = {
+  from: () => ({
+    select: ()  => Promise.resolve({data:[],error:null}),
+    insert: ()  => Promise.resolve({data:null,error:null}),
+    update: ()  => ({eq: () => Promise.resolve({data:null,error:null})}),
+    delete: ()  => ({eq: () => Promise.resolve({data:null,error:null})}),
+    upsert: ()  => Promise.resolve({data:null,error:null}),
+    order:  (c,o) => ({ limit: () => Promise.resolve({data:[],error:null}) }),
+  }),
+  channel: () => ({ on: function(){ return this; }, subscribe: function(){ return this; } })
+};
+
+let sb; // sera défini ci-dessous
+
+if (IS_LOCAL) {
+  // Pas de SDK, pas d'iframe, pas de réseau — tout en mémoire
+  sb = _sbStub;
+  document.addEventListener('DOMContentLoaded', () => init());
+} else {
+  // Charger le SDK Supabase dynamiquement, PUIS lancer init()
+  const s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+  s.onload = () => {
+    sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    init();
+  };
+  s.onerror = () => {
+    // Fallback si CDN inaccessible (mauvaise connexion) : mode stub
+    sb = _sbStub;
+    init();
+  };
+  document.head.appendChild(s);
+}
 
 const ADMIN_PASSWORD = 'cdm2026admin';
 const MISE = 10;
@@ -1163,6 +1600,12 @@ function selectAvatar(emoji) {
 
 async function saveAvatar() {
   if (!pendingAvatar) { document.getElementById('avatar-modal').classList.add('hidden'); return; }
+  if(IS_LOCAL){
+    const joueur=allJoueurs.find(j=>j.id===currentUser);
+    if(joueur) joueur.avatar=pendingAvatar;
+    document.getElementById('avatar-modal').classList.add('hidden');
+    showToast('Avatar mis à jour !'); updateHeaderUser(); return;
+  }
   const { error } = await sb.from('joueurs').update({ avatar: pendingAvatar }).eq('id', currentUser);
   if (error) { showToast('Erreur lors de la sauvegarde'); return; }
   await loadData();
@@ -1552,7 +1995,32 @@ const GLOBAUX_DEF = [
 // ══ STATE ══
 let currentUser=null,isAdmin=false,allJoueurs=[],allScores={},allGlobaux={};
 
+// ── MODE DÉMO (file:// ou offline) ────────────────────────────
+// IS_LOCAL déjà défini plus haut via window._IS_LOCAL
+
+function loadDemoData(){
+  allJoueurs=[
+    {id:'MEHDI-demo',  pseudo:'MEHDI',  code:'demo', paid:true, avatar:'⚽', pronostics:{}, globaux:{}},
+    {id:'KARIM-demo',  pseudo:'KARIM',  code:'demo', paid:true, avatar:'🏆', pronostics:{}, globaux:{}},
+    {id:'SARAH-demo',  pseudo:'SARAH',  code:'demo', paid:true, avatar:'🔥', pronostics:{}, globaux:{}},
+    {id:'NASSER-demo', pseudo:'NASSER', code:'demo', paid:true, avatar:'⚡', pronostics:{}, globaux:{}},
+    {id:'LEO-demo',    pseudo:'LEO',    code:'demo', paid:true, avatar:'🎯', pronostics:{}, globaux:{}},
+  ];
+  allScores={};
+  allGlobaux={};
+}
+
 async function init(){
+  if(IS_LOCAL){
+    loadDemoData();
+    hide('loading');
+    const u=localStorage.getItem('cdm2026_user');
+    const a=localStorage.getItem('cdm2026_admin');
+    if(a==='true'){ isAdmin=true; openAdminApp(); }
+    else if(u && allJoueurs.find(j=>j.id===u)){ currentUser=u; openApp(); }
+    else { showLoginScreen(); }
+    return;
+  }
   try{
     await loadData();
     hide('loading');
@@ -1561,12 +2029,10 @@ async function init(){
     if(a==='true'){
       isAdmin=true;openAdminApp();
     } else if(u){
-      // Vérifier que le joueur existe encore en base
       const joueurExiste=allJoueurs.find(j=>j.id===u);
       if(joueurExiste){
         currentUser=u;openApp();
       } else {
-        // Joueur supprimé ou base réinitialisée
         localStorage.removeItem('cdm2026_user');
         showLoginScreen();
         showToast('Session expirée, reconnecte-toi avec ton code');
@@ -1626,6 +2092,25 @@ async function doLogin(){
   if(pwd.length<4){showToast('Mot de passe trop court (min 4 caractères)');return;}
   const btn=document.getElementById('login-btn');
   btn.disabled=true;btn.textContent='Connexion...';
+
+  // Mode local / demo : login sans Supabase
+  if(IS_LOCAL){
+    const existing=allJoueurs.find(j=>j.pseudo.toUpperCase()===pseudo);
+    if(existing){
+      currentUser=existing.id;
+      localStorage.setItem('cdm2026_user',existing.id);
+      btn.disabled=false;btn.textContent='Rejoindre le tournoi ⚽';
+      openApp();return;
+    }
+    // Créer joueur local
+    const newId=pseudo+'-'+Date.now();
+    const newJ={id:newId,pseudo,code:pwd,paid:false,avatar:'⚽',pronostics:{},globaux:{}};
+    allJoueurs.push(newJ);
+    currentUser=newId;localStorage.setItem('cdm2026_user',newId);
+    btn.disabled=false;btn.textContent='Rejoindre le tournoi ⚽';
+    openApp();return;
+  }
+
   // Chercher le joueur par pseudo
   const joueurExistant=allJoueurs.find(j=>j.pseudo.toUpperCase()===pseudo);
   if(joueurExistant){
@@ -2047,6 +2532,15 @@ async function savePronostic(id){
   btn.disabled=true;btn.textContent='Sauvegarde...';
   const joueur=allJoueurs.find(j=>j.id===currentUser);
   const newProg={...(joueur?.pronostics||{}),[id]:{s1,s2}};
+  if(IS_LOCAL){
+    // Sauvegarder localement sans Supabase
+    joueur.pronostics=newProg;
+    const stored=JSON.parse(localStorage.getItem('cdm2026_pronostics')||'{}');
+    stored[currentUser]=newProg;
+    localStorage.setItem('cdm2026_pronostics',JSON.stringify(stored));
+    btn.classList.add('saved');btn.textContent='✓ Enregistré';
+    btn.disabled=false;showToast('Pronostic sauvegardé localement !');return;
+  }
   const{error}=await sb.from('joueurs').update({pronostics:newProg}).eq('id',currentUser);
   if(error){showToast('Erreur');btn.disabled=false;btn.textContent='Enregistrer ce pronostic';return;}
   await loadData();btn.classList.add('saved');btn.textContent='✓ Enregistré';showToast('Pronostic sauvegardé !');
@@ -2108,6 +2602,10 @@ async function saveGlobaux(){
     const inp=document.getElementById('gi-'+g.id);
     if(inp) newGlob[g.id]=inp.value.trim();
   });
+  if(IS_LOCAL){
+    joueur.globaux=newGlob;
+    showToast('Pronostics globaux enregistrés localement !');renderGlobaux();return;
+  }
   const{error}=await sb.from('joueurs').update({globaux:newGlob}).eq('id',currentUser);
   if(error){showToast('Erreur');return;}
   await loadData();showToast('Pronostics globaux enregistrés !');renderGlobaux();
@@ -2407,6 +2905,13 @@ async function sendMessage(){
   const joueur=allJoueurs.find(j=>j.id===currentUser);
   const pseudo=joueur?joueur.pseudo:'?';
   input.value='';
+  if(IS_LOCAL){
+    // Simuler le message localement
+    const fakeMsg={id:Date.now(),user_id:currentUser,pseudo,content,created_at:new Date().toISOString()};
+    allMessages=[...allMessages,fakeMsg];
+    if(document.getElementById('chat-messages')) renderChat();
+    return;
+  }
   const{error}=await sb.from('messages').insert({
     user_id:currentUser,
     pseudo:pseudo,
@@ -3047,10 +3552,11 @@ function closePwaModal() {
 
 initPWA();
 
-init();
+// init() est maintenant appelé par le chargement du SDK Supabase (onload)
+// ou par DOMContentLoaded en mode local — ne pas appeler ici
 
 // PWA Service Worker
-if ('serviceWorker' in navigator) {
+if ('serviceWorker' in navigator && !IS_LOCAL) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').catch(() => {});
   });
