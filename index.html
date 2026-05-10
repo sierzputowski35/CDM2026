@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>CDM 2026 - ESPORT PREMIUM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-primary: #050816;
+            --bg-secondary: #0B1020;
+            --bg-card: #111827;
+            --gold: #F4C542;
+            --gold-light: #FFD970;
+            --emerald: #22D16B;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-primary);
+            color: white;
+            margin: 0; padding-bottom: 100px;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .bebas { font-family: 'Bebas Neue', cursive; }
+
+        /* --- CARTE MATCH AAA --- */
+        .match-card {
+            background: linear-gradient(180deg, #1A2235 0%, #111827 100%);
+            border-radius: 20px;
+            border: 1px solid rgba(244, 197, 66, 0.2);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.05);
+            transition: transform 0.1s ease;
+        }
+        .match-card:active { transform: scale(0.97); }
+
+        /* --- SCORE BADGE --- */
+        .score-badge {
+            background: #050816;
+            border: 2px solid var(--gold);
+            border-radius: 12px;
+            padding: 4px 12px;
+            font-family: 'Bebas Neue';
+            font-size: 1.5rem;
+            color: var(--gold-light);
+            box-shadow: 0 0 15px rgba(244,197,66,0.2);
+        }
+
+        /* --- PROGRESS BAR --- */
+        .xp-bar {
+            height: 10px;
+            background: #1A2235;
+            border-radius: 5px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .xp-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--emerald), #a2ffc8);
+            box-shadow: 0 0 10px var(--emerald);
+            transition: width 0.5s ease-out;
+        }
+
+        /* --- BOTTOM NAV --- */
+        .nav-bar {
+            position: fixed; bottom: 0; width: 100%;
+            background: rgba(11, 16, 32, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(244, 197, 66, 0.3);
+            display: flex; justify-content: space-around;
+            padding: 12px 0 25px 0; z-index: 1000;
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center;
+            color: #718096; font-size: 10px; font-weight: bold;
+        }
+        .nav-item.active { color: var(--gold); }
+        .nav-item img { width: 28px; height: 28px; margin-bottom: 4px; filter: grayscale(1); opacity: 0.6; }
+        .nav-item.active img { filter: grayscale(0); opacity: 1; drop-shadow: 0 0 5px var(--gold); }
+
+        .btn-gold {
+            background: linear-gradient(180deg, var(--gold-light), var(--gold));
+            color: black; font-weight: 800; border-radius: 12px;
+            box-shadow: 0 4px 0 #B38B2D; transition: all 0.1s;
+        }
+        .btn-gold:active { transform: translateY(2px); box-shadow: 0 2px 0 #B38B2D; }
+    </style>
+</head>
+<body>
+
+    <header class="p-4 flex justify-between items-center sticky top-0 bg-[#050816]/80 backdrop-blur-md z-50">
+        <div class="flex items-center gap-3">
+            <div class="relative">
+                <img id="user-avatar" src="https://api.dicebear.com/8.x/avataaars/svg?seed=Player" class="w-10 h-10 rounded-full border-2 border-gold">
+                <div class="absolute -bottom-1 -right-1 bg-gold text-black text-[10px] font-black px-1 rounded-full">LV.1</div>
+            </div>
+            <div>
+                <div id="user-name" class="text-xs font-bold text-gray-400">Joueur</div>
+                <div class="xp-bar w-24 mt-1"><div class="xp-fill" style="width: 30%"></div></div>
+            </div>
+        </div>
+        <div class="flex items-center gap-2 bg-[#1A2235] px-3 py-1 rounded-full border border-white/10">
+            <img src="assets/icons/ui_cagnotte.png" class="w-4 h-4" onerror="this.src='💰'">
+            <span id="user-points" class="text-gold font-black text-sm">0</span>
+        </div>
+    </header>
+
+    <main id="app-content" class="p-4">
+        <div id="loading" class="text-center py-20">
+            <div class="animate-spin text-gold text-4xl mb-4 bebas">Chargement...</div>
+        </div>
+    </main>
+
+    <nav class="nav-bar">
+        <button onclick="showPage('home')" class="nav-item active" id="nav-home">
+            <img src="assets/icons/icon_home.png" onerror="this.src='🏠'">
+            <span>HOME</span>
+        </button>
+        <button onclick="showPage('matches')" class="nav-item" id="nav-matches">
+            <img src="assets/icons/icon_matchs.png" onerror="this.src='⚽'">
+            <span>MATCHS</span>
+        </button>
+        <button onclick="showPage('rank')" class="nav-item" id="nav-rank">
+            <img src="assets/icons/league_or.png" onerror="this.src='🏆'">
+            <span>LEAGUE</span>
+        </button>
+        <button onclick="showPage('club')" class="nav-item" id="nav-club">
+            <img src="assets/icons/icon_club.png" onerror="this.src='💬'">
+            <span>CLUB</span>
+        </button>
+    </nav>
+
+    <div id="modal-prono" class="fixed inset-0 bg-black/90 z-[2000] hidden flex items-center justify-center p-6">
+        <div class="match-card w-full max-w-sm p-6 text-center">
+            <h2 class="bebas text-2xl text-gold mb-6">VOTRE PRONOSTIC</h2>
+            <div id="modal-content"></div>
+            <button onclick="closeModal()" class="mt-6 text-gray-500 font-bold">ANNULER</button>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION SUPABASE (A REMPLIR) ---
+        const SUPABASE_URL = "TA_URL_ICI";
+        const SUPABASE_KEY = "TA_KEY_ICI";
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // --- CONSTANTES MATCHS (TES DONNÉES) ---
+        const MATCHS = [
+            { id: 'm1', team1: 'France', t1: 'FR', team2: 'Brésil', t2: 'BR', phase: 'Finale' },
+            { id: 'm2', team1: 'Espagne', t1: 'ES', team2: 'Argentine', t2: 'AR', phase: 'Demi-Finale' }
+            // Ajoute ici tous tes matchs comme dans ton fichier original
+        ];
+
+        let currentUser = null;
+        let allScores = {}; // Scores réels
+        let userPronos = {}; // Pronos du user connecté
+
+        // --- INITIALISATION ---
+        async function init() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (!user) {
+                // Logique login ici
+                console.log("Utilisateur non connecté");
+            } else {
+                currentUser = user;
+                document.getElementById('user-name').innerText = user.email.split('@')[0];
+            }
+            
+            // Simuler chargement scores
+            renderMatches();
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('nav-' + pageId).classList.add('active');
+            
+            if(pageId === 'matches') renderMatches();
+            if(pageId === 'home') renderHome();
+            // ... autres pages
+        }
+
+        // --- RENDU MATCHS (AAA STYLE) ---
+        function renderMatches() {
+            const container = document.getElementById('app-content');
+            let html = `<h1 class="bebas text-3xl mb-6 tracking-widest text-gold">MATCHS À VENIR</h1>`;
+            
+            MATCHS.forEach(m => {
+                html += `
+                <div class="match-card p-5 mb-4" onclick="openProno('${m.id}')">
+                    <div class="flex justify-between items-center">
+                        <div class="text-center w-1/3">
+                            <img src="https://flagcdn.com/w80/${m.t1.toLowerCase()}.png" class="w-12 h-8 object-cover rounded shadow-md mx-auto">
+                            <div class="text-[10px] font-bold mt-2 uppercase text-gray-400">${m.team1}</div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <div class="score-badge">VS</div>
+                            <div class="text-[9px] font-bold text-gold uppercase mt-2 tracking-tighter">${m.phase}</div>
+                        </div>
+
+                        <div class="text-center w-1/3">
+                            <img src="https://flagcdn.com/w80/${m.t2.toLowerCase()}.png" class="w-12 h-8 object-cover rounded shadow-md mx-auto">
+                            <div class="text-[10px] font-bold mt-2 uppercase text-gray-400">${m.team2}</div>
+                        </div>
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function renderHome() {
+            document.getElementById('app-content').innerHTML = `
+                <div class="aaa-card p-6 text-center mb-6" style="background: linear-gradient(45deg, #111827, #1A2235)">
+                    <img src="assets/icons/league_or.png" class="w-24 mx-auto mb-4" onerror="this.src='🏆'">
+                    <h2 class="bebas text-2xl text-gold">LIGUE OR II</h2>
+                    <p class="text-xs text-gray-400">Saison 1 : En cours</p>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="match-card p-4 text-center">
+                        <div class="text-2xl bebas">12</div>
+                        <div class="text-[10px] text-gray-400">PRONOS FAITS</div>
+                    </div>
+                    <div class="match-card p-4 text-center">
+                        <div class="text-2xl bebas text-emerald">#42</div>
+                        <div class="text-[10px] text-gray-400">RANG MONDIAL</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- MODAL LOGIC ---
+        function openProno(matchId) {
+            const m = MATCHS.find(x => x.id === matchId);
+            const modal = document.getElementById('modal-prono');
+            const content = document.getElementById('modal-content');
+            
+            content.innerHTML = `
+                <div class="flex items-center justify-center gap-4 mb-6">
+                    <div class="flex flex-col items-center">
+                        <img src="https://flagcdn.com/w80/${m.t1.toLowerCase()}.png" class="w-12 mb-2">
+                        <input type="number" id="s1" class="w-16 h-16 bg-[#050816] border-2 border-gold rounded-xl text-center text-2xl bebas text-gold focus:outline-none" value="0">
+                    </div>
+                    <div class="bebas text-2xl mt-6">-</div>
+                    <div class="flex flex-col items-center">
+                        <img src="https://flagcdn.com/w80/${m.t2.toLowerCase()}.png" class="w-12 mb-2">
+                        <input type="number" id="s2" class="w-16 h-16 bg-[#050816] border-2 border-gold rounded-xl text-center text-2xl bebas text-gold focus:outline-none" value="0">
+                    </div>
+                </div>
+                <button onclick="saveProno('${m.id}')" class="btn-gold w-full py-4 text-xl bebas">VALIDER LE PRONO</button>
+            `;
+            modal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('modal-prono').classList.add('hidden');
+        }
+
+        async function saveProno(matchId) {
+            const s1 = document.getElementById('s1').value;
+            const s2 = document.getElementById('s2').value;
+            
+            // ICI TON CODE SUPABASE ORIGINAL POUR SAUVEGARDER
+            console.log(`Saving prono for ${matchId}: ${s1}-${s2}`);
+            
+            // Effet visuel de succès
+            closeModal();
+        }
+
+        init();
+    </script>
+</body>
+</html>
