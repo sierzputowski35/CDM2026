@@ -1,4 +1,10 @@
 {
+  "crons": [
+    {
+      "path": "/api/scores",
+      "schedule": "*/5 * * * *"
+    }
+  ],
   "functions": {
     "api/scores.js": {
       "maxDuration": 30
