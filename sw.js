@@ -3,7 +3,7 @@
 // (ex: cdm2026-v2, cdm2026-v3 ...) pour forcer le rafraîchissement
 // du cache sur tous les appareils des utilisateurs.
 // ─────────────────────────────────────────────────────────────────
-const CACHE = 'cdm2026-v2';
+const CACHE = 'cdm2026-v3';
 
 // FIX #8 : Les polices Google Fonts sont maintenant mises en cache
 // pour que l'app reste belle en mode hors-ligne.
