@@ -1794,10 +1794,7 @@ body {
       <!-- 1. HEADER JOUEUR -->
       <div class="home-header">
         <div class="home-header__left">
-          <div class="player-avatar" id="home-avatar">
-            <img src="assets/avatars/default.png" alt="Avatar" width="38" height="38"
-                 onerror="this.outerHTML='<span class=\'avatar-initials-home\' id=\'home-avatar-initials\'>?</span>'">
-          </div>
+          <div class="player-avatar" id="home-avatar" onclick="openAvatarModal()" style="cursor:pointer"></div>
           <div>
             <div class="player-name-home" id="home-username">Joueur</div>
             <div class="player-xp">
@@ -3308,8 +3305,8 @@ function initHomeHeader() {
   const nameEl = document.getElementById('home-username');
   if (nameEl) nameEl.textContent = joueur.pseudo || joueur.id;
 
-  const initEl = document.getElementById('home-avatar-initials');
-  if (initEl) initEl.textContent = (joueur.pseudo || '?').charAt(0).toUpperCase();
+  const avEl = document.getElementById('home-avatar');
+  if (avEl) avEl.innerHTML = renderAvatarEl(joueur, 38, 11);
 
   const pts = calcPoints(joueur);
   const xp = pts * 10;
