@@ -1604,7 +1604,7 @@ body {
 </div>
 
 <!-- MODAL AVATAR AAA -->
-<div class="match-modal-overlay hidden" id="avatar-modal">
+<div class="match-modal-overlay hidden" id="avatar-modal" style="z-index:1100">
   <div class="match-modal-box" style="padding:0;border-radius:24px 24px 0 0;max-height:90vh;overflow:hidden;display:flex;flex-direction:column">
 
     <!-- Handle + Header -->
@@ -2253,6 +2253,42 @@ const RARITY_COLORS = {
   legendary: '#F4C542',
 };
 
+// Twemoji — images HD illustrées (standard Discord / Twitter / Slack)
+function twUrl(emoji) {
+  const cps = [...emoji]
+    .map(c => c.codePointAt(0).toString(16))
+    .filter(c => c !== 'fe0f');
+  return `https://cdn.jsdelivr.net/npm/twemoji@14.0.2/assets/72x72/${cps.join('-')}.png`;
+}
+
+const AVATAR_FLAG_BGS = [
+  { id: 'flag_fr', label: 'France',    code: 'fr',     locked: false },
+  { id: 'flag_br', label: 'Brésil',    code: 'br',     locked: false },
+  { id: 'flag_es', label: 'Espagne',   code: 'es',     locked: false },
+  { id: 'flag_ar', label: 'Argentine', code: 'ar',     locked: false },
+  { id: 'flag_pt', label: 'Portugal',  code: 'pt',     locked: false },
+  { id: 'flag_gb', label: 'Angleterre',code: 'gb-eng', locked: false },
+  { id: 'flag_ma', label: 'Maroc',     code: 'ma',     locked: false },
+  { id: 'flag_ca', label: 'Canada',    code: 'ca',     locked: false },
+  { id: 'flag_us', label: 'USA',       code: 'us',     locked: false },
+  { id: 'flag_mx', label: 'Mexique',   code: 'mx',     locked: false },
+  { id: 'flag_it', label: 'Italie',    code: 'it',     locked: false },
+  { id: 'flag_de', label: 'Allemagne', code: 'de',     locked: false },
+  { id: 'flag_jp', label: 'Japon',     code: 'jp',     locked: false },
+  { id: 'flag_nl', label: 'Pays-Bas',  code: 'nl',     locked: false },
+  { id: 'flag_sn', label: 'Sénégal',   code: 'sn',     locked: false },
+  { id: 'flag_hr', label: 'Croatie',   code: 'hr',     locked: false },
+].map(f => ({
+  ...f,
+  bg: `url(https://flagcdn.com/w160/${f.code}.png) center/cover`,
+}));
+
+function getAvatarBgById(id) {
+  return AVATAR_BACKGROUNDS.find(b => b.id === id)
+      || AVATAR_FLAG_BGS.find(b => b.id === id)
+      || AVATAR_BACKGROUNDS[0];
+}
+
 let pendingAvatarConfig = null;
 
 function getAvatar(joueur) {
@@ -2283,30 +2319,31 @@ function renderAvatarEl(joueur, size = 34, radius = 10) {
   const av = getAvatar(joueur);
 
   const frameData = AVATAR_FRAMES.find(f => f.id === (av.frame || 'none')) || AVATAR_FRAMES[0];
-  const bgData = AVATAR_BACKGROUNDS.find(b => b.id === (av.bg || 'cosmos')) || AVATAR_BACKGROUNDS[0];
+  const bgData = getAvatarBgById(av.bg || 'cosmos');
 
   const innerSize = size - 6;
+  const imgSize = Math.round(innerSize * 0.64);
 
   const bgStyle = `
     width:${size}px;height:${size}px;border-radius:${radius}px;
     background:${bgData.bg};
     display:flex;align-items:center;justify-content:center;
-    position:relative;flex-shrink:0;
+    position:relative;flex-shrink:0;overflow:hidden;
     ${frameData.css}
   `.replace(/\s+/g, ' ');
 
   if (av.emoji) {
     return `<div style="${bgStyle}">
-      <span style="font-size:${Math.round(innerSize * 0.6)}px;line-height:1">${av.emoji}</span>
+      <img src="${twUrl(av.emoji)}" width="${imgSize}" height="${imgSize}"
+           style="object-fit:contain;image-rendering:auto"
+           onerror="this.style.display='none';this.nextSibling.style.display='flex'"
+           loading="lazy">
+      <span style="display:none;font-size:${imgSize}px;line-height:1">${av.emoji}</span>
     </div>`;
   }
 
   return `<div style="${bgStyle}">
-    <span style="
-      font-family:'Bebas Neue',sans-serif;
-      font-size:${Math.round(innerSize * 0.4)}px;
-      color:#fff;font-weight:700;letter-spacing:1px
-    ">${av.initials}</span>
+    <span style="font-family:'Bebas Neue',sans-serif;font-size:${Math.round(innerSize*0.4)}px;color:#fff;font-weight:700;letter-spacing:1px">${av.initials}</span>
   </div>`;
 }
 
@@ -2371,7 +2408,7 @@ function closeAvatarModal() {
 function applyAvatarPreview() {
   if (!pendingAvatarConfig) return;
 
-  const bgData    = AVATAR_BACKGROUNDS.find(b => b.id === pendingAvatarConfig.bg) || AVATAR_BACKGROUNDS[0];
+  const bgData    = getAvatarBgById(pendingAvatarConfig.bg);
   const frameData = AVATAR_FRAMES.find(f => f.id === pendingAvatarConfig.frame) || AVATAR_FRAMES[0];
   const titleData = AVATAR_TITLES.find(t => t.name === pendingAvatarConfig.title) || AVATAR_TITLES[0];
 
@@ -2388,7 +2425,13 @@ function applyAvatarPreview() {
       ${frameData.css}
     `;
   }
-  if (emojiEl) emojiEl.textContent = pendingAvatarConfig.emoji || '⚽';
+  if (emojiEl) {
+    const em = pendingAvatarConfig.emoji || '⚽';
+    emojiEl.innerHTML = `<img src="${twUrl(em)}" width="60" height="60"
+      style="object-fit:contain;image-rendering:auto"
+      onerror="this.style.display='none';this.nextSibling.style.display='block'"
+      loading="lazy"><span style="display:none;font-size:52px;line-height:1">${em}</span>`;
+  }
   if (titleEl) {
     titleEl.textContent = pendingAvatarConfig.title;
     titleEl.style.color = titleData.color;
@@ -2439,7 +2482,10 @@ function renderAvatarEmojiGrid(cat, joueur) {
     return `
       <div class="av-item ${selected ? 'selected' : ''} ${!unlocked ? 'locked' : ''}"
            onclick="pickAvatarEmoji('${item.e}', ${!unlocked})">
-        ${item.e}
+        <img src="${twUrl(item.e)}" width="36" height="36"
+             style="object-fit:contain;image-rendering:auto;pointer-events:none"
+             onerror="this.outerHTML='<span style=font-size:28px;line-height:1>${item.e}</span>'"
+             loading="lazy">
         ${!unlocked ? `
           <div style="position:absolute;inset:0;background:rgba(5,8,22,0.65);display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:14px;gap:2px">
             <span style="font-size:14px">🔒</span>
@@ -2479,8 +2525,10 @@ function renderAvatarFrameGrid(joueur) {
     return `
       <div class="av-frame-item ${selected ? 'selected' : ''}"
            onclick="${unlocked ? `pickAvatarFrame('${frame.id}')` : ''}">
-        <div style="width:56px;height:56px;${frame.css};display:flex;align-items:center;justify-content:center;font-size:26px;background:linear-gradient(135deg,#1a1060,#0a2a50)">
-          ${pendingAvatarConfig?.emoji || '⚽'}
+        <div style="width:56px;height:56px;${frame.css};display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1a1060,#0a2a50);overflow:hidden">
+          <img src="${twUrl(pendingAvatarConfig?.emoji || '⚽')}" width="34" height="34"
+               style="object-fit:contain" loading="lazy"
+               onerror="this.outerHTML='<span style=font-size:26px>${pendingAvatarConfig?.emoji||\'⚽\'}</span>'">
         </div>
         <div style="font-size:9px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:${rarityColor}">
           ${frame.rarity === 'legendary' ? '✦ ' : ''}${frame.label}
@@ -2509,19 +2557,30 @@ function renderAvatarBgGrid(joueur) {
   const grid = document.getElementById('av-bg-grid');
   if (!grid) return;
 
-  grid.innerHTML = AVATAR_BACKGROUNDS.map(bg => {
+  function renderBgItem(bg) {
     const unlocked = isAvatarItemUnlocked(bg, joueur);
     const selected = bg.id === pendingAvatarConfig?.bg;
-
     return `
       <div class="av-bg-item ${selected ? 'selected' : ''}"
            style="background:${bg.bg}" onclick="${unlocked ? `pickAvatarBg('${bg.id}')` : ''}">
         ${selected ? '<div style="position:absolute;top:4px;right:4px;width:16px;height:16px;border-radius:50%;background:#F4C542;display:flex;align-items:center;justify-content:center;font-size:9px;color:#050816;font-weight:900">✓</div>' : ''}
         ${!unlocked ? '<div style="position:absolute;inset:0;background:rgba(5,8,22,0.6);display:flex;align-items:center;justify-content:center;border-radius:14px;font-size:16px">🔒</div>' : ''}
-        <div style="position:absolute;bottom:3px;left:0;right:0;text-align:center;font-size:8px;color:rgba(255,255,255,0.6);font-weight:700">${bg.label}</div>
+        <div style="position:absolute;bottom:0;left:0;right:0;padding:2px 0;background:rgba(0,0,0,0.45);text-align:center;font-size:8px;color:rgba(255,255,255,0.85);font-weight:700">${bg.label}</div>
       </div>
     `;
-  }).join('');
+  }
+
+  const gradSection = `
+    <div style="grid-column:1/-1;font-size:10px;font-weight:700;letter-spacing:0.8px;color:var(--text3);text-transform:uppercase;padding:4px 0 2px">Thèmes</div>
+    ${AVATAR_BACKGROUNDS.map(renderBgItem).join('')}
+  `;
+
+  const flagSection = `
+    <div style="grid-column:1/-1;font-size:10px;font-weight:700;letter-spacing:0.8px;color:var(--text3);text-transform:uppercase;padding:10px 0 2px">🏳 Drapeaux CDM 2026</div>
+    ${AVATAR_FLAG_BGS.map(renderBgItem).join('')}
+  `;
+
+  grid.innerHTML = gradSection + flagSection;
 }
 
 function pickAvatarBg(bgId) {
