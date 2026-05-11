@@ -1308,11 +1308,6 @@ body {
     </div>
     <div id="page-classement" class="page">
       <div class="stripe"></div>
-      <div class="sub-tabs">
-        <button class="sub-tab active" onclick="switchAreneTab('classement',this)">Classement</button>
-        <button class="sub-tab" onclick="switchAreneTab('globaux',this)">Globaux</button>
-      </div>
-      <div id="arene-classement">
       <div class="section-sub" id="classement-sub"></div>
       <div class="stats-grid" id="stats-grid"></div>
       <!-- PODIUM TOP 3 -->
@@ -1326,25 +1321,30 @@ body {
           <div id="feed-list"></div>
         </div>
       </div>
+    </div>
+    <div id="page-matchs" class="page">
+      <div class="stripe"></div>
+      <div class="sub-tabs">
+        <button class="sub-tab active" onclick="switchPronosTab('matchs',this)">Matchs</button>
+        <button class="sub-tab" onclick="switchPronosTab('globaux',this)">Globaux</button>
       </div>
-      <div id="arene-globaux" style="display:none">
+      <!-- SOUS-ONGLET MATCHS -->
+      <div id="pronos-matchs">
+        <div class="section-sub">Saisissez votre score avant le coup d'envoi · 0 pt si non rempli</div>
+        <div class="filter-bar">
+          <button class="filter-btn active" id="f-tous" onclick="setFilter('tous',this)">Tous</button>
+          <button class="filter-btn" id="f-prochain" onclick="setFilter('prochain',this)">⚡ À parier</button>
+          <button class="filter-btn" id="f-joues" onclick="setFilter('joues',this)">✓ Terminés</button>
+          <button class="filter-btn" id="f-elim" onclick="setFilter('elim',this)">Phases finales</button>
+        </div>
+        <div id="matchs-list"></div>
+      </div>
+      <!-- SOUS-ONGLET GLOBAUX -->
+      <div id="pronos-globaux" style="display:none">
         <div class="section-title">Pronostics du tournoi</div>
         <div class="section-sub">À saisir avant le 11 juin — verrouillés au coup d'envoi</div>
         <div id="globaux-list"></div>
       </div>
-    </div>
-    <div id="page-matchs" class="page">
-      <div class="stripe"></div>
-      <div class="section-title">Mes pronostics</div>
-      <div class="section-sub">Saisissez votre score avant le coup d'envoi · 0 pt si non rempli</div>
-      <!-- FILTRES MATCHS -->
-      <div class="filter-bar">
-        <button class="filter-btn active" id="f-tous" onclick="setFilter('tous',this)">Tous</button>
-        <button class="filter-btn" id="f-prochain" onclick="setFilter('prochain',this)">⚡ À parier</button>
-        <button class="filter-btn" id="f-joues" onclick="setFilter('joues',this)">✓ Terminés</button>
-        <button class="filter-btn" id="f-elim" onclick="setFilter('elim',this)">Phases finales</button>
-      </div>
-      <div id="matchs-list"></div>
     </div>
 
     <div id="page-groupes" class="page">
@@ -2000,7 +2000,7 @@ function refreshPage(){
   const sel=isAdmin?'#admin-app-screen .page.active':'#app-screen .page.active';
   const id=document.querySelector(sel)?.id?.replace('page-','');
   if(!id)return;
-  const fns={home:renderHomePage,classement:renderClassement,matchs:renderMatchs,groupes:function(){renderGroupes();renderBracket();},globaux:renderGlobaux,cagnotte:renderCagnotte,profil:renderProfilPage,'admin-matchs':renderAdminMatchs,'admin-globaux':renderAdminGlobaux,'admin-cagnotte':renderAdminCagnotte,'admin-joueurs':renderAdminJoueurs};
+  const fns={home:renderHomePage,classement:renderClassement,matchs:function(){document.getElementById('pronos-globaux')?.style.display==='none'?renderMatchs():renderGlobaux();},groupes:function(){renderGroupes();renderBracket();},cagnotte:renderCagnotte,profil:renderProfilPage,'admin-matchs':renderAdminMatchs,'admin-globaux':renderAdminGlobaux,'admin-cagnotte':renderAdminCagnotte,'admin-joueurs':renderAdminJoueurs};
   fns[id]?.();
 }
 
@@ -2087,7 +2087,7 @@ function openAdminApp(){
 
 const TAB_MAP = {
   home: { page: 'home', render: renderHomePage },
-  pronos: { page: 'matchs', render: renderMatchs },
+  pronos: { page: 'matchs', render: function(){ document.getElementById('pronos-matchs').style.display=''; document.getElementById('pronos-globaux').style.display='none'; const tabs=document.querySelectorAll('#page-matchs .sub-tab'); tabs[0]?.classList.add('active'); tabs[1]?.classList.remove('active'); renderMatchs(); } },
   arene: { page: 'classement', render: renderClassement },
   resultats: { page: 'groupes', render: function(){ renderGroupes(); renderBracket(); } },
   profil: { page: 'profil', render: renderProfilPage }
@@ -2118,12 +2118,12 @@ function switchTab(tab, btn) {
   if (navigator.vibrate) navigator.vibrate(10);
 }
 
-function switchAreneTab(sub, btn) {
-  document.getElementById('arene-classement').style.display = sub === 'classement' ? '' : 'none';
-  document.getElementById('arene-globaux').style.display = sub === 'globaux' ? '' : 'none';
+function switchPronosTab(sub, btn) {
+  document.getElementById('pronos-matchs').style.display = sub === 'matchs' ? '' : 'none';
+  document.getElementById('pronos-globaux').style.display = sub === 'globaux' ? '' : 'none';
   btn.parentElement.querySelectorAll('.sub-tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  if (sub === 'classement') renderClassement();
+  if (sub === 'matchs') renderMatchs();
   else renderGlobaux();
 }
 
