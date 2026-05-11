@@ -2255,7 +2255,8 @@ function twUrl(emoji) {
   const cps = [...emoji]
     .map(c => c.codePointAt(0).toString(16))
     .filter(c => c !== 'fe0f');
-  return `https://cdn.jsdelivr.net/npm/twemoji@14.0.2/assets/72x72/${cps.join('-')}.png`;
+  const file = cps.join('-');
+  return `https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/${file}.png`;
 }
 
 const AVATAR_FLAG_BGS = [
