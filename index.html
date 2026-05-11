@@ -581,9 +581,18 @@ body {
   background: linear-gradient(90deg, var(--gold), var(--gold2));
   color: var(--bg); border: none; border-radius: 12px;
   font-family: 'Bebas Neue', sans-serif; font-size: 15px; letter-spacing: 1.5px;
-  cursor: pointer; transition: opacity .15s;
+  cursor: pointer; position: relative; overflow: visible;
+  transition: transform .15s cubic-bezier(.34,1.56,.64,1), box-shadow .2s;
+  box-shadow: 0 4px 20px rgba(255,215,0,0.25);
 }
-.btn-primary:hover { opacity: .85; }
+.btn-primary:active { transform: scale(0.95); }
+.btn-primary:not(:active):hover { transform: scale(1.02); box-shadow: 0 0 30px rgba(255,215,0,0.4); }
+@keyframes btn-flash {
+  0%   { box-shadow: 0 0 0px rgba(255,215,0,0); }
+  30%  { box-shadow: 0 0 50px rgba(255,215,0,0.8); }
+  100% { box-shadow: 0 0 20px rgba(255,215,0,0.2); }
+}
+.btn-primary.flash { animation: btn-flash 400ms ease-out forwards; }
 
 /* ══════════════════════════════════
    CAGNOTTE
@@ -823,9 +832,99 @@ body {
   .stats-grid { grid-template-columns: repeat(2,1fr); }
   .podium-avatar.p1 { width: 50px; height: 50px; }
 }
+
+/* ══════════════════════════════════
+   TÂCHE 5 — STREAK FLAMES
+══════════════════════════════════ */
+.streak-flame-container { position: relative; display: inline-block; }
+.flame {
+  font-size: 28px; display: inline-block;
+  animation: flame-flicker 0.8s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 8px rgba(255,138,61,0.8));
+}
+.flame:nth-child(2) { animation-delay: .15s; font-size: 22px; }
+.flame:nth-child(3) { animation-delay: .30s; font-size: 26px; }
+@keyframes flame-flicker {
+  0%   { transform: scale(1) rotate(-2deg); filter: drop-shadow(0 0 6px rgba(255,138,61,0.6)); }
+  100% { transform: scale(1.08) rotate(2deg); filter: drop-shadow(0 0 14px rgba(255,138,61,1)); }
+}
+.streak-card {
+  border-color: rgba(255,138,61,0.3) !important;
+  background: linear-gradient(135deg, rgba(255,138,61,0.08), transparent) !important;
+  animation: streak-glow 2.5s ease-in-out infinite;
+}
+@keyframes streak-glow {
+  0%,100% { box-shadow: 0 0 15px rgba(255,138,61,0.1); }
+  50%      { box-shadow: 0 0 30px rgba(255,138,61,0.25); }
+}
+.streak-number {
+  font-family: 'Bebas Neue', sans-serif; font-size: 48px;
+  color: #FF8A3D; line-height: 1;
+  animation: streak-bounce .6s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes streak-bounce {
+  from { transform: scale(0.5); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+/* ══════════════════════════════════
+   TÂCHE 6 — PAGE TRANSITIONS
+══════════════════════════════════ */
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(10px) scale(0.99); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes page-exit {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-6px); }
+}
+.page.entering { animation: page-enter 220ms cubic-bezier(.4,0,.2,1) both; }
+
+/* ══════════════════════════════════
+   TÂCHE 8 — BADGE UNLOCK
+══════════════════════════════════ */
+@keyframes badge-explode {
+  0%  { transform: scale(0) rotate(-20deg); opacity: 0; }
+  60% { transform: scale(1.2) rotate(5deg); }
+  100%{ transform: scale(1) rotate(0deg); opacity: 1; }
+}
+@keyframes badge-name-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+#badge-unlock-icon { animation: badge-explode .6s cubic-bezier(.34,1.56,.64,1) both; }
+#badge-unlock-name { animation: badge-name-in .4s .3s ease both; opacity: 0; }
+
+/* ══════════════════════════════════
+   TÂCHE 9 — PODIUM ANIMATIONS
+══════════════════════════════════ */
+@keyframes podium-rise {
+  from { transform: scaleY(0); transform-origin: bottom; opacity: 0; }
+  to   { transform: scaleY(1); transform-origin: bottom; opacity: 1; }
+}
+@keyframes podium-bounce-top {
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(-6px); }
+}
+.podium-base { animation: podium-rise .6s cubic-bezier(.34,1.56,.64,1) both; }
+.podium-base.p2 { animation-delay: 0s; }
+.podium-base.p1 { animation-delay: .1s; }
+.podium-base.p3 { animation-delay: .2s; }
+.podium-avatar.p1 { animation: podium-bounce-top 2s ease-in-out infinite; }
 </style>
 </head>
 <body>
+
+<!-- TÂCHE 7 — Particules ambiantes -->
+<canvas id="particles-canvas" style="position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.18;"></canvas>
+
+<!-- TÂCHE 8 — Badge Unlock Overlay -->
+<div id="badge-unlock-overlay" class="hidden" style="position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;" onclick="closeBadgeUnlock()">
+  <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;color:var(--text2);letter-spacing:3px;text-transform:uppercase;">Nouveau Badge Débloqué</div>
+  <div id="badge-unlock-icon" style="font-size:80px;filter:drop-shadow(0 0 30px rgba(255,215,0,0.8));"></div>
+  <div id="badge-unlock-name" style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--gold);letter-spacing:2px;"></div>
+  <button onclick="event.stopPropagation();closeBadgeUnlock()" style="margin-top:8px;background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.3);color:var(--gold);border-radius:12px;padding:10px 28px;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;cursor:pointer;">SUPER !</button>
+</div>
 
 <div id="loading" style="position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:16px;">
   <img src="icon-192.png" alt="CDM 2026" style="width:80px;height:80px;border-radius:20px;box-shadow:0 0 40px rgba(255,215,0,0.3);animation:pulse 1.5s ease-in-out infinite" onerror="this.outerHTML='<div style=\'font-size:60px\'>🏆</div>'">
@@ -1746,13 +1845,28 @@ const TAB_MAP = {
 };
 
 function switchTab(tab, btn) {
-  document.querySelectorAll('#app-screen .page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.bottom-nav .nav-tab').forEach(b => b.classList.remove('active'));
   const t = TAB_MAP[tab];
   if (!t) return;
-  document.getElementById('page-' + t.page)?.classList.add('active');
+  const current = document.querySelector('#app-screen .page.active');
+  const target = document.getElementById('page-' + t.page);
+  if (current && target && current !== target) {
+    current.style.animation = 'page-exit 150ms ease forwards';
+    setTimeout(() => {
+      current.style.animation = '';
+      current.classList.remove('active');
+      target.classList.add('active');
+      target.classList.add('entering');
+      target.addEventListener('animationend', () => target.classList.remove('entering'), { once: true });
+      t.render?.();
+    }, 150);
+  } else {
+    document.querySelectorAll('#app-screen .page').forEach(p => p.classList.remove('active'));
+    target?.classList.add('active');
+    t.render?.();
+  }
+  document.querySelectorAll('.bottom-nav .nav-tab').forEach(b => b.classList.remove('active'));
   btn?.classList.add('active');
-  t.render?.();
+  if (navigator.vibrate) navigator.vibrate(10);
 }
 
 function switchAreneTab(sub, btn) {
@@ -1777,9 +1891,27 @@ function renderHomePage() {
   const container = document.getElementById('home-feed-list');
   if (!container) return;
   const board = getLeaderboard();
-  if (!board.length) { container.innerHTML = '<div class="card"><div style="text-align:center;color:var(--text3);padding:20px">Aucune activité — commencez à parier !</div></div>'; return; }
+  let streakHtml = '';
+  if (currentUser) {
+    const joueur = allJoueurs.find(j => j.id === currentUser);
+    const streak = joueur ? getStreak(joueur) : 0;
+    if (streak >= 2) {
+      const flames = streak >= 5 ? '<span class="flame">🔥</span><span class="flame">🔥</span><span class="flame">🔥</span>'
+                   : streak >= 3 ? '<span class="flame">🔥</span><span class="flame">🔥</span>'
+                   : '<span class="flame">🔥</span>';
+      streakHtml = `<div class="card streak-card" style="display:flex;align-items:center;gap:14px;margin-bottom:12px">
+        <div class="streak-flame-container">${flames}</div>
+        <div>
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#FF8A3D;font-weight:700;margin-bottom:2px">Série en cours</div>
+          <div class="streak-number">${streak}</div>
+          <div style="font-size:11px;color:var(--text3)">prono${streak>1?'s':''} correct${streak>1?'s':''} de suite</div>
+        </div>
+      </div>`;
+    }
+  }
+  if (!board.length) { container.innerHTML = streakHtml + '<div class="card"><div style="text-align:center;color:var(--text3);padding:20px">Aucune activité — commencez à parier !</div></div>'; return; }
   const events = _buildFeedEvents(board);
-  container.innerHTML = events.map(e => {
+  container.innerHTML = streakHtml + events.map(e => {
     const avHtml = e.joueur ? renderAvatarEl(e.joueur, 32, 9) : '<div style="width:32px;height:32px;border-radius:9px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:16px">' + e.emoji + '</div>';
     return '<div class="feed-item"><div class="feed-emoji">' + avHtml + '</div><div class="feed-text">' + e.text + '</div>' + (e.pts ? '<div class="feed-pts">' + e.pts + '</div>' : '') + '</div>';
   }).join('');
@@ -2161,6 +2293,10 @@ async function savePronostic(id){
   const newProg={...(joueur?.pronostics||{}),[id]:{s1,s2}};
   const{error}=await sb.from('joueurs').update({pronostics:newProg}).eq('id',currentUser);
   if(error){showToast('Erreur');btn.disabled=false;btn.textContent='Enregistrer ce pronostic';return;}
+  if(navigator.vibrate) navigator.vibrate([50,30,50]);
+  btn.classList.add('flash');
+  setTimeout(()=>btn.classList.remove('flash'),400);
+  spawnParticles(btn,8);
   await loadData();btn.classList.add('saved');btn.textContent='✓ Enregistré';showToast('Pronostic sauvegardé !');
 }
 
@@ -3166,6 +3302,78 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').catch(() => {});
   });
+}
+
+// ══ TÂCHE 3 — PARTICULES CTA ══
+function spawnParticles(originEl, count) {
+  const rect = originEl.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+  for (let i = 0; i < count; i++) {
+    const p = document.createElement('div');
+    p.style.cssText = `position:fixed;left:${cx}px;top:${cy}px;width:6px;height:6px;border-radius:50%;background:${Math.random()>.5?'var(--gold)':'white'};pointer-events:none;z-index:9999;transform:translate(-50%,-50%)`;
+    document.body.appendChild(p);
+    const angle = (i / count) * Math.PI * 2;
+    const dist = 40 + Math.random() * 60;
+    const dx = Math.cos(angle) * dist, dy = Math.sin(angle) * dist;
+    p.animate([
+      {transform:'translate(-50%,-50%) scale(1)',opacity:1},
+      {transform:`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px)) scale(0)`,opacity:0}
+    ],{duration:600,easing:'cubic-bezier(.25,.46,.45,.94)',fill:'forwards'}).onfinish=()=>p.remove();
+  }
+}
+
+// ══ TÂCHE 7 — PARTICULES CANVAS AMBIANTES ══
+(function initParticles() {
+  const canvas = document.getElementById('particles-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let W = canvas.width = window.innerWidth;
+  let H = canvas.height = window.innerHeight;
+  window.addEventListener('resize', () => { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; });
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (prefersReduced) { canvas.style.display = 'none'; return; }
+  const particles = Array.from({length:25}, () => ({
+    x: Math.random()*W, y: Math.random()*H,
+    r: Math.random()*2+0.5,
+    vx: (Math.random()-.5)*.3, vy: -Math.random()*.4-.1,
+    alpha: Math.random()*.5+.2
+  }));
+  let rafId;
+  function draw() {
+    ctx.clearRect(0,0,W,H);
+    particles.forEach(p => {
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(255,215,0,${p.alpha})`; ctx.fill();
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.y<-5){p.y=H+5;p.x=Math.random()*W;}
+      if(p.x<-5) p.x=W+5;
+      if(p.x>W+5) p.x=-5;
+    });
+    rafId = requestAnimationFrame(draw);
+  }
+  draw();
+  document.addEventListener('visibilitychange', () => {
+    if(document.hidden){cancelAnimationFrame(rafId);}else{draw();}
+  });
+})();
+
+// ══ TÂCHE 8 — BADGE UNLOCK ══
+function showBadgeUnlock(emoji, name) {
+  const overlay = document.getElementById('badge-unlock-overlay');
+  const icon = document.getElementById('badge-unlock-icon');
+  const nameEl = document.getElementById('badge-unlock-name');
+  icon.textContent = emoji;
+  nameEl.textContent = name;
+  // Replay animation by forcing reflow
+  icon.style.animation = 'none'; icon.offsetHeight; icon.style.animation = '';
+  nameEl.style.animation = 'none'; nameEl.offsetHeight; nameEl.style.animation = '';
+  overlay.classList.remove('hidden');
+  if(navigator.vibrate) navigator.vibrate([100,50,100,50,200]);
+  setTimeout(closeBadgeUnlock, 4000);
+}
+function closeBadgeUnlock() {
+  document.getElementById('badge-unlock-overlay')?.classList.add('hidden');
 }
 
 function calcPlayerStats(joueur){
