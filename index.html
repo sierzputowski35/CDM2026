@@ -535,6 +535,11 @@ body {
   cursor: pointer; transition: opacity .15s;
 }
 .save-btn:hover { opacity: .85; }
+.save-btn.saved {
+  background: var(--surface2);
+  color: var(--green);
+  border: 1px solid rgba(0,230,118,0.3);
+}
 .saved-score { font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--green); letter-spacing: 3px; }
 .locked-badge { font-size: 10px; color: var(--text3); background: var(--surface2); padding: 3px 10px; border-radius: 6px; border: 1px solid var(--border); }
 .phase-header { display: flex; align-items: center; gap: 10px; margin: 18px 0 10px; }
@@ -2220,8 +2225,9 @@ function renderMatchs(){
         <span style="font-size:10px;color:var(--text3);margin-left:6px">👥 Qui a pris quoi ? →</span>
       </div>`;
     }else{
-      footer=`<div class="match-footer"><span class="badge badge-open">Ouvert</span></div>
-      <button class="save-btn" id="sbtn-${m.id}" onclick="savePronostic(${m.id})">Enregistrer ce pronostic</button>`;
+      const hasSaved = p.s1 !== undefined && p.s2 !== undefined;
+      footer=`<div class="match-footer"><span class="badge badge-open">Ouvert</span>${hasSaved?`<span class="badge badge-diff" style="margin-left:6px">✓ ${p.s1}–${p.s2} sauvegardé</span>`:''}</div>
+      <button class="save-btn${hasSaved?' saved':''}" id="sbtn-${m.id}" onclick="savePronostic(${m.id})">${hasSaved?'✎ Modifier mon pronostic':'Enregistrer ce pronostic'}</button>`;
     }
     html+=`<div class="match-card">
       <div class="match-meta">
