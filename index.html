@@ -2277,7 +2277,8 @@ const AVATAR_FLAG_BGS = [
   { id: 'flag_hr', label: 'Croatie',   code: 'hr',     locked: false },
 ].map(f => ({
   ...f,
-  bg: `url(https://flagcdn.com/w160/${f.code}.png) center/cover`,
+  bg: '#0a1520',
+  bgUrl: `https://flagcdn.com/w160/${f.code}.png`,
 }));
 
 function getAvatarBgById(id) {
@@ -2329,18 +2330,24 @@ function renderAvatarEl(joueur, size = 34, radius = 10) {
     ${frameData.css}
   `.replace(/\s+/g, ' ');
 
+  const flagImg = bgData.bgUrl
+    ? `<img src="${bgData.bgUrl}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none" loading="lazy">`
+    : '';
+
   if (av.emoji) {
     return `<div style="${bgStyle}">
+      ${flagImg}
       <img src="${twUrl(av.emoji)}" width="${imgSize}" height="${imgSize}"
-           style="object-fit:contain;image-rendering:auto"
+           style="object-fit:contain;image-rendering:auto;position:relative;z-index:1"
            onerror="this.style.display='none';this.nextSibling.style.display='flex'"
            loading="lazy">
-      <span style="display:none;font-size:${imgSize}px;line-height:1">${av.emoji}</span>
+      <span style="display:none;font-size:${imgSize}px;line-height:1;position:relative;z-index:1">${av.emoji}</span>
     </div>`;
   }
 
   return `<div style="${bgStyle}">
-    <span style="font-family:'Bebas Neue',sans-serif;font-size:${Math.round(innerSize*0.4)}px;color:#fff;font-weight:700;letter-spacing:1px">${av.initials}</span>
+    ${flagImg}
+    <span style="font-family:'Bebas Neue',sans-serif;font-size:${Math.round(innerSize*0.4)}px;color:#fff;font-weight:700;letter-spacing:1px;position:relative;z-index:1">${av.initials}</span>
   </div>`;
 }
 
@@ -2414,7 +2421,14 @@ function applyAvatarPreview() {
   const emojiEl = document.getElementById('av-preview-emoji');
   const titleEl = document.getElementById('av-preview-title');
 
-  if (bgEl)    bgEl.style.background = bgData.bg;
+  if (bgEl) {
+    bgEl.style.background = bgData.bg;
+    if (bgData.bgUrl) {
+      bgEl.style.backgroundImage = `url(${bgData.bgUrl})`;
+      bgEl.style.backgroundSize = 'cover';
+      bgEl.style.backgroundPosition = 'center';
+    }
+  }
   if (frameEl) {
     frameEl.style.cssText = `
       position:absolute;inset:-5px;border-radius:33px;
@@ -2554,30 +2568,29 @@ function renderAvatarBgGrid(joueur) {
   const grid = document.getElementById('av-bg-grid');
   if (!grid) return;
 
-  function renderBgItem(bg) {
+  const renderBgItem = (bg) => {
     const unlocked = isAvatarItemUnlocked(bg, joueur);
     const selected = bg.id === pendingAvatarConfig?.bg;
+    const flagLayer = bg.bgUrl
+      ? `<img src="${bg.bgUrl}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none" loading="lazy">`
+      : '';
     return `
       <div class="av-bg-item ${selected ? 'selected' : ''}"
-           style="background:${bg.bg}" onclick="${unlocked ? `pickAvatarBg('${bg.id}')` : ''}">
-        ${selected ? '<div style="position:absolute;top:4px;right:4px;width:16px;height:16px;border-radius:50%;background:#F4C542;display:flex;align-items:center;justify-content:center;font-size:9px;color:#050816;font-weight:900">✓</div>' : ''}
-        ${!unlocked ? '<div style="position:absolute;inset:0;background:rgba(5,8,22,0.6);display:flex;align-items:center;justify-content:center;border-radius:14px;font-size:16px">🔒</div>' : ''}
-        <div style="position:absolute;bottom:0;left:0;right:0;padding:2px 0;background:rgba(0,0,0,0.45);text-align:center;font-size:8px;color:rgba(255,255,255,0.85);font-weight:700">${bg.label}</div>
+           style="background:${bg.bg}"
+           onclick="${unlocked ? `pickAvatarBg('${bg.id}')` : ''}">
+        ${flagLayer}
+        ${selected ? '<div style="position:absolute;top:4px;right:4px;width:16px;height:16px;border-radius:50%;background:#F4C542;display:flex;align-items:center;justify-content:center;font-size:9px;color:#050816;font-weight:900;z-index:2">✓</div>' : ''}
+        ${!unlocked ? '<div style="position:absolute;inset:0;background:rgba(5,8,22,0.6);display:flex;align-items:center;justify-content:center;border-radius:14px;font-size:16px;z-index:2">🔒</div>' : ''}
+        <div style="position:absolute;bottom:0;left:0;right:0;padding:2px 0;background:rgba(0,0,0,0.55);text-align:center;font-size:8px;color:rgba(255,255,255,0.9);font-weight:700;z-index:2">${bg.label}</div>
       </div>
     `;
-  }
+  };
 
-  const gradSection = `
-    <div style="grid-column:1/-1;font-size:10px;font-weight:700;letter-spacing:0.8px;color:var(--text3);text-transform:uppercase;padding:4px 0 2px">Thèmes</div>
-    ${AVATAR_BACKGROUNDS.map(renderBgItem).join('')}
-  `;
-
-  const flagSection = `
-    <div style="grid-column:1/-1;font-size:10px;font-weight:700;letter-spacing:0.8px;color:var(--text3);text-transform:uppercase;padding:10px 0 2px">🏳 Drapeaux CDM 2026</div>
-    ${AVATAR_FLAG_BGS.map(renderBgItem).join('')}
-  `;
-
-  grid.innerHTML = gradSection + flagSection;
+  grid.innerHTML =
+    `<div style="grid-column:1/-1;font-size:10px;font-weight:700;letter-spacing:0.8px;color:var(--text3);text-transform:uppercase;padding:4px 0 2px">Thèmes</div>`
+    + AVATAR_BACKGROUNDS.map(renderBgItem).join('')
+    + `<div style="grid-column:1/-1;font-size:10px;font-weight:700;letter-spacing:0.8px;color:var(--text3);text-transform:uppercase;padding:10px 0 2px">Drapeaux CDM 2026</div>`
+    + AVATAR_FLAG_BGS.map(renderBgItem).join('');
 }
 
 function pickAvatarBg(bgId) {
@@ -2627,28 +2640,23 @@ async function saveAvatarConfig() {
   }
 
   const btn = document.getElementById('av-save-btn');
-  if (btn) {
-    btn.textContent = '...';
-    btn.style.opacity = '0.7';
-    btn.disabled = true;
-  }
+  const btnReset = () => { if (btn) { btn.innerHTML = '<span>✓</span> SAUVEGARDER'; btn.disabled = false; btn.style.opacity = '1'; } };
+  if (btn) { btn.innerHTML = '...'; btn.style.opacity = '0.7'; btn.disabled = true; }
 
   const payload = JSON.stringify(pendingAvatarConfig);
   const { error } = await sb.from('joueurs').update({ avatar: payload }).eq('id', currentUser);
 
-  if (btn) {
-    btn.disabled = false;
-    btn.style.opacity = '1';
-  }
-
   if (error) {
+    btnReset();
     showToast('Erreur lors de la sauvegarde');
-    if (btn) btn.innerHTML = '<span>✓</span> SAUVEGARDER';
     return;
   }
 
   await loadData();
   closeAvatarModal();
+  updateHeaderUser();
+  if (typeof initHomeHeader === 'function') initHomeHeader();
+  if (typeof refreshPage === 'function') refreshPage();
   showToast('✨ Avatar mis à jour !');
 }
 
