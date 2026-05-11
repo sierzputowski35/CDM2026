@@ -2293,11 +2293,14 @@ async function savePronostic(id){
   const newProg={...(joueur?.pronostics||{}),[id]:{s1,s2}};
   const{error}=await sb.from('joueurs').update({pronostics:newProg}).eq('id',currentUser);
   if(error){showToast('Erreur');btn.disabled=false;btn.textContent='Enregistrer ce pronostic';return;}
-  if(navigator.vibrate) navigator.vibrate([50,30,50]);
-  btn.classList.add('flash');
-  setTimeout(()=>btn.classList.remove('flash'),400);
-  spawnParticles(btn,8);
-  await loadData();btn.classList.add('saved');btn.textContent='✓ Enregistré';showToast('Pronostic sauvegardé !');
+  await loadData();
+  btn.classList.add('saved');btn.textContent='✓ Enregistré';showToast('Pronostic sauvegardé !');
+  try{
+    if(navigator.vibrate) navigator.vibrate([50,30,50]);
+    btn.classList.add('flash');
+    setTimeout(()=>btn.classList.remove('flash'),400);
+    spawnParticles(btn,8);
+  }catch(e){}
 }
 
 // ══ RENDER GLOBAUX ══
