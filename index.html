@@ -1447,6 +1447,123 @@ body {
 .news-title { font-size: 12px; font-weight: 700; color: #fff; line-height: 1.3; }
 .news-sub { font-size: 11px; color: #718096; margin-top: 2px; }
 .news-time { font-size: 10px; color: #F4C542; font-weight: 600; margin-top: 3px; }
+
+/* === AVATAR MODAL AAA === */
+.av-tab-btn {
+  flex-shrink: 0;
+  background: transparent;
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.av-tab-btn.av-tab-active {
+  background: var(--gold, #F4C542);
+  border-color: var(--gold, #F4C542);
+  color: #050816;
+}
+.av-cat-pill {
+  flex-shrink: 0;
+  background: var(--surface, #111827);
+  border: 1px solid var(--border2);
+  border-radius: 16px;
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.av-cat-pill.active {
+  border-color: var(--gold, #F4C542);
+  color: var(--gold, #F4C542);
+  background: rgba(244,197,66,0.1);
+}
+.av-item {
+  aspect-ratio: 1;
+  border-radius: 16px;
+  border: 2px solid var(--border2);
+  background: var(--surface, #111827);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+.av-item:active { transform: scale(0.9); }
+.av-item.selected {
+  border-color: var(--gold, #F4C542);
+  box-shadow: 0 0 12px rgba(244,197,66,0.4);
+}
+.av-item.locked { opacity: 0.45; cursor: not-allowed; }
+.av-frame-item {
+  aspect-ratio: 1;
+  border-radius: 18px;
+  border: 2px solid var(--border2);
+  background: var(--surface, #111827);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+  padding: 8px;
+}
+.av-frame-item.selected {
+  border-color: var(--gold, #F4C542);
+  box-shadow: 0 0 12px rgba(244,197,66,0.3);
+}
+.av-bg-item {
+  aspect-ratio: 1;
+  border-radius: 16px;
+  border: 2px solid var(--border2);
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+.av-bg-item.selected { border-color: var(--gold, #F4C542); box-shadow: 0 0 12px rgba(244,197,66,0.3); }
+.av-title-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface, #111827);
+  border: 1px solid var(--border2);
+  border-radius: 14px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.av-title-item.selected {
+  border-color: var(--gold, #F4C542);
+  background: rgba(244,197,66,0.08);
+}
+.av-rarity-dot {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+@media (prefers-reduced-motion: reduce) {
+  .av-tab-btn, .av-cat-pill, .av-item, .av-frame-item, .av-bg-item, .av-title-item {
+    transition: none;
+  }
+}
 </style>
 </head>
 <body>
@@ -1486,15 +1603,85 @@ body {
   </div>
 </div>
 
-<!-- MODAL AVATAR SELECTION -->
+<!-- MODAL AVATAR AAA -->
 <div class="match-modal-overlay hidden" id="avatar-modal">
-  <div class="match-modal-box">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-      <div class="match-modal-title">CHOISIS TON AVATAR</div>
-      <button onclick="document.getElementById('avatar-modal').classList.add('hidden')" style="background:var(--surface);border:1px solid var(--border2);color:var(--text2);font-size:16px;width:36px;height:36px;border-radius:50%;cursor:pointer">✕</button>
+  <div class="match-modal-box" style="padding:0;border-radius:24px 24px 0 0;max-height:90vh;overflow:hidden;display:flex;flex-direction:column">
+
+    <!-- Handle + Header -->
+    <div style="flex-shrink:0;padding:12px 20px 0">
+      <div style="width:40px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 16px"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div style="font-family:'Oswald',sans-serif;font-size:18px;font-weight:700;letter-spacing:1.5px;color:var(--gold)">MON AVATAR</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:4px 10px;font-size:13px;font-weight:700;color:#58C8FA;display:flex;align-items:center;gap:5px">
+            <span>💎</span><span id="av-gems-count">0</span>
+          </div>
+          <button onclick="closeAvatarModal()" style="background:var(--surface);border:1px solid var(--border2);color:var(--text2);font-size:16px;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+        </div>
+      </div>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px" id="avatar-grid"></div>
-    <button class="btn-primary" style="margin-top:16px" onclick="saveAvatar()">Valider</button>
+
+    <!-- Preview -->
+    <div id="av-preview-section" style="flex-shrink:0;display:flex;justify-content:center;padding:20px 0 24px;background:radial-gradient(ellipse at center, rgba(14,24,48,1) 0%, var(--bg) 70%)">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:20px">
+        <div id="av-preview-wrap" style="position:relative;width:110px;height:110px">
+          <div id="av-preview-bg" style="position:absolute;inset:0;border-radius:28px;background:linear-gradient(135deg,#1a1060,#0a2a50);transition:background 0.3s ease"></div>
+          <div id="av-preview-frame" style="position:absolute;inset:-5px;border-radius:33px;border:3px solid #F4C542;box-shadow:0 0 14px rgba(244,197,66,0.5);pointer-events:none;transition:all 0.3s ease"></div>
+          <div id="av-preview-emoji" style="position:absolute;inset:8px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:52px;z-index:2">🦁</div>
+        </div>
+        <div id="av-preview-title" style="background:var(--surface);border:1px solid #F4C542;border-radius:10px;padding:3px 12px;font-size:11px;font-weight:700;letter-spacing:0.5px;color:#F4C542">Joueur CDM</div>
+      </div>
+    </div>
+
+    <!-- Onglets -->
+    <div id="av-tabs-nav" style="flex-shrink:0;display:flex;gap:6px;padding:0 16px 10px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--border)">
+      <button class="av-tab-btn av-tab-active" onclick="switchAvatarTab('emoji',this)">Avatars</button>
+      <button class="av-tab-btn" onclick="switchAvatarTab('frame',this)">Cadres</button>
+      <button class="av-tab-btn" onclick="switchAvatarTab('bg',this)">Fonds</button>
+      <button class="av-tab-btn" onclick="switchAvatarTab('title',this)">Titres</button>
+    </div>
+
+    <!-- Contenu scrollable -->
+    <div style="flex:1;overflow-y:auto;scrollbar-width:none">
+
+      <!-- Onglet Avatars -->
+      <div id="av-tab-emoji" class="av-tab-content">
+        <div style="display:flex;gap:6px;padding:10px 16px 6px;overflow-x:auto;scrollbar-width:none" id="av-cat-nav"></div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:6px 16px 16px" id="av-emoji-grid"></div>
+      </div>
+
+      <!-- Onglet Cadres -->
+      <div id="av-tab-frame" class="av-tab-content" style="display:none">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:14px 16px 16px" id="av-frame-grid"></div>
+      </div>
+
+      <!-- Onglet Fonds -->
+      <div id="av-tab-bg" class="av-tab-content" style="display:none">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:14px 16px 16px" id="av-bg-grid"></div>
+      </div>
+
+      <!-- Onglet Titres -->
+      <div id="av-tab-title" class="av-tab-content" style="display:none">
+        <div style="display:flex;flex-direction:column;gap:8px;padding:14px 16px 16px" id="av-title-grid"></div>
+      </div>
+
+    </div>
+
+    <!-- Bouton Save -->
+    <div style="flex-shrink:0;padding:12px 16px 20px;border-top:1px solid var(--border)">
+      <button id="av-save-btn" onclick="saveAvatarConfig()" style="
+        width:100%;padding:14px;
+        background:linear-gradient(135deg, #FFCC33, #F4C542);
+        border:none;border-radius:16px;
+        font-family:'Oswald',sans-serif;font-size:16px;font-weight:700;letter-spacing:1px;
+        color:#050816;cursor:pointer;
+        display:flex;align-items:center;justify-content:center;gap:8px;
+        transition:transform 0.15s,filter 0.15s
+      ">
+        <span>✓</span> SAUVEGARDER
+      </button>
+    </div>
+
   </div>
 </div>
 
@@ -1507,6 +1694,7 @@ body {
           <div id="profil-avatar-display" style="width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:26px;cursor:pointer" onclick="openAvatarModal()" title="Changer d'avatar"></div>
           <div>
             <div id="profil-pseudo" style="font-family:'Oswald',sans-serif;font-size:22px;font-weight:700;color:var(--accent)"></div>
+            <div id="profil-title-badge" style="font-size:11px;font-weight:700;border:1px solid;border-radius:8px;padding:2px 8px;margin-top:4px;display:none"></div>
             <div id="profil-stats-summary" style="font-size:12px;color:var(--text3);margin-top:2px"></div>
           </div>
         </div>
@@ -1928,60 +2116,484 @@ const ADMIN_PASSWORD = 'cdm2026admin';
 const MISE = 10;
 
 // ══════════════════════════════════════════
-// AVATARS EMOJI — liste de 24 options
+// SYSTÈME AVATAR AAA — CDM 2026
 // ══════════════════════════════════════════
-const AVATARS_LIST = ['⚽','🏆','🦁','🐯','🦅','🔥','⚡','🌟','💎','🎯','🦊','🐺','🦋','🎪','🚀','👑','🏅','🎭','🦄','🐉','🎸','🤖','💪','🌈'];
-let pendingAvatar = null;
+
+const AVATAR_CATEGORIES = {
+  foot: {
+    label: '⚽ Football',
+    items: [
+      { e: '⚽', rarity: 'common', locked: false },
+      { e: '🥅', rarity: 'common', locked: false },
+      { e: '🏆', rarity: 'rare', locked: false },
+      { e: '🎯', rarity: 'rare', locked: false },
+      { e: '⚡', rarity: 'epic', locked: false },
+      { e: '🔥', rarity: 'epic', locked: false },
+      { e: '👟', rarity: 'epic', locked: true, unlock: 'Niveau 10', unlockType: 'level', unlockValue: 10 },
+      { e: '🥇', rarity: 'legendary', locked: true, unlock: 'Top 3', unlockType: 'rank', unlockValue: 3 },
+    ]
+  },
+  animaux: {
+    label: '🐯 Animaux',
+    items: [
+      { e: '🦁', rarity: 'rare', locked: false },
+      { e: '🐯', rarity: 'rare', locked: false },
+      { e: '🦅', rarity: 'rare', locked: false },
+      { e: '🦊', rarity: 'common', locked: false },
+      { e: '🐺', rarity: 'epic', locked: true, unlock: 'Streak 5j', unlockType: 'streak', unlockValue: 5 },
+      { e: '🐉', rarity: 'epic', locked: true, unlock: 'Ligue Or', unlockType: 'ligue', unlockValue: 'Or' },
+      { e: '🦋', rarity: 'legendary', locked: true, unlock: '💎 500', unlockType: 'gems', unlockValue: 500 },
+      { e: '🦄', rarity: 'legendary', locked: true, unlock: 'Ligue Légende', unlockType: 'ligue', unlockValue: 'Légende' },
+    ]
+  },
+  legendes: {
+    label: '👑 Légendes',
+    items: [
+      { e: '👑', rarity: 'rare', locked: false },
+      { e: '🌟', rarity: 'rare', locked: false },
+      { e: '💎', rarity: 'epic', locked: true, unlock: 'Ligue Diamant', unlockType: 'ligue', unlockValue: 'Diamant' },
+      { e: '🏅', rarity: 'epic', locked: true, unlock: '50 matchs', unlockType: 'matches', unlockValue: 50 },
+      { e: '🎭', rarity: 'legendary', locked: true, unlock: 'Niveau 20', unlockType: 'level', unlockValue: 20 },
+      { e: '🤖', rarity: 'legendary', locked: true, unlock: '💎 1000', unlockType: 'gems', unlockValue: 1000 },
+    ]
+  },
+  mascottes: {
+    label: '🏆 CDM',
+    items: [
+      { e: '🌍', rarity: 'common', locked: false },
+      { e: '🗽', rarity: 'common', locked: false },
+      { e: '🍁', rarity: 'rare', locked: false },
+      { e: '🎪', rarity: 'epic', locked: true, unlock: 'Ligue Argent', unlockType: 'ligue', unlockValue: 'Argent' },
+      { e: '🚀', rarity: 'legendary', locked: true, unlock: 'Ligue Légende', unlockType: 'ligue', unlockValue: 'Légende' },
+    ]
+  }
+};
+
+const AVATAR_FRAMES = [
+  {
+    id: 'none',
+    label: 'Aucun',
+    rarity: 'common',
+    locked: false,
+    css: 'border: 2px solid rgba(136,153,187,0.4); border-radius: 24px',
+  },
+  {
+    id: 'gold',
+    label: 'Or',
+    rarity: 'rare',
+    locked: false,
+    css: 'border: 3px solid #F4C542; border-radius: 24px; box-shadow: 0 0 14px rgba(244,197,66,0.5)',
+  },
+  {
+    id: 'flame',
+    label: 'Flamme',
+    rarity: 'epic',
+    locked: true,
+    unlock: 'Streak 7 jours',
+    unlockType: 'streak',
+    unlockValue: 7,
+    css: 'border: 3px solid #FF8A3D; border-radius: 24px; box-shadow: 0 0 18px rgba(255,138,61,0.6)',
+  },
+  {
+    id: 'diamond',
+    label: 'Diamant',
+    rarity: 'epic',
+    locked: true,
+    unlock: 'Ligue Diamant',
+    unlockType: 'ligue',
+    unlockValue: 'Diamant',
+    css: 'border: 3px solid #58C8FA; border-radius: 24px; box-shadow: 0 0 18px rgba(88,200,250,0.5)',
+  },
+  {
+    id: 'legend',
+    label: 'Légende',
+    rarity: 'legendary',
+    locked: true,
+    unlock: 'Ligue Légende',
+    unlockType: 'ligue',
+    unlockValue: 'Légende',
+    css: 'border: 3px solid #A855F7; border-radius: 24px; box-shadow: 0 0 22px rgba(168,85,247,0.7)',
+  },
+  {
+    id: 'champion',
+    label: 'Champion',
+    rarity: 'legendary',
+    locked: true,
+    unlock: 'Vainqueur Saison',
+    unlockType: 'season_winner',
+    css: 'border: 3px solid #FF4D5A; border-radius: 24px; box-shadow: 0 0 22px rgba(255,77,90,0.7)',
+  },
+];
+
+const AVATAR_BACKGROUNDS = [
+  { id: 'cosmos',  label: 'Cosmos',   bg: 'linear-gradient(135deg, #1a1060, #0a2a50)', locked: false },
+  { id: 'fire',    label: 'Feu',      bg: 'linear-gradient(135deg, #3D1000, #6B2000)', locked: false },
+  { id: 'jungle',  label: 'Jungle',   bg: 'linear-gradient(135deg, #002A1A, #004430)', locked: false },
+  { id: 'ocean',   label: 'Océan',    bg: 'linear-gradient(135deg, #001A3D, #003060)', locked: false },
+  { id: 'sunset',  label: 'Sunset',   bg: 'linear-gradient(135deg, #3D1A00, #5A2A00)', locked: true, unlock: 'Niveau 5' },
+  { id: 'legend',  label: 'Légende',  bg: 'linear-gradient(135deg, #1A0035, #2A0055)', locked: true, unlock: 'Ligue Or' },
+  { id: 'gold',    label: 'Or Pur',   bg: 'linear-gradient(135deg, #2A1A00, #3D2800)', locked: true, unlock: 'Ligue Or' },
+  { id: 'arctic',  label: 'Arctique', bg: 'linear-gradient(135deg, #001A35, #00253A)', locked: true, unlock: 'Streak 10j' },
+];
+
+const AVATAR_TITLES = [
+  { id: 'default',  name: 'Joueur CDM',     color: '#8899BB', locked: false, unlock: 'Par défaut' },
+  { id: 'prophet',  name: 'Prophète',       color: '#F4C542', locked: false, unlock: '5 scores exacts' },
+  { id: 'sniper',   name: 'Sniper',         color: '#58C8FA', locked: false, unlock: '10 scores exacts' },
+  { id: 'clutch',   name: 'Clutch King',    color: '#FF8A3D', locked: true,  unlock: 'Streak 7 jours', unlockType: 'streak', unlockValue: 7 },
+  { id: 'legend',   name: 'Légende Vivante',color: '#A855F7', locked: true,  unlock: 'Ligue Légende', unlockType: 'ligue', unlockValue: 'Légende' },
+  { id: 'telepath', name: 'Télépathe',      color: '#22D16B', locked: true,  unlock: '95% précision', unlockType: 'precision', unlockValue: 95 },
+  { id: 'champion', name: 'Champion',       color: '#FF4D5A', locked: true,  unlock: 'Vainqueur Saison', unlockType: 'season_winner' },
+];
+
+const RARITY_COLORS = {
+  common:    '#8899BB',
+  rare:      '#22D16B',
+  epic:      '#A855F7',
+  legendary: '#F4C542',
+};
+
+let pendingAvatarConfig = null;
 
 function getAvatar(joueur) {
-  // Retourne {emoji, initiales, color}
   const pseudo = joueur?.pseudo || '?';
-  const colors = ['#E8C547','#22c55e','#60a5fa','#f87171','#a78bfa','#fb923c','#34d399','#f472b6'];
-  const color = colors[(pseudo).charCodeAt(0) % colors.length];
-  const emoji = joueur?.avatar || null;
-  const initials = pseudo.substring(0,2).toUpperCase();
-  return { emoji, initials, color };
-}
+  const colors = ['#F4C542','#22D16B','#58C8FA','#FF4D5A','#A855F7','#FF8A3D','#22D16B','#F472B6'];
+  const color = colors[pseudo.charCodeAt(0) % colors.length];
+  const initials = pseudo.substring(0, 2).toUpperCase();
 
-function renderAvatarEl(joueur, size=34, radius=10) {
-  const av = getAvatar(joueur);
-  if (av.emoji) {
-    return `<div style="width:${size}px;height:${size}px;border-radius:${radius}px;display:flex;align-items:center;justify-content:center;font-size:${Math.round(size*0.55)}px;background:var(--surface2);border:1px solid var(--border2)">${av.emoji}</div>`;
+  let config = { emoji: null, frame: 'none', bg: 'cosmos', title: 'Joueur CDM' };
+
+  if (joueur?.avatar) {
+    if (!joueur.avatar.startsWith('{')) {
+      config.emoji = joueur.avatar;
+    } else {
+      try {
+        const parsed = JSON.parse(joueur.avatar);
+        config = { ...config, ...parsed };
+      } catch(e) {
+        config.emoji = joueur.avatar;
+      }
+    }
   }
-  return `<div style="width:${size}px;height:${size}px;border-radius:${radius}px;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:${Math.round(size*0.38)}px;color:var(--bg);background:${av.color}">${av.initials}</div>`;
+
+  return { ...config, initials, color };
 }
 
+function renderAvatarEl(joueur, size = 34, radius = 10) {
+  const av = getAvatar(joueur);
+
+  const frameData = AVATAR_FRAMES.find(f => f.id === (av.frame || 'none')) || AVATAR_FRAMES[0];
+  const bgData = AVATAR_BACKGROUNDS.find(b => b.id === (av.bg || 'cosmos')) || AVATAR_BACKGROUNDS[0];
+
+  const innerSize = size - 6;
+
+  const bgStyle = `
+    width:${size}px;height:${size}px;border-radius:${radius}px;
+    background:${bgData.bg};
+    display:flex;align-items:center;justify-content:center;
+    position:relative;flex-shrink:0;
+    ${frameData.css}
+  `.replace(/\s+/g, ' ');
+
+  if (av.emoji) {
+    return `<div style="${bgStyle}">
+      <span style="font-size:${Math.round(innerSize * 0.6)}px;line-height:1">${av.emoji}</span>
+    </div>`;
+  }
+
+  return `<div style="${bgStyle}">
+    <span style="
+      font-family:'Bebas Neue',sans-serif;
+      font-size:${Math.round(innerSize * 0.4)}px;
+      color:#fff;font-weight:700;letter-spacing:1px
+    ">${av.initials}</span>
+  </div>`;
+}
+
+// ── Vérifier si un item est débloqué pour ce joueur ──
+function isAvatarItemUnlocked(item, joueur) {
+  if (!item.locked) return true;
+  if (!joueur) return false;
+
+  const stats = calcPlayerStats(joueur);
+  const t = item.unlockType;
+  const v = item.unlockValue;
+
+  if (t === 'streak')   return (joueur.streak || 0) >= v;
+  if (t === 'ligue')    return joueur.ligue === v;
+  if (t === 'level')    return (joueur.level || 1) >= v;
+  if (t === 'matches')  return (stats?.total || 0) >= v;
+  if (t === 'rank')     return (joueur.rank || 999) <= v;
+  if (t === 'gems')     return (joueur.gems || 0) >= v;
+  if (t === 'precision') {
+    if (!stats?.total) return false;
+    const precision = Math.round(((stats.exact + stats.bonDiff + stats.bonVainqueur) / stats.total) * 100);
+    return precision >= v;
+  }
+  return false;
+}
+
+// ── Ouvrir le modal ──
 function openAvatarModal() {
-  const grid = document.getElementById('avatar-grid');
-  if (!grid) return;
-  const joueur = allJoueurs.find(j=>j.id===currentUser);
-  const current = joueur?.avatar || '';
-  grid.innerHTML = AVATARS_LIST.map(e =>
-    `<div onclick="selectAvatar('${e}')" id="av-opt-${e.codePointAt(0)}" style="width:100%;aspect-ratio:1;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;border:2px solid ${e===current?'var(--gold)':'var(--border2)'};background:${e===current?'rgba(255,215,0,.1)':'var(--surface)'};transition:all .15s">${e}</div>`
-  ).join('');
-  pendingAvatar = current || null;
+  const joueur = allJoueurs.find(j => j.id === currentUser);
+  if (!joueur) return;
+
+  const current = getAvatar(joueur);
+  pendingAvatarConfig = {
+    emoji: current.emoji || '⚽',
+    frame: current.frame || 'none',
+    bg:    current.bg    || 'cosmos',
+    title: current.title || 'Joueur CDM',
+  };
+
+  const gemsEl = document.getElementById('av-gems-count');
+  if (gemsEl) gemsEl.textContent = joueur.gems || 0;
+
+  applyAvatarPreview();
+
+  renderAvatarCatNav('foot');
+  renderAvatarEmojiGrid('foot', joueur);
+  renderAvatarFrameGrid(joueur);
+  renderAvatarBgGrid(joueur);
+  renderAvatarTitleGrid(joueur);
+
+  switchAvatarTab('emoji', document.querySelector('.av-tab-btn'));
+
   document.getElementById('avatar-modal').classList.remove('hidden');
 }
 
-function selectAvatar(emoji) {
-  document.querySelectorAll('#avatar-grid > div').forEach(d => {
-    d.style.border = '2px solid var(--border2)';
-    d.style.background = 'var(--surface)';
-  });
-  const cp = emoji.codePointAt(0);
-  const el = document.getElementById('av-opt-'+cp);
-  if (el) { el.style.border='2px solid var(--gold)'; el.style.background='rgba(255,215,0,.1)'; }
-  pendingAvatar = emoji;
+function closeAvatarModal() {
+  document.getElementById('avatar-modal').classList.add('hidden');
+  pendingAvatarConfig = null;
 }
 
-async function saveAvatar() {
-  if (!pendingAvatar) { document.getElementById('avatar-modal').classList.add('hidden'); return; }
-  const { error } = await sb.from('joueurs').update({ avatar: pendingAvatar }).eq('id', currentUser);
-  if (error) { showToast('Erreur lors de la sauvegarde'); return; }
+// ── Appliquer la preview en temps réel ──
+function applyAvatarPreview() {
+  if (!pendingAvatarConfig) return;
+
+  const bgData    = AVATAR_BACKGROUNDS.find(b => b.id === pendingAvatarConfig.bg) || AVATAR_BACKGROUNDS[0];
+  const frameData = AVATAR_FRAMES.find(f => f.id === pendingAvatarConfig.frame) || AVATAR_FRAMES[0];
+  const titleData = AVATAR_TITLES.find(t => t.name === pendingAvatarConfig.title) || AVATAR_TITLES[0];
+
+  const bgEl    = document.getElementById('av-preview-bg');
+  const frameEl = document.getElementById('av-preview-frame');
+  const emojiEl = document.getElementById('av-preview-emoji');
+  const titleEl = document.getElementById('av-preview-title');
+
+  if (bgEl)    bgEl.style.background = bgData.bg;
+  if (frameEl) {
+    frameEl.style.cssText = `
+      position:absolute;inset:-5px;border-radius:33px;
+      pointer-events:none;transition:all 0.3s ease;
+      ${frameData.css}
+    `;
+  }
+  if (emojiEl) emojiEl.textContent = pendingAvatarConfig.emoji || '⚽';
+  if (titleEl) {
+    titleEl.textContent = pendingAvatarConfig.title;
+    titleEl.style.color = titleData.color;
+    titleEl.style.borderColor = titleData.color;
+  }
+}
+
+// ── Navigation par onglet ──
+function switchAvatarTab(tab, btn) {
+  document.querySelectorAll('.av-tab-btn').forEach(b => b.classList.remove('av-tab-active'));
+  document.querySelectorAll('.av-tab-content').forEach(t => t.style.display = 'none');
+  if (btn) btn.classList.add('av-tab-active');
+  const el = document.getElementById('av-tab-' + tab);
+  if (el) el.style.display = 'block';
+}
+
+// ── Catégories emoji ──
+function renderAvatarCatNav(activeCat) {
+  const nav = document.getElementById('av-cat-nav');
+  if (!nav) return;
+  nav.innerHTML = Object.entries(AVATAR_CATEGORIES).map(([key, cat]) => `
+    <div class="av-cat-pill ${key === activeCat ? 'active' : ''}"
+         onclick="selectAvatarCat('${key}')">
+      ${cat.label}
+    </div>
+  `).join('');
+}
+
+function selectAvatarCat(cat) {
+  document.querySelectorAll('.av-cat-pill').forEach(p => p.classList.remove('active'));
+  const pill = [...document.querySelectorAll('.av-cat-pill')]
+    .find(p => p.textContent.trim().includes(AVATAR_CATEGORIES[cat]?.label?.split(' ')[1] || cat));
+  if (pill) pill.classList.add('active');
+
+  const joueur = allJoueurs.find(j => j.id === currentUser);
+  renderAvatarEmojiGrid(cat, joueur);
+}
+
+// ── Grille Emoji ──
+function renderAvatarEmojiGrid(cat, joueur) {
+  const grid = document.getElementById('av-emoji-grid');
+  if (!grid) return;
+  const items = AVATAR_CATEGORIES[cat]?.items || [];
+
+  grid.innerHTML = items.map(item => {
+    const unlocked = isAvatarItemUnlocked(item, joueur);
+    const selected = item.e === pendingAvatarConfig?.emoji;
+    return `
+      <div class="av-item ${selected ? 'selected' : ''} ${!unlocked ? 'locked' : ''}"
+           onclick="pickAvatarEmoji('${item.e}', ${!unlocked})">
+        ${item.e}
+        ${!unlocked ? `
+          <div style="position:absolute;inset:0;background:rgba(5,8,22,0.65);display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:14px;gap:2px">
+            <span style="font-size:14px">🔒</span>
+            <span style="font-size:8px;color:rgba(255,255,255,0.6);padding:0 4px;text-align:center;line-height:1.2">${item.unlock || ''}</span>
+          </div>
+        ` : ''}
+        <div class="av-rarity-dot" style="background:${RARITY_COLORS[item.rarity] || '#8899BB'}"></div>
+      </div>
+    `;
+  }).join('');
+}
+
+function pickAvatarEmoji(emoji, locked) {
+  if (locked) return;
+  if (!pendingAvatarConfig) return;
+  pendingAvatarConfig.emoji = emoji;
+  applyAvatarPreview();
+  const activeCat = document.querySelector('.av-cat-pill.active');
+  const catKey = activeCat ? Object.keys(AVATAR_CATEGORIES).find(k =>
+    activeCat.textContent.includes(AVATAR_CATEGORIES[k].label.split(' ')[1] || k)
+  ) : 'foot';
+  renderAvatarEmojiGrid(catKey || 'foot', allJoueurs.find(j => j.id === currentUser));
+}
+
+// ── Grille Cadres ──
+function renderAvatarFrameGrid(joueur) {
+  const grid = document.getElementById('av-frame-grid');
+  if (!grid) return;
+
+  grid.innerHTML = AVATAR_FRAMES.map(frame => {
+    const unlocked = isAvatarItemUnlocked(frame, joueur);
+    const selected = frame.id === pendingAvatarConfig?.frame;
+    const rarityColor = frame.rarity === 'legendary' ? '#F4C542'
+      : frame.rarity === 'epic' ? '#A855F7'
+      : frame.rarity === 'rare' ? '#22D16B' : '#8899BB';
+
+    return `
+      <div class="av-frame-item ${selected ? 'selected' : ''}"
+           onclick="${unlocked ? `pickAvatarFrame('${frame.id}')` : ''}">
+        <div style="width:56px;height:56px;${frame.css};display:flex;align-items:center;justify-content:center;font-size:26px;background:linear-gradient(135deg,#1a1060,#0a2a50)">
+          ${pendingAvatarConfig?.emoji || '⚽'}
+        </div>
+        <div style="font-size:9px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:${rarityColor}">
+          ${frame.rarity === 'legendary' ? '✦ ' : ''}${frame.label}
+        </div>
+        ${!unlocked ? `
+          <div style="position:absolute;inset:0;background:rgba(5,8,22,0.6);display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:16px;gap:4px">
+            <span style="font-size:16px">🔒</span>
+            <span style="font-size:9px;color:rgba(255,255,255,0.6);text-align:center;padding:0 6px">${frame.unlock || ''}</span>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function pickAvatarFrame(frameId) {
+  if (!pendingAvatarConfig) return;
+  pendingAvatarConfig.frame = frameId;
+  applyAvatarPreview();
+  const joueur = allJoueurs.find(j => j.id === currentUser);
+  renderAvatarFrameGrid(joueur);
+}
+
+// ── Grille Fonds ──
+function renderAvatarBgGrid(joueur) {
+  const grid = document.getElementById('av-bg-grid');
+  if (!grid) return;
+
+  grid.innerHTML = AVATAR_BACKGROUNDS.map(bg => {
+    const unlocked = isAvatarItemUnlocked(bg, joueur);
+    const selected = bg.id === pendingAvatarConfig?.bg;
+
+    return `
+      <div class="av-bg-item ${selected ? 'selected' : ''}"
+           style="background:${bg.bg}" onclick="${unlocked ? `pickAvatarBg('${bg.id}')` : ''}">
+        ${selected ? '<div style="position:absolute;top:4px;right:4px;width:16px;height:16px;border-radius:50%;background:#F4C542;display:flex;align-items:center;justify-content:center;font-size:9px;color:#050816;font-weight:900">✓</div>' : ''}
+        ${!unlocked ? '<div style="position:absolute;inset:0;background:rgba(5,8,22,0.6);display:flex;align-items:center;justify-content:center;border-radius:14px;font-size:16px">🔒</div>' : ''}
+        <div style="position:absolute;bottom:3px;left:0;right:0;text-align:center;font-size:8px;color:rgba(255,255,255,0.6);font-weight:700">${bg.label}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function pickAvatarBg(bgId) {
+  if (!pendingAvatarConfig) return;
+  pendingAvatarConfig.bg = bgId;
+  applyAvatarPreview();
+  const joueur = allJoueurs.find(j => j.id === currentUser);
+  renderAvatarBgGrid(joueur);
+}
+
+// ── Grille Titres ──
+function renderAvatarTitleGrid(joueur) {
+  const grid = document.getElementById('av-title-grid');
+  if (!grid) return;
+
+  grid.innerHTML = AVATAR_TITLES.map(t => {
+    const unlocked = isAvatarItemUnlocked(t, joueur);
+    const selected = t.name === pendingAvatarConfig?.title;
+
+    return `
+      <div class="av-title-item ${selected ? 'selected' : ''} ${!unlocked ? 'locked' : ''}"
+           onclick="${unlocked ? `pickAvatarTitle('${t.name.replace(/'/g,"\\'")}')` : ''}"
+           style="${!unlocked ? 'opacity:0.45;cursor:not-allowed' : ''}">
+        <div>
+          <div style="font-size:14px;font-weight:700;color:${t.color}">${t.name}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">${!unlocked ? '🔒 ' : '✓ '}${t.unlock}</div>
+        </div>
+        ${selected ? '<div style="color:var(--gold,#F4C542);font-size:18px">✓</div>' : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function pickAvatarTitle(name) {
+  if (!pendingAvatarConfig) return;
+  pendingAvatarConfig.title = name;
+  applyAvatarPreview();
+  const joueur = allJoueurs.find(j => j.id === currentUser);
+  renderAvatarTitleGrid(joueur);
+}
+
+// ── Sauvegarder ──
+async function saveAvatarConfig() {
+  if (!pendingAvatarConfig) {
+    closeAvatarModal();
+    return;
+  }
+
+  const btn = document.getElementById('av-save-btn');
+  if (btn) {
+    btn.textContent = '...';
+    btn.style.opacity = '0.7';
+    btn.disabled = true;
+  }
+
+  const payload = JSON.stringify(pendingAvatarConfig);
+  const { error } = await sb.from('joueurs').update({ avatar: payload }).eq('id', currentUser);
+
+  if (btn) {
+    btn.disabled = false;
+    btn.style.opacity = '1';
+  }
+
+  if (error) {
+    showToast('Erreur lors de la sauvegarde');
+    if (btn) btn.innerHTML = '<span>✓</span> SAUVEGARDER';
+    return;
+  }
+
   await loadData();
-  document.getElementById('avatar-modal').classList.add('hidden');
-  showToast('Avatar mis à jour !');
-  updateHeaderUser();
+  closeAvatarModal();
+  showToast('✨ Avatar mis à jour !');
 }
 
 // ══════════════════════════════════════════
@@ -2997,10 +3609,11 @@ function renderClassement(){
       item.className='podium-item';
       item.style.cursor='pointer';
       item.onclick=function(){openProfil(p.id);};
+      const podiumAvHtml=renderAvatarEl(p,56,16);
       item.innerHTML=
-        '<div class="podium-avatar '+cls+'" style="background:'+getAvatarColor(p.pseudo)+'">'+
+        '<div style="position:relative;display:inline-block">'+
+          podiumAvHtml+
           (crown?'<div class="podium-crown">'+crown+'</div>':'')+
-          (p.avatar?p.avatar:p.pseudo.substring(0,2).toUpperCase())+
         '</div>'+
         '<div class="podium-name">'+p.pseudo+'</div>'+
         '<div class="podium-pts">'+p.pts+' pts</div>'+
@@ -3018,7 +3631,11 @@ function renderClassement(){
     const stats=calcPlayerStats(p);
     const streak=getStreak(p);
     const awards=getAwards(p);
-    const color=getAvatarColor(p.pseudo);
+    const avConfig=getAvatar(p);
+    const titleData=AVATAR_TITLES.find(t=>t.name===avConfig.title);
+    const titleHtml=titleData&&avConfig.title!=='Joueur CDM'
+      ?'<div style="font-size:9px;color:'+titleData.color+';font-weight:700;letter-spacing:0.3px;margin-top:1px">'+avConfig.title+'</div>'
+      :'';
     let badgesHtml='';
     if(stats.exact>0) badgesHtml+='<span class="badge badge-exact">⭐ '+stats.exact+' exact'+(stats.exact>1?'s':'')+'</span>';
     if(stats.bonDiff>0) badgesHtml+='<span class="badge badge-diff">✓ '+stats.bonDiff+' diff</span>';
@@ -3027,9 +3644,10 @@ function renderClassement(){
     awards.forEach(function(a){badgesHtml+='<span class="badge '+a.cls+'">'+a.icon+' '+a.label+'</span>';});
     return '<div class="ranking-row'+(isMe?' me':'')+'" data-playerid="'+p.id+'">'
       +'<div class="rank-pos'+(i<3?' p'+(i+1):'')+'">'+String(i+1)+'</div>'
-      +(p.avatar?'<div class="rank-avatar" style="background:var(--surface2);border:1px solid var(--border2);font-size:18px">'+p.avatar+'</div>':'<div class="rank-avatar" style="background:'+color+'">'+p.pseudo.substring(0,2).toUpperCase()+'</div>')
+      +renderAvatarEl(p,36,10)
       +'<div style="flex:1;min-width:0">'
         +'<div class="rank-name">'+p.pseudo+(isMe?' <span class="me-badge">moi</span>':'')+'</div>'
+        +titleHtml
         +(badgesHtml?'<div class="badge-row">'+badgesHtml+'</div>':'')
         +'<div style="font-size:10px;color:var(--accent);margin-top:3px">Voir le détail →</div>'
       +'</div>'
@@ -4059,12 +4677,22 @@ function openProfil(id){
   // Avatar dans le modal
   const avDisplay=document.getElementById('profil-avatar-display');
   if(avDisplay){
-    const av=getAvatar(joueur);
-    if(av.emoji){avDisplay.textContent=av.emoji;avDisplay.style.background='var(--surface2)';avDisplay.style.border='1px solid var(--border2)';}
-    else{avDisplay.textContent=av.initials;avDisplay.style.background=av.color;avDisplay.style.fontFamily="'Bebas Neue',sans-serif";avDisplay.style.fontSize='18px';avDisplay.style.color='var(--bg)';}
-    // Permettre de changer uniquement si c'est son propre profil
-    if(id===currentUser){avDisplay.title='Cliquer pour changer d\'avatar';avDisplay.onclick=openAvatarModal;}
+    avDisplay.innerHTML=renderAvatarEl(joueur,46,13);
+    if(id===currentUser){avDisplay.title='Cliquer pour changer d\'avatar';avDisplay.onclick=openAvatarModal;avDisplay.style.cursor='pointer';}
     else{avDisplay.title='';avDisplay.onclick=null;avDisplay.style.cursor='default';}
+  }
+
+  // Titre sous le pseudo
+  const avConfig=getAvatar(joueur);
+  const titleEl=document.getElementById('profil-title-badge');
+  if(titleEl&&avConfig.title){
+    const titleData=AVATAR_TITLES.find(t=>t.name===avConfig.title)||AVATAR_TITLES[0];
+    titleEl.textContent=avConfig.title;
+    titleEl.style.color=titleData.color;
+    titleEl.style.borderColor=titleData.color;
+    titleEl.style.display='inline-block';
+  } else if(titleEl){
+    titleEl.style.display='none';
   }
 
   document.getElementById('profil-badges').innerHTML=
