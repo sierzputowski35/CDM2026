@@ -2664,8 +2664,16 @@ async function saveAvatarConfig() {
 
   btnReset();
   closeAvatarModal();
-  updateHeaderUser();
-  if (typeof initHomeHeader === 'function') initHomeHeader();
+
+  // Mettre à jour tous les affichages d'avatar du joueur courant
+  const joueurMaj = allJoueurs.find(j => j.id === currentUser);
+  if (joueurMaj) {
+    const profilAvEl = document.getElementById('profil-avatar-display');
+    if (profilAvEl) profilAvEl.innerHTML = renderAvatarEl(joueurMaj, 46, 13);
+    const homeAvEl = document.getElementById('home-avatar');
+    if (homeAvEl) homeAvEl.innerHTML = renderAvatarEl(joueurMaj, 38, 11);
+  }
+
   if (typeof refreshPage === 'function') refreshPage();
   showToast('✨ Avatar mis à jour !');
 }
