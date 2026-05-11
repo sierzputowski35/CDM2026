@@ -2539,7 +2539,7 @@ function renderAvatarFrameGrid(joueur) {
         <div style="width:56px;height:56px;${frame.css};display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1a1060,#0a2a50);overflow:hidden">
           <img src="${twUrl(pendingAvatarConfig?.emoji || '⚽')}" width="34" height="34"
                style="object-fit:contain" loading="lazy"
-               onerror="this.outerHTML='<span style=font-size:26px>${pendingAvatarConfig?.emoji||\'⚽\'}</span>'">
+               onerror="this.style.display='none'">
         </div>
         <div style="font-size:9px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:${rarityColor}">
           ${frame.rarity === 'legendary' ? '✦ ' : ''}${frame.label}
