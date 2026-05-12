@@ -3995,7 +3995,7 @@ function _buildFeedEvents(board){
   const events=[];
   board.forEach(function(p){
     const stats=calcPlayerStats(p);
-    if(stats.exact>0)events.push({joueur:p,emoji:'\u2B50',text:'<strong>'+p.pseudo+'</strong> a trouv\u00e9 '+stats.exact+' score'+(stats.exact>1?'s':'')+' exact'+(stats.exact>1?'s':''),pts:'+ '+Math.round(stats.exact*5)+' pts'});
+    if(stats.exact>0)events.push({joueur:p,emoji:'\u2B50',text:'<strong>'+p.pseudo+'</strong> a trouv\u00e9 '+stats.exact+' score'+(stats.exact>1?'s':'')+' exact'+(stats.exact>1?'s':''),pts:'+ '+p.pts+' pts au total'});
     const streak=getStreak(p);
     if(streak>=3)events.push({joueur:p,emoji:'\uD83D\uDD25',text:'<strong>'+p.pseudo+'</strong> est en feu \u2014 '+streak+' bons pronos d\u2019affil\u00e9e !',pts:''});
   });
@@ -5151,14 +5151,14 @@ function openProfil(id){
       let badgeClass='pb-none',badgeText='Non saisi',ptsGagnes='';
       if(p){
         const p1=parseInt(p.s1),p2=parseInt(p.s2);
-        const mult=PHASES[m.phase]||1;
-        if(p1===r1&&p2===r2){
-          badgeClass='pb-exact';badgeText='Score exact';ptsGagnes='+'+Math.round(5*mult)+' pts';
-        } else {
-          const rw=r1>r2?1:r1<r2?2:0,pw=p1>p2?1:p1<p2?2:0;
-          if(rw!==pw){badgeClass='pb-miss';badgeText='Rat\u00e9';ptsGagnes='0 pt';}
-          else if(r1-r2===p1-p2){badgeClass='pb-diff';badgeText='Bonne diff';ptsGagnes='+'+Math.round(3*mult)+' pts';}
-          else{badgeClass='pb-win';badgeText='Bon vainq.';ptsGagnes='+'+Math.round(1*mult)+' pt';}
+        const pts_m=computeMatchPts(m,p,real);
+        if(pts_m===0){
+          badgeClass='pb-miss';badgeText='Rat\u00e9';ptsGagnes='0 pt';
+        } else if(pts_m!==null){
+          ptsGagnes='+'+pts_m+' pts';
+          if(p1===r1&&p2===r2){badgeClass='pb-exact';badgeText='Score exact';}
+          else if(r1-r2===p1-p2){badgeClass='pb-diff';badgeText='Bonne diff';}
+          else{badgeClass='pb-win';badgeText='Bon vainq.';}
         }
       }
       const row=document.createElement('div');
@@ -5392,13 +5392,14 @@ function calcPlayerStats(joueur){
     if(!p){rate++;continue;}
     const p1=parseInt(p.s1),p2=parseInt(p.s2),r1=parseInt(real.s1),r2=parseInt(real.s2);
     if(isNaN(p1)||isNaN(p2)){rate++;continue;}
-    const mult=PHASES[m.phase]||1;
-    if(p1===r1&&p2===r2){pts+=Math.round(5*mult);exact++;}
+    const pts_m=computeMatchPts(m,p,real);
+    if(pts_m!==null)pts+=pts_m;
+    if(p1===r1&&p2===r2){exact++;}
     else{
       const rw=r1>r2?1:r1<r2?2:0,pw=p1>p2?1:p1<p2?2:0;
       if(rw!==pw){rate++;}
-      else if(r1-r2===p1-p2){pts+=Math.round(3*mult);bonDiff++;}
-      else{pts+=Math.round(1*mult);bonVainqueur++;}
+      else if(r1-r2===p1-p2){bonDiff++;}
+      else{bonVainqueur++;}
     }
   }
   const glob=joueur.globaux||{};
