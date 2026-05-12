@@ -1564,6 +1564,63 @@ body {
     transition: none;
   }
 }
+
+/* ══════════════════════════════════
+   PTS PREVIEW (cartes match)
+══════════════════════════════════ */
+.pts-preview-row {
+  display: flex; gap: 6px; margin: 10px 0 6px;
+}
+.pts-preview-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 6px 4px; gap: 2px;
+}
+.pts-preview-label {
+  font-size: 8px; color: var(--text3); text-align: center;
+  font-weight: 600; letter-spacing: .04em; line-height: 1.2;
+}
+.pts-preview-pts {
+  font-family: 'Bebas Neue', sans-serif; font-size: 17px; letter-spacing: 1px;
+}
+.pts-preview-sub {
+  font-size: 8px; color: var(--text3); text-align: center; line-height: 1.2;
+}
+
+/* ══════════════════════════════════
+   PTS LEGEND PANEL
+══════════════════════════════════ */
+.pts-legend-panel {
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: 16px; padding: 14px 14px 10px; margin: 0 0 12px;
+}
+.pts-legend-title {
+  font-family: 'Oswald', sans-serif; font-size: 15px; font-weight: 700;
+  color: var(--text); letter-spacing: .05em; margin-bottom: 12px;
+}
+.pts-legend-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;
+}
+.pts-legend-item {
+  display: flex; align-items: flex-start; gap: 8px;
+  background: var(--surface2); border-radius: 10px; padding: 8px 10px;
+}
+.pts-legend-icon { font-size: 18px; flex-shrink: 0; line-height: 1; }
+.pts-legend-info {
+  display: flex; flex-direction: column; gap: 1px;
+}
+.pts-legend-name { font-size: 10px; font-weight: 700; color: var(--text2); }
+.pts-legend-val  { font-family: 'Bebas Neue', sans-serif; font-size: 14px; color: var(--gold); letter-spacing: .5px; }
+.pts-legend-note { font-size: 9px; color: var(--text3); }
+.pts-legend-mult-row {
+  display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+}
+.pts-legend-mult-chip {
+  font-size: 10px; color: var(--text2);
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 2px 7px;
+}
+.pts-legend-mult-chip span { color: var(--gold); font-weight: 700; }
 </style>
 </head>
 <body>
@@ -1963,6 +2020,83 @@ body {
       <!-- SOUS-ONGLET MATCHS -->
       <div id="pronos-matchs">
         <div class="section-sub">Saisissez votre score avant le coup d'envoi · 0 pt si non rempli</div>
+        <div style="text-align:center;margin:4px 0 8px">
+          <button onclick="togglePtsLegend()" style="background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer;text-decoration:underline;font-family:inherit">❓ Comment les points sont calculés ?</button>
+        </div>
+        <div class="pts-legend-panel" id="pts-legend-panel" style="display:none">
+          <div class="pts-legend-title">📊 Système de Points</div>
+          <div class="pts-legend-grid">
+            <div class="pts-legend-item">
+              <div class="pts-legend-icon">🎯</div>
+              <div class="pts-legend-info">
+                <span class="pts-legend-name">Score exact</span>
+                <span class="pts-legend-val">5 pts × mult.</span>
+                <span class="pts-legend-note">Ex. prédit 2-1, résultat 2-1</span>
+              </div>
+            </div>
+            <div class="pts-legend-item">
+              <div class="pts-legend-icon">📐</div>
+              <div class="pts-legend-info">
+                <span class="pts-legend-name">Bonne différence</span>
+                <span class="pts-legend-val">3 pts × mult.</span>
+                <span class="pts-legend-note">Ex. prédit 2-0, résultat 3-1</span>
+              </div>
+            </div>
+            <div class="pts-legend-item">
+              <div class="pts-legend-icon">✅</div>
+              <div class="pts-legend-info">
+                <span class="pts-legend-name">Bon vainqueur</span>
+                <span class="pts-legend-val">1 pt × mult.</span>
+                <span class="pts-legend-note">Ex. prédit 2-0, résultat 1-0</span>
+              </div>
+            </div>
+            <div class="pts-legend-item">
+              <div class="pts-legend-icon">❌</div>
+              <div class="pts-legend-info">
+                <span class="pts-legend-name">Mauvais résultat</span>
+                <span class="pts-legend-val">0 pt</span>
+                <span class="pts-legend-note">Mauvais vainqueur ou non rempli</span>
+              </div>
+            </div>
+          </div>
+          <div class="pts-legend-mult-row">
+            <span style="font-size:10px;color:var(--text3);font-weight:600;align-self:center">Multiplicateurs :</span>
+            <span class="pts-legend-mult-chip">Groupes <span>×1</span></span>
+            <span class="pts-legend-mult-chip">16es <span>×1.5</span></span>
+            <span class="pts-legend-mult-chip">8es / QF <span>×2</span></span>
+            <span class="pts-legend-mult-chip">Demies <span>×3</span></span>
+            <span class="pts-legend-mult-chip">Finale <span>×4</span></span>
+          </div>
+          <div style="height:1px;background:var(--border);margin:12px 0"></div>
+          <div class="pts-legend-title" style="font-size:13px;margin-bottom:8px">🌍 Pronostics Globaux — Cotes</div>
+          <div style="font-size:10px;color:var(--text3);margin-bottom:8px;line-height:1.5">
+            Pour les pronos <strong style="color:var(--text2)">Vainqueur du tournoi, Meilleur buteur, Finaliste…</strong>
+            les points dépendent de la difficulté du choix. Plus l'équipe/joueur est outsider, plus tu gagnes de points si tu as raison.
+          </div>
+          <div class="pts-legend-grid" style="grid-template-columns:1fr 1fr 1fr;gap:6px">
+            <div class="pts-legend-item" style="flex-direction:column;align-items:center;text-align:center;padding:8px 6px">
+              <span style="font-size:20px">⭐</span>
+              <span class="pts-legend-name" style="margin-top:4px">Grand favori</span>
+              <span class="pts-legend-val" style="color:#22D16B">+5 pts</span>
+              <span class="pts-legend-note">Ex : France, Espagne</span>
+            </div>
+            <div class="pts-legend-item" style="flex-direction:column;align-items:center;text-align:center;padding:8px 6px">
+              <span style="font-size:20px">⚡</span>
+              <span class="pts-legend-name" style="margin-top:4px">Outsider</span>
+              <span class="pts-legend-val" style="color:var(--gold)">+15–22 pts</span>
+              <span class="pts-legend-note">Ex : Turquie, Suède</span>
+            </div>
+            <div class="pts-legend-item" style="flex-direction:column;align-items:center;text-align:center;padding:8px 6px">
+              <span style="font-size:20px">🔥</span>
+              <span class="pts-legend-name" style="margin-top:4px">Gros outsider</span>
+              <span class="pts-legend-val" style="color:#FF8A3D">+30 pts</span>
+              <span class="pts-legend-note">Ex : Bolivie, Haïti</span>
+            </div>
+          </div>
+          <div style="margin-top:10px;font-size:10px;color:var(--text3);line-height:1.6;background:var(--surface2);border-radius:8px;padding:8px 10px">
+            💡 <strong style="color:var(--text2)">Résumé :</strong> Les pronos de matchs rapportent entre 1 et 5 pts × multiplicateur de phase. Les pronos globaux rapportent entre 5 pts (favori) et 30 pts (outsider) selon la cote de l'équipe ou du joueur choisi.
+          </div>
+        </div>
         <div class="filter-bar">
           <button class="filter-btn active" id="f-tous" onclick="setFilter('tous',this)">Tous</button>
           <button class="filter-btn" id="f-prochain" onclick="setFilter('prochain',this)">⚡ À parier</button>
@@ -3839,6 +3973,62 @@ function renderSocialFeed(){
 }
 
 
+// ══ PTS PREVIEW ══
+function renderPtsPreview(m){
+  const mult=PHASES[m.phase]||1;
+  const ptsMax=Math.round(5*mult);
+  const ptsMid=Math.round(3*mult);
+  const ptsMin=Math.round(1*mult);
+
+  const eq1=EQUIPES.find(e=>e.nom===m.name1);
+  const eq2=EQUIPES.find(e=>e.nom===m.name2);
+  const pts1=eq1?eq1.pts:15;
+  const pts2=eq2?eq2.pts:15;
+
+  const diff=pts1-pts2;
+  let label1='',label2='',labelDraw='';
+  if(Math.abs(diff)>=6){
+    label1=diff<0?'⭐ Favori':'🔥 Outsider';
+    label2=diff>0?'⭐ Favori':'🔥 Outsider';
+    labelDraw='⚡ Surprise';
+  }else if(Math.abs(diff)>=3){
+    label1=diff<0?'Légèrement favori':'Outsider';
+    label2=diff>0?'Légèrement favori':'Outsider';
+  }
+
+  const n1=m.name1.length>9?m.name1.substring(0,8)+'…':m.name1;
+  const n2=m.name2.length>9?m.name2.substring(0,8)+'…':m.name2;
+
+  return '<div class="pts-preview-row">'
+    +'<div class="pts-preview-btn">'
+    +'<span class="pts-preview-label">'+n1+' gagne</span>'
+    +'<span class="pts-preview-pts" style="color:var(--gold)">+'+ptsMax+'</span>'
+    +'<span class="pts-preview-sub">'+(label1||'score exact')+'</span>'
+    +'</div>'
+    +'<div class="pts-preview-btn">'
+    +'<span class="pts-preview-label">Nul</span>'
+    +'<span class="pts-preview-pts" style="color:var(--gold)">+'+ptsMax+'</span>'
+    +'<span class="pts-preview-sub">'+(labelDraw||'score exact')+'</span>'
+    +'</div>'
+    +'<div class="pts-preview-btn">'
+    +'<span class="pts-preview-label">'+n2+' gagne</span>'
+    +'<span class="pts-preview-pts" style="color:var(--gold)">+'+ptsMax+'</span>'
+    +'<span class="pts-preview-sub">'+(label2||'score exact')+'</span>'
+    +'</div>'
+    +'</div>'
+    +'<div style="font-size:9px;color:var(--text3);text-align:center;margin-bottom:6px">'
+    +'Bon vainqueur +'+ptsMin+' pt &nbsp;·&nbsp; '
+    +'Bonne diff +'+ptsMid+' pts &nbsp;·&nbsp; '
+    +'Score exact +'+ptsMax+' pts'
+    +(mult>1?' &nbsp;<span style="color:var(--gold);font-weight:700">(×'+mult+' '+m.phase+')</span>':'')
+    +'</div>';
+}
+
+function togglePtsLegend(){
+  const p=document.getElementById('pts-legend-panel');
+  if(p) p.style.display=p.style.display==='none'?'block':'none';
+}
+
 // ══ FILTRE MATCHS ══
 let currentFilter='tous';
 function setFilter(f,btn){
@@ -3888,6 +4078,9 @@ function renderMatchs(){
     const maxBonus=Math.max(coteToBonus(cotesM.cote1),coteToBonus(cotesM.cote2));
     const bonusColor=maxBonus>=2.5?'var(--orange-fire)':maxBonus>=1.8?'var(--gold)':'var(--text2)';
     const badgeCote=`<span style="font-size:11px;font-family:'Oswald',sans-serif;background:rgba(255,138,61,0.15);color:${bonusColor};border:1px solid ${bonusColor};border-radius:6px;padding:2px 7px;font-weight:600;letter-spacing:0.5px">⚡ ×${maxBonus.toFixed(1)} max</span>`;
+    const ptsMaxCard=Math.round(5*(PHASES[m.phase]||1));
+    const badgePts=!isLocked?`<span style="margin-left:auto;font-family:'Bebas Neue',sans-serif;font-size:13px;color:var(--gold);letter-spacing:1px;background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.2);border-radius:6px;padding:1px 7px;white-space:nowrap">🎯 max +${ptsMaxCard} pts</span>`:'';
+
     let footer='';
     if(real){
       const pts=(()=>{
@@ -3917,7 +4110,7 @@ function renderMatchs(){
       <div class="match-meta">
         <span class="match-group">${groupeLabel}</span>
         <span class="match-venue">${m.venue}</span>
-        ${badgeCote}
+        ${isLocked?badgeCote:badgePts}
       </div>
       <div class="match-meta" style="margin-bottom:0"><span class="match-date">${m.date}</span></div>
       <div class="teams-row" style="margin-top:14px">
@@ -3930,6 +4123,7 @@ function renderMatchs(){
         <span class="score-sep">:</span>
         <input class="score-inp" type="number" min="0" max="20" id="s2-${m.id}" value="${p.s2!==undefined?p.s2:''}" placeholder="—" ${isLocked?'disabled':''}>
       </div>
+      ${!isLocked?renderPtsPreview(m):''}
       ${footer}
     </div>`;
   }
@@ -4063,16 +4257,33 @@ async function saveGlobaux(){
   await loadData();showToast('Pronostics globaux enregistrés !');renderGlobaux();
 }
 
+function _bonusTier(pts){
+  if(pts<=6)  return{tier:'Grand favori', color:'#22D16B', icon:'⭐'};
+  if(pts<=12) return{tier:'Favori',        color:'#22D16B', icon:'⭐'};
+  if(pts<=18) return{tier:'Intermédiaire', color:'var(--gold)', icon:'⚡'};
+  if(pts<=24) return{tier:'Outsider',      color:'var(--gold)', icon:'⚡'};
+              return{tier:'Gros outsider', color:'#FF8A3D', icon:'🔥'};
+}
+function _renderBonusHtml(pts){
+  const{tier,color,icon}=_bonusTier(pts);
+  return `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px">
+    <span style="font-size:11px;color:var(--text3)">Si correct :</span>
+    <span style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;color:${color}">${icon} +${pts} pts</span>
+    <span style="font-size:10px;color:${color};background:${color}18;border:1px solid ${color}33;border-radius:6px;padding:1px 7px">${tier}</span>
+  </div>`;
+}
 function updateSelectBonus(id,sel){
   const g=GLOBAUX_DEF.find(x=>x.id===id);
   const joueur=g?.liste?.find(j=>j.nom===sel.value);
   const div=document.getElementById('bonus-'+id);
-  if(div) div.innerHTML=joueur?`Bonus si correct : <span style="color:var(--accent);font-weight:600">+${joueur.pts} pts</span>`:'⚡ Favori = 5 pts · Outsider = jusqu\'à 30 pts';
+  if(!div) return;
+  div.innerHTML=joueur?_renderBonusHtml(joueur.pts):'<span style="color:var(--text3);font-size:11px">⭐ Favori = 5 pts &nbsp;·&nbsp; 🔥 Outsider = 30 pts</span>';
 }
 function updateEquipeBonus(id,sel){
   const equipe=EQUIPES.find(e=>e.nom===sel.value);
   const div=document.getElementById('bonus-'+id);
-  if(div) div.innerHTML=equipe?`Bonus si correct : <span style="color:var(--accent);font-weight:600">+${equipe.pts} pts</span>`:'Espagne/France = 5 pts · Outsider = jusqu\'à 30 pts';
+  if(!div) return;
+  div.innerHTML=equipe?_renderBonusHtml(equipe.pts):'<span style="color:var(--text3);font-size:11px">⭐ Favori = 5 pts &nbsp;·&nbsp; 🔥 Outsider = 30 pts</span>';
 }
 
 // ══ GROUPES ══
