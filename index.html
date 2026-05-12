@@ -2255,7 +2255,9 @@ function twUrl(emoji) {
   const cps = [...emoji]
     .map(c => c.codePointAt(0).toString(16))
     .filter(c => c !== 'fe0f');
-  return `https://cdn.jsdelivr.net/npm/twemoji@14.0.2/assets/72x72/${cps.join('-')}.png`;
+  const file = cps.join('-');
+  // cdnjs cloudflare > jsdelivr (plus fiable pour les gros packages)
+  return `https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/72x72/${file}.png`;
 }
 
 const AVATAR_FLAG_BGS = [
@@ -2297,15 +2299,20 @@ function getAvatar(joueur) {
 
   let config = { emoji: null, frame: 'none', bg: 'cosmos', title: 'Joueur CDM' };
 
-  if (joueur?.avatar) {
-    if (!joueur.avatar.startsWith('{')) {
-      config.emoji = joueur.avatar;
+  // Priorité : localStorage (fonctionne même si colonne Supabase absente)
+  const lsKey = 'cdm2026_avatar_' + joueur?.id;
+  const lsRaw = joueur?.id ? localStorage.getItem(lsKey) : null;
+  const raw = lsRaw || joueur?.avatar || null;
+
+  if (raw) {
+    if (!raw.startsWith('{')) {
+      config.emoji = raw;
     } else {
       try {
-        const parsed = JSON.parse(joueur.avatar);
+        const parsed = JSON.parse(raw);
         config = { ...config, ...parsed };
       } catch(e) {
-        config.emoji = joueur.avatar;
+        config.emoji = raw;
       }
     }
   }
@@ -2644,18 +2651,35 @@ async function saveAvatarConfig() {
   if (btn) { btn.innerHTML = '...'; btn.style.opacity = '0.7'; btn.disabled = true; }
 
   const payload = JSON.stringify(pendingAvatarConfig);
-  const { error } = await sb.from('joueurs').update({ avatar: payload }).eq('id', currentUser);
 
+  // Sauvegarde locale immédiate (fonctionne même si Supabase échoue)
+  localStorage.setItem('cdm2026_avatar_' + currentUser, payload);
+
+  // Patch local allJoueurs pour que l'UI se mette à jour sans reload
+  const joueurLocal = allJoueurs.find(j => j.id === currentUser);
+  if (joueurLocal) joueurLocal.avatar = payload;
+
+  // Tenter la sync Supabase
+  const { error } = await sb.from('joueurs').update({ avatar: payload }).eq('id', currentUser);
   if (error) {
-    btnReset();
-    showToast('Erreur lors de la sauvegarde');
-    return;
+    console.error('[Avatar save] Supabase error:', error);
+    // On ferme quand même — la config est dans localStorage
   }
 
-  await loadData();
+  btnReset();
   closeAvatarModal();
-  updateHeaderUser();
-  if (typeof initHomeHeader === 'function') initHomeHeader();
+
+  // Mettre à jour tous les affichages d'avatar du joueur courant
+  const joueurMaj = allJoueurs.find(j => j.id === currentUser);
+  if (joueurMaj) {
+    // Profil modal (ouvert depuis le classement)
+    const profilAvEl = document.getElementById('profil-avatar-display');
+    if (profilAvEl) profilAvEl.innerHTML = renderAvatarEl(joueurMaj, 46, 13);
+    // Home header
+    const homeAvEl = document.getElementById('home-avatar');
+    if (homeAvEl) homeAvEl.innerHTML = renderAvatarEl(joueurMaj, 38, 11);
+  }
+
   if (typeof refreshPage === 'function') refreshPage();
   showToast('✨ Avatar mis à jour !');
 }
