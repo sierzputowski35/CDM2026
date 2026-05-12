@@ -3801,32 +3801,21 @@ function coteToBonus(cote){
   return parseFloat((Math.log(c)+1).toFixed(2));
 }
 
-// ══ CONVERSION COTE → POINTS ══
-// Formule : cote × 4, plafonné à 30, plancher à 2
-function coteToPts(cote) {
-  if (!cote || cote <= 0) return 5;
-  return Math.min(30, Math.max(2, Math.round(cote * 4)));
-}
-
-function getMatchPts(match, typeRes) {
-  const cote = typeRes === 1 ? match.c1 : typeRes === 2 ? match.c2 : match.cN;
-  return coteToPts(cote);
-}
-
+// ══ POINTS PAR MATCH ══
+// Formule : base (5/3/1) × cote du résultat réel × multiplicateur de phase
 function computeMatchPts(m, p, real) {
   if (!p || p.s1 === undefined) return null;
   const p1 = parseInt(p.s1), p2 = parseInt(p.s2);
   const r1 = parseInt(real.s1), r2 = parseInt(real.s2);
   if (isNaN(p1) || isNaN(p2)) return null;
-  const mult  = PHASES[m.phase] || 1;
-  const rRes  = r1 > r2 ? 1 : r1 < r2 ? 2 : 0;
-  const pRes  = p1 > p2 ? 1 : p1 < p2 ? 2 : 0;
+  const mult = PHASES[m.phase] || 1;
+  const rRes = r1 > r2 ? 1 : r1 < r2 ? 2 : 0;
+  const pRes = p1 > p2 ? 1 : p1 < p2 ? 2 : 0;
   if (rRes !== pRes) return 0;
-  const coteRes = rRes === 1 ? m.c1 : rRes === 2 ? m.c2 : m.cN;
-  const base    = coteToPts(coteRes);
-  if (p1 === r1 && p2 === r2)        return Math.round(base * mult);
-  if (r1 - r2 === p1 - p2)           return Math.round(base * 0.70 * mult);
-  return                                     Math.round(base * 0.40 * mult);
+  const cote = (rRes === 1 ? m.c1 : rRes === 2 ? m.c2 : m.cN) || 1;
+  if (p1 === r1 && p2 === r2) return Math.round(5 * cote * mult);
+  if (r1 - r2 === p1 - p2)    return Math.round(3 * cote * mult);
+  return                              Math.round(1 * cote * mult);
 }
 
 // ══ POINTS ══
@@ -3995,7 +3984,7 @@ function _buildFeedEvents(board){
   const events=[];
   board.forEach(function(p){
     const stats=calcPlayerStats(p);
-    if(stats.exact>0)events.push({joueur:p,emoji:'\u2B50',text:'<strong>'+p.pseudo+'</strong> a trouv\u00e9 '+stats.exact+' score'+(stats.exact>1?'s':'')+' exact'+(stats.exact>1?'s':''),pts:'+ '+Math.round(stats.exact*5)+' pts'});
+    if(stats.exact>0)events.push({joueur:p,emoji:'\u2B50',text:'<strong>'+p.pseudo+'</strong> a trouv\u00e9 '+stats.exact+' score'+(stats.exact>1?'s':'')+' exact'+(stats.exact>1?'s':''),pts:'+ '+p.pts+' pts au total'});
     const streak=getStreak(p);
     if(streak>=3)events.push({joueur:p,emoji:'\uD83D\uDD25',text:'<strong>'+p.pseudo+'</strong> est en feu \u2014 '+streak+' bons pronos d\u2019affil\u00e9e !',pts:''});
   });
@@ -4147,23 +4136,24 @@ function renderMatchs(){
       </div>`;
     }else{
       const hasSaved = p.s1 !== undefined && p.s2 !== undefined;
-      const ptsV1=getMatchPts(m,1),ptsNul=getMatchPts(m,0),ptsV2=getMatchPts(m,2);
+      const mult = PHASES[m.phase] || 1;
+      const maxPts = (cote) => Math.round(5 * (cote || 1) * mult);
       const cotesHtml=`
         <div class="match-odds-row">
           <div class="match-odd-item">
             <span class="odd-label">${m.name1}</span>
-            <span class="odd-cote">${m.c1?m.c1.toFixed(2):'—'}</span>
-            <span class="odd-pts">+${ptsV1} pts</span>
+            <span class="odd-cote">${m.c1?'×'+m.c1.toFixed(2):'—'}</span>
+            <span class="odd-pts">max +${maxPts(m.c1)} pts</span>
           </div>
           <div class="match-odd-item odd-nul">
             <span class="odd-label">Nul</span>
-            <span class="odd-cote">${m.cN?m.cN.toFixed(2):'—'}</span>
-            <span class="odd-pts">+${ptsNul} pts</span>
+            <span class="odd-cote">${m.cN?'×'+m.cN.toFixed(2):'—'}</span>
+            <span class="odd-pts">max +${maxPts(m.cN)} pts</span>
           </div>
           <div class="match-odd-item">
             <span class="odd-label">${m.name2}</span>
-            <span class="odd-cote">${m.c2?m.c2.toFixed(2):'—'}</span>
-            <span class="odd-pts">+${ptsV2} pts</span>
+            <span class="odd-cote">${m.c2?'×'+m.c2.toFixed(2):'—'}</span>
+            <span class="odd-pts">max +${maxPts(m.c2)} pts</span>
           </div>
         </div>`;
       footer=`<div class="match-footer"><span class="badge badge-open">Ouvert</span>${hasSaved?`<span class="badge badge-diff" style="margin-left:6px">✓ ${p.s1}–${p.s2} sauvegardé</span>`:''}</div>
@@ -5097,9 +5087,10 @@ function openProfil(id){
   const prog=joueur.pronostics||{};
   const glob=joueur.globaux||{};
 
+  const totalPts = calcPoints(joueur);
   document.getElementById('profil-pseudo').textContent=joueur.pseudo;
   document.getElementById('profil-stats-summary').textContent=
-    stats.total+' match'+(stats.total>1?'s':'')+' jou\u00e9'+(stats.total>1?'s':'')+' \u00b7 '+stats.pts+' pts';
+    stats.total+' match'+(stats.total>1?'s':'')+' jou\u00e9'+(stats.total>1?'s':'')+' \u00b7 '+totalPts+' pts';
 
   // Avatar dans le modal
   const avDisplay=document.getElementById('profil-avatar-display');
@@ -5123,7 +5114,7 @@ function openProfil(id){
   }
 
   document.getElementById('profil-badges').innerHTML=
-    '<div class="stat-badge"><div class="stat-badge-val" style="color:var(--accent)">'+stats.pts+'</div><div class="stat-badge-lbl">Points</div></div>'
+    '<div class="stat-badge"><div class="stat-badge-val" style="color:var(--accent)">'+totalPts+'</div><div class="stat-badge-lbl">Points</div></div>'
     +'<div class="stat-badge"><div class="stat-badge-val" style="color:#f0c96a">'+stats.exact+'</div><div class="stat-badge-lbl">Score exact</div></div>'
     +'<div class="stat-badge"><div class="stat-badge-val" style="color:#22c55e">'+stats.bonDiff+'</div><div class="stat-badge-lbl">Bonne diff</div></div>'
     +'<div class="stat-badge"><div class="stat-badge-val" style="color:#60a5fa">'+stats.bonVainqueur+'</div><div class="stat-badge-lbl">Bon vainq.</div></div>'
@@ -5151,14 +5142,14 @@ function openProfil(id){
       let badgeClass='pb-none',badgeText='Non saisi',ptsGagnes='';
       if(p){
         const p1=parseInt(p.s1),p2=parseInt(p.s2);
-        const mult=PHASES[m.phase]||1;
-        if(p1===r1&&p2===r2){
-          badgeClass='pb-exact';badgeText='Score exact';ptsGagnes='+'+Math.round(5*mult)+' pts';
-        } else {
-          const rw=r1>r2?1:r1<r2?2:0,pw=p1>p2?1:p1<p2?2:0;
-          if(rw!==pw){badgeClass='pb-miss';badgeText='Rat\u00e9';ptsGagnes='0 pt';}
-          else if(r1-r2===p1-p2){badgeClass='pb-diff';badgeText='Bonne diff';ptsGagnes='+'+Math.round(3*mult)+' pts';}
-          else{badgeClass='pb-win';badgeText='Bon vainq.';ptsGagnes='+'+Math.round(1*mult)+' pt';}
+        const pts_m=computeMatchPts(m,p,real);
+        if(pts_m===0){
+          badgeClass='pb-miss';badgeText='Rat\u00e9';ptsGagnes='0 pt';
+        } else if(pts_m!==null){
+          ptsGagnes='+'+pts_m+' pts';
+          if(p1===r1&&p2===r2){badgeClass='pb-exact';badgeText='Score exact';}
+          else if(r1-r2===p1-p2){badgeClass='pb-diff';badgeText='Bonne diff';}
+          else{badgeClass='pb-win';badgeText='Bon vainq.';}
         }
       }
       const row=document.createElement('div');
@@ -5392,13 +5383,14 @@ function calcPlayerStats(joueur){
     if(!p){rate++;continue;}
     const p1=parseInt(p.s1),p2=parseInt(p.s2),r1=parseInt(real.s1),r2=parseInt(real.s2);
     if(isNaN(p1)||isNaN(p2)){rate++;continue;}
-    const mult=PHASES[m.phase]||1;
-    if(p1===r1&&p2===r2){pts+=Math.round(5*mult);exact++;}
+    const pts_m=computeMatchPts(m,p,real);
+    if(pts_m!==null)pts+=pts_m;
+    if(p1===r1&&p2===r2){exact++;}
     else{
       const rw=r1>r2?1:r1<r2?2:0,pw=p1>p2?1:p1<p2?2:0;
       if(rw!==pw){rate++;}
-      else if(r1-r2===p1-p2){pts+=Math.round(3*mult);bonDiff++;}
-      else{pts+=Math.round(1*mult);bonVainqueur++;}
+      else if(r1-r2===p1-p2){bonDiff++;}
+      else{bonVainqueur++;}
     }
   }
   const glob=joueur.globaux||{};
