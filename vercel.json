@@ -2,11 +2,18 @@
   "crons": [
     {
       "path": "/api/scores",
-      "schedule": "0 6 * * *"
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/odds",
+      "schedule": "0 */4 * * *"
     }
   ],
   "functions": {
     "api/scores.js": {
+      "maxDuration": 30
+    },
+    "api/odds.js": {
       "maxDuration": 30
     }
   }
