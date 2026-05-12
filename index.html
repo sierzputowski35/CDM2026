@@ -3288,6 +3288,7 @@ const GLOBAUX_DEF = [
 
 // ══ STATE ══
 let currentUser=null,isAdmin=false,allJoueurs=[],allScores={},allGlobaux={},allCotes={};
+let _pendingScrollMatchId=null;
 
 async function init(){
   try{
@@ -3646,7 +3647,7 @@ function renderQuickMatches() {
     const badge = locked
       ? '<div class="qmc-badge qmc-badge--lock"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg><span>Ferme</span></div>'
       : '<div class="qmc-badge qmc-badge--xp"><span>x' + multi + ' XP</span></div>';
-    return '<div class="quick-match-card" onclick="switchTab(\'pronos\',document.getElementById(\'tab-pronos\'))">'
+    return '<div class="quick-match-card" onclick="_pendingScrollMatchId=' + m.id + ';switchTab(\'pronos\',document.getElementById(\'tab-pronos\'))">'
       + '<div class="qmc-time">' + heure + '</div>'
       + '<div class="qmc-teams">'
       + '<div class="qmc-team"><div class="qmc-flag"><img src="https://flagcdn.com/w40/' + code1 + '.png" alt="' + m.name1 + '" loading="lazy" onerror="this.style.display=\'none\'"/></div><span>' + m.name1 + '</span></div>'
@@ -4160,7 +4161,7 @@ function renderMatchs(){
       ${cotesHtml}
       <button class="save-btn${hasSaved?' saved':''}" id="sbtn-${m.id}" onclick="savePronostic(${m.id})">${hasSaved?'✎ Modifier mon pronostic':'Enregistrer ce pronostic'}</button>`;
     }
-    html+=`<div class="match-card">
+    html+=`<div class="match-card" id="match-card-${m.id}">
       <div class="match-meta">
         <span class="match-group">${groupeLabel}</span>
         <span class="match-venue">${m.venue}</span>
@@ -4180,6 +4181,11 @@ function renderMatchs(){
     </div>`;
   }
   document.getElementById('matchs-list').innerHTML=html;
+  if(_pendingScrollMatchId!==null){
+    const el=document.getElementById('match-card-'+_pendingScrollMatchId);
+    if(el) setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'center'}),100);
+    _pendingScrollMatchId=null;
+  }
 }
 
 // ══ MODAL "QUI A PRIS QUOI ?" ══
