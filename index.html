@@ -702,6 +702,67 @@ body {
 }
 .saved-score { font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--green); letter-spacing: 3px; }
 .locked-badge { font-size: 10px; color: var(--text3); background: var(--surface2); padding: 3px 10px; border-radius: 6px; border: 1px solid var(--border); }
+
+/* ── BUTEUR & PARI BONUS ── */
+.bonus-section {
+  margin-top: 12px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+.bonus-section-title {
+  font-size: 10px;
+  font-family: 'Oswald', sans-serif;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.bonus-section-title span { color: var(--gold); }
+.buteur-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.buteur-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 8px 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: transform .15s, border-color .15s;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.buteur-btn:active { transform: scale(.96); }
+.buteur-btn.selected { border-color: var(--gold); background: rgba(255,215,0,.08); }
+.buteur-btn.locked { cursor: default; opacity: .7; }
+.buteur-nom { font-size: 12px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.buteur-cote { font-size: 10px; color: var(--gold); font-family: 'Oswald', sans-serif; }
+.bonus-list { display: flex; flex-direction: column; gap: 6px; }
+.bonus-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: transform .15s, border-color .15s;
+}
+.bonus-btn:active { transform: scale(.98); }
+.bonus-btn.selected { border-color: rgba(88,200,250,.5); background: rgba(88,200,250,.07); }
+.bonus-btn.locked { cursor: default; opacity: .7; }
+.bonus-btn.won { border-color: var(--green); background: rgba(34,209,107,.08); }
+.bonus-btn.lost { border-color: rgba(255,77,90,.3); background: rgba(255,77,90,.05); }
+.bonus-label { font-size: 12px; color: var(--text); flex: 1; }
+.bonus-cote { font-size: 11px; font-family: 'Oswald', sans-serif; color: var(--gold); margin-left: 8px; white-space: nowrap; }
+.bonus-result-badge { font-size: 10px; padding: 2px 7px; border-radius: 6px; margin-left: 6px; font-weight: 600; }
 .phase-header { display: flex; align-items: center; gap: 10px; margin: 18px 0 10px; }
 .phase-tag { font-family: 'Bebas Neue', sans-serif; font-size: 15px; color: var(--gold); letter-spacing: 2px; }
 .phase-mult { font-size: 10px; color: var(--text3); background: var(--surface); padding: 2px 8px; border-radius: 6px; border: 1px solid var(--border2); font-weight:600; }
@@ -3071,6 +3132,69 @@ const MATCHS = [
   {id:99, phase:'Finale',         groupe:'',date:'19 juil. · 21h00',ts:20260719,venue:'MetLife Stadium, New York',team1:'🏆',name1:'Finaliste 1',team2:'🏆',name2:'Finaliste 2',c1:2.10,cN:3.40,c2:3.40},
 ];
 
+// ══ BUTEURS & PARIS BONUS ══
+const BUTEURS_PAR_MATCH = {
+  1:  [{nom:'Hirving Lozano',    cote:3}, {nom:'Raúl Jiménez',      cote:4},
+       {nom:'Percy Tau',         cote:6}, {nom:'Evidence Makgopa',  cote:8}],
+  2:  [{nom:'Son Heung-min',     cote:3}, {nom:'Patrik Schick',     cote:4},
+       {nom:'Cho Gue-sung',      cote:5}, {nom:'Tomáš Souček',      cote:6}],
+  7:  [{nom:'Ciro Immobile',     cote:3}, {nom:'Jonathan David',    cote:3},
+       {nom:'Federico Chiesa',   cote:4}, {nom:'Alphonso Davies',   cote:5}],
+  13: [{nom:'Vinícius Jr.',      cote:2}, {nom:'Youssef En-Nesyri', cote:4},
+       {nom:'Rodrygo',           cote:4}, {nom:'Hakim Ziyech',      cote:6}],
+  19: [{nom:'Christian Pulisic', cote:3}, {nom:'Daryl Dike',        cote:4},
+       {nom:'Miguel Almirón',    cote:7}, {nom:'Julio Enciso',      cote:8}],
+  25: [{nom:'Kai Havertz',       cote:3}, {nom:'Leroy Sané',        cote:3},
+       {nom:'Serhou Guirassy',   cote:5}, {nom:'Simon Adingra',     cote:7}],
+  31: [{nom:'Memphis Depay',     cote:3}, {nom:'Cody Gakpo',        cote:3},
+       {nom:'Ritsu Doan',        cote:5}, {nom:'Kaoru Mitoma',      cote:5}],
+  37: [{nom:'Romelu Lukaku',     cote:3}, {nom:'Mohamed Salah',     cote:3},
+       {nom:'Dodi Lukébakio',    cote:5}, {nom:'Omar Marmoush',     cote:6}],
+  43: [{nom:'Álvaro Morata',     cote:3}, {nom:'Ferran Torres',     cote:3},
+       {nom:'Ryan Johansson',    cote:9}, {nom:'Garry Rodrigues',   cote:10}],
+  49: [{nom:'Kylian Mbappé',     cote:2}, {nom:'Antoine Griezmann', cote:3},
+       {nom:'Sadio Mané',        cote:4}, {nom:'Ismaïla Sarr',      cote:5}],
+  55: [{nom:'Lautaro Martínez',  cote:2}, {nom:'Lionel Messi',      cote:3},
+       {nom:'Riyad Mahrez',      cote:5}, {nom:'Islam Slimani',     cote:7}],
+  61: [{nom:'Cristiano Ronaldo', cote:2}, {nom:'Rafael Leão',       cote:3},
+       {nom:'Luis Díaz',         cote:4}, {nom:'Jhon Córdoba',      cote:6}],
+  73: [{nom:'À déterminer',      cote:3}],
+};
+
+const PARIS_BONUS_PAR_MATCH = {
+  1: [
+    {id:'plus2buts',   label:'Plus de 2 buts au total',       cote:2.0},
+    {id:'btts',        label:'Les deux équipes marquent',      cote:2.5},
+    {id:'nul_mi',      label:'Score nul à la mi-temps',        cote:3.5},
+    {id:'clean_sheet', label:'Mexique gardé clean sheet',      cote:3.0},
+  ],
+  13: [
+    {id:'plus3buts',   label:'Plus de 3 buts au total',        cote:2.5},
+    {id:'btts',        label:'Les deux équipes marquent',       cote:2.0},
+    {id:'bresil_2p',   label:'Brésil mène à la mi-temps',      cote:1.8},
+    {id:'vini_score',  label:'Vinícius Jr. buteur & passeur',  cote:7.0},
+  ],
+  49: [
+    {id:'mbappe_db',   label:'Mbappé doublé',                  cote:6.0},
+    {id:'btts',        label:'Les deux équipes marquent',       cote:2.2},
+    {id:'france_2p',   label:'France gagne les deux mi-temps', cote:2.8},
+    {id:'plus3buts',   label:'Plus de 3 buts au total',        cote:3.0},
+    {id:'mane_score',  label:'Sadio Mané buteur',              cote:4.5},
+  ],
+  55: [
+    {id:'messi_score', label:'Messi buteur ou passeur',        cote:2.5},
+    {id:'plus2buts',   label:'Plus de 2 buts au total',        cote:1.9},
+    {id:'btts',        label:'Les deux équipes marquent',       cote:2.8},
+    {id:'arg_avan',    label:'Argentine mène à la mi-temps',   cote:1.7},
+  ],
+  61: [
+    {id:'cr7_score',   label:'Cristiano Ronaldo buteur',       cote:2.5},
+    {id:'plus2buts',   label:'Plus de 2 buts au total',        cote:2.0},
+    {id:'btts',        label:'Les deux équipes marquent',       cote:2.5},
+    {id:'por_cs',      label:'Portugal gardé clean sheet',     cote:3.5},
+  ],
+};
+
 // 48 ÉQUIPES qualifiées CDM 2026
 const EQUIPES = [
   {nom:'Espagne',flag:'🇪🇸',pts:5},{nom:'France',flag:'🇫🇷',pts:5},
@@ -3815,13 +3939,26 @@ function computeMatchPts(m, p, real) {
   const r1 = parseInt(real.s1), r2 = parseInt(real.s2);
   if (isNaN(p1) || isNaN(p2)) return null;
   const mult = PHASES[m.phase] || 1;
+  let total = 0;
   const rRes = r1 > r2 ? 1 : r1 < r2 ? 2 : 0;
   const pRes = p1 > p2 ? 1 : p1 < p2 ? 2 : 0;
-  if (rRes !== pRes) return 0;
-  const cote = (rRes === 1 ? m.c1 : rRes === 2 ? m.c2 : m.cN) || 1;
-  if (p1 === r1 && p2 === r2) return Math.round(5 * cote * mult);
-  if (r1 - r2 === p1 - p2)    return Math.round(3 * cote * mult);
-  return                              Math.round(1 * cote * mult);
+  if (rRes === pRes) {
+    const cote = (rRes === 1 ? m.c1 : rRes === 2 ? m.c2 : m.cN) || 1;
+    if (p1 === r1 && p2 === r2) total += Math.round(5 * cote * mult);
+    else if (r1 - r2 === p1 - p2) total += Math.round(3 * cote * mult);
+    else total += Math.round(1 * cote * mult);
+  }
+  // Buteur
+  if (p.buteur && real.buteurs_reels?.length) {
+    const bd = (BUTEURS_PAR_MATCH[m.id] || []).find(b => b.nom === p.buteur);
+    if (bd && real.buteurs_reels.includes(p.buteur)) total += Math.ceil(bd.cote);
+  }
+  // Pari bonus
+  if (p.pari_bonus && real.bonus_realise) {
+    const pd = (PARIS_BONUS_PAR_MATCH[m.id] || []).find(b => b.id === p.pari_bonus);
+    if (pd && p.pari_bonus === real.bonus_realise) total += Math.ceil(pd.cote);
+  }
+  return total;
 }
 
 // ══ POINTS ══
@@ -4123,6 +4260,96 @@ function getFilteredMatchs(){
 }
 
 // ══ RENDER MATCHS ══
+// ══ BONUS SECTION RENDER ══
+function renderBonusSection(m, p, isLocked) {
+  const buteurs = BUTEURS_PAR_MATCH[m.id];
+  const parisBonusDef = PARIS_BONUS_PAR_MATCH[m.id];
+  if (!buteurs?.length && !parisBonusDef?.length) return '';
+
+  const real = allScores[m.id];
+  let html = '';
+
+  // Section Buteur
+  if (buteurs?.length) {
+    const selectedButeur = p.buteur || null;
+    const realButeurs = real?.buteurs_reels || [];
+
+    const btns = buteurs.map(b => {
+      const isSelected = selectedButeur === b.nom;
+      const pts = Math.ceil(b.cote);
+      let cls = 'buteur-btn';
+      let resultBadge = '';
+
+      if (isLocked) {
+        cls += ' locked';
+        if (realButeurs.includes(b.nom)) {
+          resultBadge = isSelected
+            ? `<span class="bonus-result-badge" style="background:rgba(34,209,107,.15);color:var(--green)">+${pts} pts ✓</span>`
+            : `<span class="bonus-result-badge" style="background:rgba(34,209,107,.1);color:var(--green)">✓ Buteur</span>`;
+        } else if (isSelected) {
+          resultBadge = `<span class="bonus-result-badge" style="background:rgba(255,77,90,.1);color:#ff4d5a">✗ Raté</span>`;
+        }
+        if (isSelected) cls += ' selected';
+      } else {
+        if (isSelected) cls += ' selected';
+      }
+
+      return `<button class="${cls}" ${isLocked ? 'disabled' : `onclick="selectButeur(${m.id},'${b.nom.replace(/'/g,"\\'")}')"`}>
+        <div class="buteur-nom">${b.nom}</div>
+        <div class="buteur-cote">×${b.cote} · ${pts} pts</div>
+        ${resultBadge}
+      </button>`;
+    }).join('');
+
+    html += `<div class="bonus-section">
+      <div class="bonus-section-title">⚽ Buteur du match <span>+pts variables</span></div>
+      <div class="buteur-grid">${btns}</div>
+    </div>`;
+  }
+
+  // Section Pari Bonus
+  if (parisBonusDef?.length) {
+    const selectedBonus = p.pari_bonus || null;
+    const realBonus = real?.bonus_realise || null;
+
+    const btns = parisBonusDef.map(b => {
+      const isSelected = selectedBonus === b.id;
+      const pts = Math.ceil(b.cote);
+      let cls = 'bonus-btn';
+      let resultBadge = '';
+
+      if (isLocked) {
+        cls += ' locked';
+        if (realBonus === b.id) {
+          cls += ' won';
+          resultBadge = isSelected
+            ? `<span class="bonus-result-badge" style="background:rgba(34,209,107,.2);color:var(--green)">+${pts} pts ✓</span>`
+            : `<span class="bonus-result-badge" style="background:rgba(34,209,107,.1);color:var(--green)">Réalisé</span>`;
+        } else if (isSelected) {
+          cls += ' lost';
+          resultBadge = `<span class="bonus-result-badge" style="background:rgba(255,77,90,.1);color:#ff4d5a">✗ Raté</span>`;
+        }
+        if (isSelected) cls += ' selected';
+      } else {
+        if (isSelected) cls += ' selected';
+      }
+
+      return `<button class="${cls}" ${isLocked ? 'disabled' : `onclick="selectPariBonus(${m.id},'${b.id}')"`}>
+        <span class="bonus-label">${b.label}</span>
+        <span class="bonus-cote">×${b.cote} → ${pts} pts</span>
+        ${resultBadge}
+      </button>`;
+    }).join('');
+
+    html += `<div class="bonus-section">
+      <div class="bonus-section-title">⚡ Pari bonus <span>+pts variables</span></div>
+      <div class="bonus-list">${btns}</div>
+    </div>`;
+  }
+
+  return html;
+}
+
 function renderMatchs(){
   const joueur=allJoueurs.find(j=>j.id===currentUser);
   const prog=joueur?.pronostics||{};
@@ -4190,6 +4417,7 @@ function renderMatchs(){
         <span class="score-sep">:</span>
         <input class="score-inp" type="number" min="0" max="20" id="s2-${m.id}" value="${p.s2!==undefined?p.s2:''}" placeholder="—" ${isLocked?'disabled':''}>
       </div>
+      ${renderBonusSection(m, p, isLocked)}
       ${footer}
     </div>`;
   }
@@ -4254,7 +4482,8 @@ async function savePronostic(id){
   btn.disabled=true;btn.textContent='Sauvegarde...';
   const joueur=allJoueurs.find(j=>j.id===currentUser);
 
-  const pronosticEntry={s1,s2};
+  const existing=(joueur?.pronostics||{})[id]||{};
+  const pronosticEntry={...existing,s1,s2};
 
   const newProg={...(joueur?.pronostics||{}),[id]:pronosticEntry};
   const{error}=await sb.from('joueurs').update({pronostics:newProg}).eq('id',currentUser);
@@ -4267,6 +4496,37 @@ async function savePronostic(id){
     setTimeout(()=>btn.classList.remove('flash'),400);
     spawnParticles(btn,8);
   }catch(e){}
+}
+
+// ══ SÉLECTION BUTEUR ══
+function selectButeur(matchId, nom) {
+  const joueur = allJoueurs.find(j => j.id === currentUser);
+  if (!joueur) return;
+  const prog = joueur.pronostics || {};
+  if (!prog[matchId]) prog[matchId] = {};
+  prog[matchId].buteur = prog[matchId].buteur === nom ? null : nom;
+  saveBonusPick(matchId);
+}
+
+// ══ SÉLECTION PARI BONUS ══
+function selectPariBonus(matchId, bonusId) {
+  const joueur = allJoueurs.find(j => j.id === currentUser);
+  if (!joueur) return;
+  const prog = joueur.pronostics || {};
+  if (!prog[matchId]) prog[matchId] = {};
+  prog[matchId].pari_bonus = prog[matchId].pari_bonus === bonusId ? null : bonusId;
+  saveBonusPick(matchId);
+}
+
+// ══ SAUVEGARDE BONUS (buteur + pari) ══
+async function saveBonusPick(matchId) {
+  const joueur = allJoueurs.find(j => j.id === currentUser);
+  if (!joueur) return;
+  const prog = joueur.pronostics || {};
+  const { error } = await sb.from('joueurs').update({ pronostics: prog }).eq('id', currentUser);
+  if (error) { showToast('Erreur sauvegarde bonus'); return; }
+  await loadData();
+  renderMatchs();
 }
 
 // ══ RENDER GLOBAUX ══
@@ -4790,6 +5050,72 @@ async function addContrib(){
 }
 
 // ══ ADMIN MATCHS ══
+// ══ ADMIN : SECTION BONUS ══
+function renderAdminBonusSection(card, m) {
+  const buteursDef = BUTEURS_PAR_MATCH[m.id];
+  const parisDef = PARIS_BONUS_PAR_MATCH[m.id];
+  if (!buteursDef?.length && !parisDef?.length) return;
+
+  const real = allScores[m.id];
+  const currentButeurs = real?.buteurs_reels || [];
+  const currentBonus = real?.bonus_realise || null;
+
+  const section = document.createElement('div');
+  section.style.cssText = 'margin-top:12px;border-top:1px solid var(--border);padding-top:10px;';
+
+  // Buteurs réels
+  if (buteursDef?.length) {
+    const title = document.createElement('div');
+    title.style.cssText = 'font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;font-family:Oswald,sans-serif';
+    title.textContent = '⚽ Buteurs ayant marqué';
+    section.appendChild(title);
+
+    const grid = document.createElement('div');
+    grid.style.cssText = 'display:grid;grid-template-columns:repeat(2,1fr);gap:5px;margin-bottom:10px';
+
+    buteursDef.forEach(b => {
+      const isMarked = currentButeurs.includes(b.nom);
+      const btn = document.createElement('button');
+      btn.style.cssText = `background:${isMarked?'rgba(34,209,107,.15)':'var(--surface2)'};border:1px solid ${isMarked?'var(--green)':'var(--border2)'};border-radius:8px;padding:6px 8px;cursor:pointer;font-family:inherit;font-size:11px;color:${isMarked?'var(--green)':'var(--text)'};text-align:left;transition:all .15s`;
+      btn.textContent = (isMarked ? '✓ ' : '') + b.nom + ' ×' + b.cote;
+      btn.onclick = () => toggleAdminButeur(m.id, b.nom);
+      grid.appendChild(btn);
+    });
+    section.appendChild(grid);
+  }
+
+  // Pari bonus réalisé
+  if (parisDef?.length) {
+    const title2 = document.createElement('div');
+    title2.style.cssText = 'font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;font-family:Oswald,sans-serif';
+    title2.textContent = '⚡ Pari bonus réalisé';
+    section.appendChild(title2);
+
+    const bonusList = document.createElement('div');
+    bonusList.style.cssText = 'display:flex;flex-direction:column;gap:4px';
+
+    const noneBtn = document.createElement('button');
+    const isNone = !currentBonus;
+    noneBtn.style.cssText = `background:${isNone?'rgba(255,215,0,.1)':'var(--surface2)'};border:1px solid ${isNone?'var(--gold)':'var(--border2)'};border-radius:8px;padding:7px 10px;cursor:pointer;font-family:inherit;font-size:11px;color:var(--text3);text-align:left`;
+    noneBtn.textContent = 'Aucun bonus réalisé';
+    noneBtn.onclick = () => setAdminBonus(m.id, null);
+    bonusList.appendChild(noneBtn);
+
+    parisDef.forEach(b => {
+      const isActive = currentBonus === b.id;
+      const btn = document.createElement('button');
+      btn.style.cssText = `background:${isActive?'rgba(88,200,250,.12)':'var(--surface2)'};border:1px solid ${isActive?'#58C8FA':'var(--border2)'};border-radius:8px;padding:7px 10px;cursor:pointer;font-family:inherit;font-size:12px;color:${isActive?'#58C8FA':'var(--text)'};text-align:left;display:flex;justify-content:space-between`;
+      btn.innerHTML = `<span>${b.label}</span><span style="color:var(--gold);font-family:Oswald,sans-serif">×${b.cote}</span>`;
+      btn.onclick = () => setAdminBonus(m.id, b.id);
+      bonusList.appendChild(btn);
+    });
+
+    section.appendChild(bonusList);
+  }
+
+  card.appendChild(section);
+}
+
 function renderAdminMatchs(){
   const container=document.getElementById('admin-matchs-list');
   container.innerHTML='';
@@ -4873,6 +5199,7 @@ function renderAdminMatchs(){
       <span style="font-size:10px;color:var(--text3)">max +${Math.max(Math.round(5*(m.c1||1)),Math.round(5*(m.c2||1)))} pts</span>
     `;
     card.appendChild(cotesRow);
+    renderAdminBonusSection(card, m);
     container.appendChild(card);
   }
 }
@@ -4894,6 +5221,32 @@ async function resetMatch(id){
   if(error){showToast('Erreur suppression');return;}
   await loadData();
   showToast('Score supprimé — tu peux resaisir');
+  renderAdminMatchs();
+}
+
+// ══ ADMIN : TOGGLE BUTEUR RÉEL ══
+async function toggleAdminButeur(matchId, nomButeur) {
+  const real = allScores[matchId];
+  if (!real) { showToast('Valide d\'abord le score du match'); return; }
+  const current = real.buteurs_reels || [];
+  const newList = current.includes(nomButeur)
+    ? current.filter(n => n !== nomButeur)
+    : [...current, nomButeur];
+  const { error } = await sb.from('scores_reels').update({ buteurs_reels: newList }).eq('match_id', matchId);
+  if (error) { showToast('Erreur'); return; }
+  await loadData();
+  showToast(newList.includes(nomButeur) ? `✓ ${nomButeur} ajouté` : `${nomButeur} retiré`);
+  renderAdminMatchs();
+}
+
+// ══ ADMIN : SET BONUS RÉALISÉ ══
+async function setAdminBonus(matchId, bonusId) {
+  const real = allScores[matchId];
+  if (!real) { showToast('Valide d\'abord le score du match'); return; }
+  const { error } = await sb.from('scores_reels').update({ bonus_realise: bonusId }).eq('match_id', matchId);
+  if (error) { showToast('Erreur'); return; }
+  await loadData();
+  showToast(bonusId ? '⚡ Bonus enregistré' : 'Bonus réinitialisé');
   renderAdminMatchs();
 }
 
@@ -5210,6 +5563,28 @@ function openProfil(id){
       }
       right.appendChild(badgeDiv);
       row.appendChild(right);
+      // Bonus info
+      if(p){
+        if(p.buteur){
+          const realButeurs=real?.buteurs_reels||[];
+          const scored=realButeurs.includes(p.buteur);
+          const bd=(BUTEURS_PAR_MATCH[m.id]||[]).find(b=>b.nom===p.buteur);
+          const bpts=bd?Math.ceil(bd.cote):0;
+          const bonusRow=document.createElement('div');
+          bonusRow.style.cssText=`font-size:10px;color:${scored?'var(--green)':'#f87171'};margin-top:3px;padding:0 0 2px`;
+          bonusRow.textContent='⚽ '+p.buteur+' '+(scored?'+'+bpts+'pts ✓':'✗');
+          row.appendChild(bonusRow);
+        }
+        if(p.pari_bonus&&real){
+          const realized=real.bonus_realise===p.pari_bonus;
+          const pd=(PARIS_BONUS_PAR_MATCH[m.id]||[]).find(b=>b.id===p.pari_bonus);
+          const ppts=pd?Math.ceil(pd.cote):0;
+          const bonusRow2=document.createElement('div');
+          bonusRow2.style.cssText=`font-size:10px;color:${realized?'var(--green)':'#f87171'};margin-top:2px;padding:0 0 2px`;
+          bonusRow2.textContent='⚡ '+(pd?.label||p.pari_bonus)+' '+(realized?'+'+ppts+'pts ✓':'✗');
+          row.appendChild(bonusRow2);
+        }
+      }
       container.appendChild(row);
     }
 
