@@ -763,6 +763,21 @@ body {
 .bonus-label { font-size: 12px; color: var(--text); flex: 1; }
 .bonus-cote { font-size: 11px; font-family: 'Oswald', sans-serif; color: var(--gold); margin-left: 8px; white-space: nowrap; }
 .bonus-result-badge { font-size: 10px; padding: 2px 7px; border-radius: 6px; margin-left: 6px; font-weight: 600; }
+
+/* ── LIVE ODDS BADGE ── */
+@keyframes livePulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+.live-dot {
+  display: inline-block;
+  width: 5px; height: 5px;
+  background: var(--green);
+  border-radius: 50%;
+  animation: livePulse 1.4s ease-in-out infinite;
+  vertical-align: middle;
+  margin-right: 3px;
+}
 .phase-header { display: flex; align-items: center; gap: 10px; margin: 18px 0 10px; }
 .phase-tag { font-family: 'Bebas Neue', sans-serif; font-size: 15px; color: var(--gold); letter-spacing: 2px; }
 .phase-mult { font-size: 10px; color: var(--text3); background: var(--surface); padding: 2px 8px; border-radius: 6px; border: 1px solid var(--border2); font-weight:600; }
@@ -3454,6 +3469,11 @@ const GLOBAUX_DEF = [
 let currentUser=null,isAdmin=false,allJoueurs=[],allScores={},allGlobaux={},allCotes={};
 let _pendingScrollMatchId=null;
 
+// ══ COTES RÉELLES (API-Football) ══
+let allOdds = {}; // { [match_id]: { home, draw, away, updated_at } }
+const ODDS_CACHE_HOURS = 6;
+const RAPIDAPI_KEY = 'REMPLACER_PAR_TA_CLE_ICI';
+
 async function init(){
   try{
     await loadData();
@@ -3477,16 +3497,18 @@ async function init(){
       showLoginScreen();
     }
     startRealtime();
+    fetchAndStoreOdds(); // background silencieux — pas de await
   }catch(e){hide('loading');showLoginScreen();showToast('Erreur de connexion');}
 }
 
 let allMessages=[];
 async function loadData(){
-  const [j,s,g,c]=await Promise.all([
+  const [j,s,g,c,o]=await Promise.all([
     sb.from('joueurs').select('*'),
     sb.from('scores_reels').select('*'),
     sb.from('globaux_reels').select('*'),
     sb.from('cotes_raw').select('*'),
+    sb.from('match_odds').select('*'),
   ]);
   allJoueurs=j.data||[];
   allScores={};(s.data||[]).forEach(x=>allScores[x.match_id]=x);
@@ -3502,6 +3524,106 @@ async function loadData(){
     }else{
       allCotes[m.id]={cote1:2.00,coteN:3.20,cote2:2.00};
     }
+  }
+
+  // ── Cotes réelles API-Football ──
+  allOdds={};
+  (o.data||[]).forEach(x=>{
+    allOdds[x.match_id]={
+      home:parseFloat(x.odds_home),
+      draw:parseFloat(x.odds_draw),
+      away:parseFloat(x.odds_away),
+      updated_at:x.updated_at
+    };
+  });
+}
+
+// ══ CHARGEMENT COTES DEPUIS SUPABASE ══
+async function loadOddsFromSupabase() {
+  try {
+    const { data, error } = await sb.from('match_odds').select('*');
+    if (error || !data) return;
+    allOdds = {};
+    data.forEach(row => {
+      allOdds[row.match_id] = {
+        home: parseFloat(row.odds_home),
+        draw: parseFloat(row.odds_draw),
+        away: parseFloat(row.odds_away),
+        updated_at: row.updated_at
+      };
+    });
+  } catch (e) {
+    console.warn('[CDM] loadOddsFromSupabase error:', e);
+  }
+}
+
+// ══ FETCH COTES API-FOOTBALL + STOCKAGE SUPABASE ══
+async function fetchAndStoreOdds() {
+  // 1. Vérifier le cache : si des cotes existent et sont récentes → skip
+  const cachedValues = Object.values(allOdds);
+  if (cachedValues.length > 0) {
+    const lastUpdate = new Date(cachedValues[0].updated_at);
+    const hoursAgo = (Date.now() - lastUpdate.getTime()) / (1000 * 60 * 60);
+    if (hoursAgo < ODDS_CACHE_HOURS) {
+      console.log(`[CDM] Cotes en cache (${hoursAgo.toFixed(1)}h) — pas d'appel API`);
+      return;
+    }
+  }
+
+  // 2. Appel API-Football
+  try {
+    const url = 'https://api-football-v1.p.rapidapi.com/v3/odds?league=1&season=2026&bookmaker=8';
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'X-RapidAPI-Key': RAPIDAPI_KEY,
+        'X-RapidAPI-Host': 'api-football-v1.p.rapidapi.com'
+      }
+    });
+
+    if (!response.ok) {
+      console.warn('[CDM] API-Football quota dépassé ou erreur:', response.status);
+      return;
+    }
+
+    const apiData = await response.json();
+    if (!apiData.response || !apiData.response.length) return;
+
+    // 3. Mapper les cotes sur MATCHS par noms d'équipe (matching souple)
+    const upserts = [];
+    for (const fixture of apiData.response) {
+      const homeTeam = fixture.fixture?.teams?.home?.name || '';
+      const awayTeam = fixture.fixture?.teams?.away?.name || '';
+
+      const match = MATCHS.find(m => {
+        const n1 = m.name1.toLowerCase(), n2 = m.name2.toLowerCase();
+        const h = homeTeam.toLowerCase(), a = awayTeam.toLowerCase();
+        return (n1.includes(h) || h.includes(n1)) && (n2.includes(a) || a.includes(n2));
+      });
+      if (!match) continue;
+
+      const bets = fixture.bookmakers?.[0]?.bets || [];
+      const matchWinner = bets.find(b => b.name === 'Match Winner');
+      if (!matchWinner) continue;
+
+      const homeOdd = parseFloat(matchWinner.values?.find(v => v.value === 'Home')?.odd || 0);
+      const drawOdd = parseFloat(matchWinner.values?.find(v => v.value === 'Draw')?.odd || 0);
+      const awayOdd = parseFloat(matchWinner.values?.find(v => v.value === 'Away')?.odd || 0);
+      if (!homeOdd || !drawOdd || !awayOdd) continue;
+
+      const now = new Date().toISOString();
+      upserts.push({ match_id: match.id, odds_home: homeOdd, odds_draw: drawOdd, odds_away: awayOdd, source: 'api-football', updated_at: now });
+      allOdds[match.id] = { home: homeOdd, draw: drawOdd, away: awayOdd, updated_at: now };
+    }
+
+    // 4. Upsert Supabase (batch)
+    if (upserts.length > 0) {
+      await sb.from('match_odds').upsert(upserts, { onConflict: 'match_id' });
+      console.log(`[CDM] ${upserts.length} cotes mises à jour depuis API-Football`);
+    }
+
+  } catch (e) {
+    console.warn('[CDM] fetchAndStoreOdds error (silencieux):', e);
   }
 }
 
@@ -4447,6 +4569,24 @@ function renderMatchs(){
         <span class="match-venue">${m.venue}</span>
       </div>
       <div class="match-meta" style="margin-bottom:0"><span class="match-date">${m.date}</span></div>
+      ${(!isLocked && allOdds[m.id]) ? `
+      <div style="display:flex;gap:6px;margin:10px 0 4px;justify-content:center">
+        <div style="flex:1;text-align:center;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);padding:6px 4px">
+          <div style="font-size:9px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px">1</div>
+          <div style="font-family:'Oswald',sans-serif;font-size:15px;font-weight:700;color:var(--gold);letter-spacing:.5px">${allOdds[m.id].home.toFixed(2)}</div>
+        </div>
+        <div style="flex:1;text-align:center;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);padding:6px 4px">
+          <div style="font-size:9px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px">X</div>
+          <div style="font-family:'Oswald',sans-serif;font-size:15px;font-weight:700;color:var(--text2);letter-spacing:.5px">${allOdds[m.id].draw.toFixed(2)}</div>
+        </div>
+        <div style="flex:1;text-align:center;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);padding:6px 4px">
+          <div style="font-size:9px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px">2</div>
+          <div style="font-family:'Oswald',sans-serif;font-size:15px;font-weight:700;color:var(--gold);letter-spacing:.5px">${allOdds[m.id].away.toFixed(2)}</div>
+        </div>
+      </div>
+      <div style="text-align:center;margin-bottom:2px">
+        <span style="font-size:8px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase"><span class="live-dot"></span>LIVE ODDS</span>
+      </div>` : ''}
       <div class="teams-row" style="margin-top:14px">
         <div class="team-block">${flagHTML(m.name1,'md')}<span class="team-name">${m.name1}</span></div>
         <div class="vs-block"><span class="vs-text">VS</span></div>
