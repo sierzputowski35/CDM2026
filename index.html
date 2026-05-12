@@ -462,6 +462,53 @@ body {
   border-top: 1px solid rgba(255,255,255,.05);
 }
 
+/* ── ODDS ROW — Points potentiels par résultat ── */
+.match-odds-row {
+  display: flex;
+  gap: 6px;
+  margin: 10px 0 4px;
+  padding: 10px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.match-odd-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+.odd-label {
+  font-size: 10px;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 80px;
+  text-align: center;
+}
+.odd-cote {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text2);
+  font-family: 'Oswald', sans-serif;
+}
+.odd-nul .odd-cote { color: var(--gold); }
+.odd-pts {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--green);
+}
+.match-odd-item.selected-odd .odd-cote { color: var(--gold); }
+.match-odd-item.selected-odd .odd-pts  { color: var(--gold); }
+@media (prefers-reduced-motion: reduce) {
+  .match-odds-row * { transition: none !important; }
+}
+
 .streak-badge {
   display: inline-flex; align-items: center; gap: 3px;
   font-size: 11px; font-weight: 700; padding: 2px 9px;
@@ -2868,160 +2915,160 @@ let heroCountdownInterval = null;
 
 const MATCHS = [
   // ── 11 JUIN ──
-  {id: 1, phase:'Groupes',groupe:'A',date:'11 juin · 21h00',ts:20260611,venue:'Azteca, Mexico',team1:'🇲🇽',name1:'Mexique',team2:'🇿🇦',name2:'Afrique du Sud'},
+  {id: 1, phase:'Groupes',groupe:'A',date:'11 juin · 21h00',ts:20260611,venue:'Azteca, Mexico',team1:'🇲🇽',name1:'Mexique',team2:'🇿🇦',name2:'Afrique du Sud',c1:1.65,cN:3.90,c2:5.50},
   // ── 12 JUIN ──
-  {id: 7, phase:'Groupes',groupe:'B',date:'12 juin · 18h00',ts:20260612,venue:'Toronto',team1:'🇨🇦',name1:'Canada',team2:'🇮🇹',name2:'Italie'},
-  {id:19, phase:'Groupes',groupe:'D',date:'12 juin · 21h00',ts:20260612,venue:'MetLife, New York',team1:'🇺🇸',name1:'États-Unis',team2:'🇵🇾',name2:'Paraguay'},
+  {id: 7, phase:'Groupes',groupe:'B',date:'12 juin · 18h00',ts:20260612,venue:'Toronto',team1:'🇨🇦',name1:'Canada',team2:'🇮🇹',name2:'Italie',c1:3.20,cN:3.30,c2:2.30},
+  {id:19, phase:'Groupes',groupe:'D',date:'12 juin · 21h00',ts:20260612,venue:'MetLife, New York',team1:'🇺🇸',name1:'États-Unis',team2:'🇵🇾',name2:'Paraguay',c1:1.55,cN:4.00,c2:6.50},
   // ── 13 JUIN ──
-  {id:20, phase:'Groupes',groupe:'D',date:'13 juin · 03h00',ts:20260612,venue:'Philadelphia',team1:'🇦🇺',name1:'Australie',team2:'🇹🇷',name2:'Turquie'},
-  {id:13, phase:'Groupes',groupe:'C',date:'13 juin · 21h00',ts:20260613,venue:'Los Angeles',team1:'🇧🇷',name1:'Brésil',team2:'🇲🇦',name2:'Maroc'},
+  {id:20, phase:'Groupes',groupe:'D',date:'13 juin · 03h00',ts:20260612,venue:'Philadelphia',team1:'🇦🇺',name1:'Australie',team2:'🇹🇷',name2:'Turquie',c1:2.60,cN:3.20,c2:2.80},
+  {id:13, phase:'Groupes',groupe:'C',date:'13 juin · 21h00',ts:20260613,venue:'Los Angeles',team1:'🇧🇷',name1:'Brésil',team2:'🇲🇦',name2:'Maroc',c1:1.60,cN:4.00,c2:6.00},
   // ── 14 JUIN ──
-  {id:14, phase:'Groupes',groupe:'C',date:'14 juin · 03h00',ts:20260613,venue:'Seattle',team1:'🏴󠁧󠁢󠁳󠁣󠁴󠁿',name1:'Écosse',team2:'🇭🇹',name2:'Haïti'},
-  {id:25, phase:'Groupes',groupe:'E',date:'14 juin · 21h00',ts:20260614,venue:'Boston',team1:'🇩🇪',name1:'Allemagne',team2:'🇨🇮',name2:'Côte d\'Ivoire'},
+  {id:14, phase:'Groupes',groupe:'C',date:'14 juin · 03h00',ts:20260613,venue:'Seattle',team1:'🏴󠁧󠁢󠁳󠁣󠁴󠁿',name1:'Écosse',team2:'🇭🇹',name2:'Haïti',c1:1.40,cN:4.50,c2:9.00},
+  {id:25, phase:'Groupes',groupe:'E',date:'14 juin · 21h00',ts:20260614,venue:'Boston',team1:'🇩🇪',name1:'Allemagne',team2:'🇨🇮',name2:'Côte d\'Ivoire',c1:1.50,cN:4.20,c2:7.00},
   // ── 15 JUIN ──
-  {id:26, phase:'Groupes',groupe:'E',date:'15 juin · 03h00',ts:20260614,venue:'Kansas City',team1:'🇪🇨',name1:'Équateur',team2:'🇨🇼',name2:'Curaçao'},
+  {id:26, phase:'Groupes',groupe:'E',date:'15 juin · 03h00',ts:20260614,venue:'Kansas City',team1:'🇪🇨',name1:'Équateur',team2:'🇨🇼',name2:'Curaçao',c1:1.45,cN:4.50,c2:8.00},
   // ── 14 JUIN ──
-  {id:31, phase:'Groupes',groupe:'F',date:'14 juin · 18h00',ts:20260614,venue:'San Francisco',team1:'🇳🇱',name1:'Pays-Bas',team2:'🇯🇵',name2:'Japon'},
+  {id:31, phase:'Groupes',groupe:'F',date:'14 juin · 18h00',ts:20260614,venue:'San Francisco',team1:'🇳🇱',name1:'Pays-Bas',team2:'🇯🇵',name2:'Japon',c1:1.75,cN:3.80,c2:4.80},
   // ── 15 JUIN ──
-  {id:32, phase:'Groupes',groupe:'F',date:'15 juin · 02h00',ts:20260614,venue:'Seattle',team1:'🇸🇪',name1:'Suède',team2:'🇹🇳',name2:'Tunisie'},
-  {id: 2, phase:'Groupes',groupe:'A',date:'15 juin · 21h00',ts:20260615,venue:'Guadalajara',team1:'🇰🇷',name1:'Corée du Sud',team2:'🇨🇿',name2:'Tchéquie'},
+  {id:32, phase:'Groupes',groupe:'F',date:'15 juin · 02h00',ts:20260614,venue:'Seattle',team1:'🇸🇪',name1:'Suède',team2:'🇹🇳',name2:'Tunisie',c1:1.60,cN:4.00,c2:5.50},
+  {id: 2, phase:'Groupes',groupe:'A',date:'15 juin · 21h00',ts:20260615,venue:'Guadalajara',team1:'🇰🇷',name1:'Corée du Sud',team2:'🇨🇿',name2:'Tchéquie',c1:2.10,cN:3.40,c2:3.60},
   // ── 16 JUIN ──
-  {id: 3, phase:'Groupes',groupe:'A',date:'16 juin · 00h00',ts:20260615,venue:'Monterrey',team1:'🇲🇽',name1:'Mexique',team2:'🇰🇷',name2:'Corée du Sud'},
+  {id: 3, phase:'Groupes',groupe:'A',date:'16 juin · 00h00',ts:20260615,venue:'Monterrey',team1:'🇲🇽',name1:'Mexique',team2:'🇰🇷',name2:'Corée du Sud',c1:1.80,cN:3.60,c2:4.80},
   // ── 15 JUIN ──
-  {id:37, phase:'Groupes',groupe:'G',date:'15 juin · 18h00',ts:20260615,venue:'Atlanta',team1:'🇧🇪',name1:'Belgique',team2:'🇪🇬',name2:'Égypte'},
+  {id:37, phase:'Groupes',groupe:'G',date:'15 juin · 18h00',ts:20260615,venue:'Atlanta',team1:'🇧🇪',name1:'Belgique',team2:'🇪🇬',name2:'Égypte',c1:1.55,cN:4.00,c2:6.50},
   // ── 16 JUIN ──
-  {id:38, phase:'Groupes',groupe:'G',date:'16 juin · 02h00',ts:20260615,venue:'Dallas',team1:'🇮🇷',name1:'Iran',team2:'🇳🇿',name2:'Nouvelle-Zélande'},
+  {id:38, phase:'Groupes',groupe:'G',date:'16 juin · 02h00',ts:20260615,venue:'Dallas',team1:'🇮🇷',name1:'Iran',team2:'🇳🇿',name2:'Nouvelle-Zélande',c1:1.80,cN:3.60,c2:4.80},
   // ── 15 JUIN ──
-  {id:43, phase:'Groupes',groupe:'H',date:'15 juin · 23h00',ts:20260615,venue:'Miami',team1:'🇪🇸',name1:'Espagne',team2:'🇨🇻',name2:'Cap-Vert'},
+  {id:43, phase:'Groupes',groupe:'H',date:'15 juin · 23h00',ts:20260615,venue:'Miami',team1:'🇪🇸',name1:'Espagne',team2:'🇨🇻',name2:'Cap-Vert',c1:1.20,cN:6.50,c2:16.0},
   // ── 16 JUIN ──
-  {id: 8, phase:'Groupes',groupe:'B',date:'16 juin · 21h00',ts:20260616,venue:'Kansas City',team1:'🇨🇦',name1:'Canada',team2:'🇶🇦',name2:'Qatar'},
+  {id: 8, phase:'Groupes',groupe:'B',date:'16 juin · 21h00',ts:20260616,venue:'Kansas City',team1:'🇨🇦',name1:'Canada',team2:'🇶🇦',name2:'Qatar',c1:1.45,cN:4.50,c2:8.00},
   // ── 17 JUIN ──
-  {id: 9, phase:'Groupes',groupe:'B',date:'17 juin · 02h00',ts:20260616,venue:'Vancouver',team1:'🇮🇹',name1:'Italie',team2:'🇨🇭',name2:'Suisse'},
+  {id: 9, phase:'Groupes',groupe:'B',date:'17 juin · 02h00',ts:20260616,venue:'Vancouver',team1:'🇮🇹',name1:'Italie',team2:'🇨🇭',name2:'Suisse',c1:2.20,cN:3.20,c2:3.40},
   // ── 16 JUIN ──
-  {id:21, phase:'Groupes',groupe:'D',date:'16 juin · 21h00',ts:20260616,venue:'Dallas',team1:'🇺🇸',name1:'États-Unis',team2:'🇦🇺',name2:'Australie'},
+  {id:21, phase:'Groupes',groupe:'D',date:'16 juin · 21h00',ts:20260616,venue:'Dallas',team1:'🇺🇸',name1:'États-Unis',team2:'🇦🇺',name2:'Australie',c1:1.70,cN:3.80,c2:5.00},
   // ── 17 JUIN ──
-  {id:22, phase:'Groupes',groupe:'D',date:'17 juin · 02h00',ts:20260616,venue:'MetLife, New York',team1:'🇵🇾',name1:'Paraguay',team2:'🇹🇷',name2:'Turquie'},
+  {id:22, phase:'Groupes',groupe:'D',date:'17 juin · 02h00',ts:20260616,venue:'MetLife, New York',team1:'🇵🇾',name1:'Paraguay',team2:'🇹🇷',name2:'Turquie',c1:2.80,cN:3.20,c2:2.60},
   // ── 16 JUIN ──
-  {id:44, phase:'Groupes',groupe:'H',date:'16 juin · 18h00',ts:20260616,venue:'Los Angeles',team1:'🇸🇦',name1:'Arabie saoudite',team2:'🇺🇾',name2:'Uruguay'},
-  {id:49, phase:'Groupes',groupe:'I',date:'16 juin · 21h00',ts:20260616,venue:'Los Angeles',team1:'🇫🇷',name1:'France',team2:'🇸🇳',name2:'Sénégal'},
+  {id:44, phase:'Groupes',groupe:'H',date:'16 juin · 18h00',ts:20260616,venue:'Los Angeles',team1:'🇸🇦',name1:'Arabie saoudite',team2:'🇺🇾',name2:'Uruguay',c1:3.20,cN:3.30,c2:2.30},
+  {id:49, phase:'Groupes',groupe:'I',date:'16 juin · 21h00',ts:20260616,venue:'Los Angeles',team1:'🇫🇷',name1:'France',team2:'🇸🇳',name2:'Sénégal',c1:1.55,cN:4.10,c2:6.50},
   // ── 17 JUIN ──
-  {id:50, phase:'Groupes',groupe:'I',date:'17 juin · 03h00',ts:20260616,venue:'Boston',team1:'🇳🇴',name1:'Norvège',team2:'🇧🇴',name2:'Bolivie'},
+  {id:50, phase:'Groupes',groupe:'I',date:'17 juin · 03h00',ts:20260616,venue:'Boston',team1:'🇳🇴',name1:'Norvège',team2:'🇧🇴',name2:'Bolivie',c1:1.35,cN:5.20,c2:10.0},
   // ── 16 JUIN ──
-  {id:55, phase:'Groupes',groupe:'J',date:'16 juin · 18h00',ts:20260616,venue:'MetLife, New York',team1:'🇦🇷',name1:'Argentine',team2:'🇩🇿',name2:'Algérie'},
+  {id:55, phase:'Groupes',groupe:'J',date:'16 juin · 18h00',ts:20260616,venue:'MetLife, New York',team1:'🇦🇷',name1:'Argentine',team2:'🇩🇿',name2:'Algérie',c1:1.35,cN:5.20,c2:10.0},
   // ── 17 JUIN ──
-  {id:56, phase:'Groupes',groupe:'J',date:'17 juin · 02h00',ts:20260616,venue:'Miami',team1:'🇦🇹',name1:'Autriche',team2:'🇯🇴',name2:'Jordanie'},
-  {id:15, phase:'Groupes',groupe:'C',date:'17 juin · 21h00',ts:20260617,venue:'Atlanta',team1:'🇧🇷',name1:'Brésil',team2:'🏴󠁧󠁢󠁳󠁣󠁴󠁿',name2:'Écosse'},
+  {id:56, phase:'Groupes',groupe:'J',date:'17 juin · 02h00',ts:20260616,venue:'Miami',team1:'🇦🇹',name1:'Autriche',team2:'🇯🇴',name2:'Jordanie',c1:1.50,cN:4.20,c2:7.00},
+  {id:15, phase:'Groupes',groupe:'C',date:'17 juin · 21h00',ts:20260617,venue:'Atlanta',team1:'🇧🇷',name1:'Brésil',team2:'🏴󠁧󠁢󠁳󠁣󠁴󠁿',name2:'Écosse',c1:1.35,cN:5.00,c2:10.0},
   // ── 18 JUIN ──
-  {id:16, phase:'Groupes',groupe:'C',date:'18 juin · 03h00',ts:20260617,venue:'Seattle',team1:'🇲🇦',name1:'Maroc',team2:'🇭🇹',name2:'Haïti'},
+  {id:16, phase:'Groupes',groupe:'C',date:'18 juin · 03h00',ts:20260617,venue:'Seattle',team1:'🇲🇦',name1:'Maroc',team2:'🇭🇹',name2:'Haïti',c1:1.35,cN:5.20,c2:11.0},
   // ── 17 JUIN ──
-  {id:61, phase:'Groupes',groupe:'K',date:'17 juin · 18h00',ts:20260617,venue:'Philadelphia',team1:'🇵🇹',name1:'Portugal',team2:'🇨🇴',name2:'Colombie'},
+  {id:61, phase:'Groupes',groupe:'K',date:'17 juin · 18h00',ts:20260617,venue:'Philadelphia',team1:'🇵🇹',name1:'Portugal',team2:'🇨🇴',name2:'Colombie',c1:1.75,cN:3.80,c2:4.80},
   // ── 18 JUIN ──
-  {id:62, phase:'Groupes',groupe:'K',date:'18 juin · 02h00',ts:20260617,venue:'Atlanta',team1:'🇺🇿',name1:'Ouzbékistan',team2:'🇮🇶',name2:'Irak'},
+  {id:62, phase:'Groupes',groupe:'K',date:'18 juin · 02h00',ts:20260617,venue:'Atlanta',team1:'🇺🇿',name1:'Ouzbékistan',team2:'🇮🇶',name2:'Irak',c1:2.20,cN:3.30,c2:3.40},
   // ── 17 JUIN ──
-  {id:67, phase:'Groupes',groupe:'L',date:'17 juin · 21h00',ts:20260617,venue:'San Francisco',team1:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',name1:'Angleterre',team2:'🇭🇷',name2:'Croatie'},
+  {id:67, phase:'Groupes',groupe:'L',date:'17 juin · 21h00',ts:20260617,venue:'San Francisco',team1:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',name1:'Angleterre',team2:'🇭🇷',name2:'Croatie',c1:1.75,cN:3.80,c2:4.80},
   // ── 18 JUIN ──
-  {id:68, phase:'Groupes',groupe:'L',date:'18 juin · 03h00',ts:20260617,venue:'Toronto',team1:'🇬🇭',name1:'Ghana',team2:'🇵🇦',name2:'Panama'},
-  {id:27, phase:'Groupes',groupe:'E',date:'18 juin · 21h00',ts:20260618,venue:'Houston',team1:'🇩🇪',name1:'Allemagne',team2:'🇨🇼',name2:'Curaçao'},
+  {id:68, phase:'Groupes',groupe:'L',date:'18 juin · 03h00',ts:20260617,venue:'Toronto',team1:'🇬🇭',name1:'Ghana',team2:'🇵🇦',name2:'Panama',c1:1.90,cN:3.60,c2:4.20},
+  {id:27, phase:'Groupes',groupe:'E',date:'18 juin · 21h00',ts:20260618,venue:'Houston',team1:'🇩🇪',name1:'Allemagne',team2:'🇨🇼',name2:'Curaçao',c1:1.10,cN:9.00,c2:25.0},
   // ── 19 JUIN ──
-  {id:28, phase:'Groupes',groupe:'E',date:'19 juin · 03h00',ts:20260618,venue:'Boston',team1:'🇨🇮',name1:'Côte d\'Ivoire',team2:'🇪🇨',name2:'Équateur'},
+  {id:28, phase:'Groupes',groupe:'E',date:'19 juin · 03h00',ts:20260618,venue:'Boston',team1:'🇨🇮',name1:'Côte d\'Ivoire',team2:'🇪🇨',name2:'Équateur',c1:2.10,cN:3.30,c2:3.60},
   // ── 18 JUIN ──
-  {id:33, phase:'Groupes',groupe:'F',date:'18 juin · 18h00',ts:20260618,venue:'Seattle',team1:'🇳🇱',name1:'Pays-Bas',team2:'🇸🇪',name2:'Suède'},
+  {id:33, phase:'Groupes',groupe:'F',date:'18 juin · 18h00',ts:20260618,venue:'Seattle',team1:'🇳🇱',name1:'Pays-Bas',team2:'🇸🇪',name2:'Suède',c1:1.80,cN:3.70,c2:4.50},
   // ── 19 JUIN ──
-  {id:34, phase:'Groupes',groupe:'F',date:'19 juin · 02h00',ts:20260618,venue:'San Francisco',team1:'🇯🇵',name1:'Japon',team2:'🇹🇳',name2:'Tunisie'},
-  {id: 4, phase:'Groupes',groupe:'A',date:'19 juin · 21h00',ts:20260619,venue:'Azteca, Mexico',team1:'🇿🇦',name1:'Afrique du Sud',team2:'🇨🇿',name2:'Tchéquie'},
+  {id:34, phase:'Groupes',groupe:'F',date:'19 juin · 02h00',ts:20260618,venue:'San Francisco',team1:'🇯🇵',name1:'Japon',team2:'🇹🇳',name2:'Tunisie',c1:1.70,cN:3.80,c2:5.20},
+  {id: 4, phase:'Groupes',groupe:'A',date:'19 juin · 21h00',ts:20260619,venue:'Azteca, Mexico',team1:'🇿🇦',name1:'Afrique du Sud',team2:'🇨🇿',name2:'Tchéquie',c1:3.50,cN:3.30,c2:2.15},
   // ── 20 JUIN ──
-  {id: 5, phase:'Groupes',groupe:'A',date:'20 juin · 00h00',ts:20260619,venue:'Guadalajara',team1:'🇲🇽',name1:'Mexique',team2:'🇨🇿',name2:'Tchéquie'},
-  {id: 6, phase:'Groupes',groupe:'A',date:'20 juin · 00h00',ts:20260619,venue:'Monterrey',team1:'🇿🇦',name1:'Afrique du Sud',team2:'🇰🇷',name2:'Corée du Sud'},
+  {id: 5, phase:'Groupes',groupe:'A',date:'20 juin · 00h00',ts:20260619,venue:'Guadalajara',team1:'🇲🇽',name1:'Mexique',team2:'🇨🇿',name2:'Tchéquie',c1:1.55,cN:4.10,c2:6.50},
+  {id: 6, phase:'Groupes',groupe:'A',date:'20 juin · 00h00',ts:20260619,venue:'Monterrey',team1:'🇿🇦',name1:'Afrique du Sud',team2:'🇰🇷',name2:'Corée du Sud',c1:4.00,cN:3.40,c2:2.00},
   // ── 19 JUIN ──
-  {id:39, phase:'Groupes',groupe:'G',date:'19 juin · 21h00',ts:20260619,venue:'Houston',team1:'🇧🇪',name1:'Belgique',team2:'🇮🇷',name2:'Iran'},
+  {id:39, phase:'Groupes',groupe:'G',date:'19 juin · 21h00',ts:20260619,venue:'Houston',team1:'🇧🇪',name1:'Belgique',team2:'🇮🇷',name2:'Iran',c1:1.55,cN:4.00,c2:6.50},
   // ── 20 JUIN ──
-  {id:40, phase:'Groupes',groupe:'G',date:'20 juin · 03h00',ts:20260619,venue:'Atlanta',team1:'🇪🇬',name1:'Égypte',team2:'🇳🇿',name2:'Nouvelle-Zélande'},
-  {id:23, phase:'Groupes',groupe:'D',date:'20 juin · 21h00',ts:20260620,venue:'Dallas',team1:'🇺🇸',name1:'États-Unis',team2:'🇹🇷',name2:'Turquie'},
+  {id:40, phase:'Groupes',groupe:'G',date:'20 juin · 03h00',ts:20260619,venue:'Atlanta',team1:'🇪🇬',name1:'Égypte',team2:'🇳🇿',name2:'Nouvelle-Zélande',c1:1.65,cN:3.80,c2:5.50},
+  {id:23, phase:'Groupes',groupe:'D',date:'20 juin · 21h00',ts:20260620,venue:'Dallas',team1:'🇺🇸',name1:'États-Unis',team2:'🇹🇷',name2:'Turquie',c1:1.65,cN:3.80,c2:5.50},
   // ── 21 JUIN ──
-  {id:24, phase:'Groupes',groupe:'D',date:'21 juin · 03h00',ts:20260620,venue:'Philadelphia',team1:'🇦🇺',name1:'Australie',team2:'🇵🇾',name2:'Paraguay'},
+  {id:24, phase:'Groupes',groupe:'D',date:'21 juin · 03h00',ts:20260620,venue:'Philadelphia',team1:'🇦🇺',name1:'Australie',team2:'🇵🇾',name2:'Paraguay',c1:2.20,cN:3.30,c2:3.40},
   // ── 20 JUIN ──
-  {id:45, phase:'Groupes',groupe:'H',date:'20 juin · 21h00',ts:20260620,venue:'Los Angeles',team1:'🇪🇸',name1:'Espagne',team2:'🇸🇦',name2:'Arabie saoudite'},
+  {id:45, phase:'Groupes',groupe:'H',date:'20 juin · 21h00',ts:20260620,venue:'Los Angeles',team1:'🇪🇸',name1:'Espagne',team2:'🇸🇦',name2:'Arabie saoudite',c1:1.35,cN:5.20,c2:9.50},
   // ── 21 JUIN ──
-  {id:46, phase:'Groupes',groupe:'H',date:'21 juin · 02h00',ts:20260620,venue:'MetLife, New York',team1:'🇨🇻',name1:'Cap-Vert',team2:'🇺🇾',name2:'Uruguay'},
+  {id:46, phase:'Groupes',groupe:'H',date:'21 juin · 02h00',ts:20260620,venue:'MetLife, New York',team1:'🇨🇻',name1:'Cap-Vert',team2:'🇺🇾',name2:'Uruguay',c1:3.80,cN:3.40,c2:2.10},
   // ── 20 JUIN ──
-  {id:51, phase:'Groupes',groupe:'I',date:'20 juin · 21h00',ts:20260620,venue:'Boston',team1:'🇫🇷',name1:'France',team2:'🇳🇴',name2:'Norvège'},
+  {id:51, phase:'Groupes',groupe:'I',date:'20 juin · 21h00',ts:20260620,venue:'Boston',team1:'🇫🇷',name1:'France',team2:'🇳🇴',name2:'Norvège',c1:1.60,cN:4.00,c2:5.80},
   // ── 21 JUIN ──
-  {id:52, phase:'Groupes',groupe:'I',date:'21 juin · 03h00',ts:20260620,venue:'San Francisco',team1:'🇸🇳',name1:'Sénégal',team2:'🇧🇴',name2:'Bolivie'},
+  {id:52, phase:'Groupes',groupe:'I',date:'21 juin · 03h00',ts:20260620,venue:'San Francisco',team1:'🇸🇳',name1:'Sénégal',team2:'🇧🇴',name2:'Bolivie',c1:1.45,cN:4.50,c2:8.00},
   // ── 20 JUIN ──
-  {id:57, phase:'Groupes',groupe:'J',date:'20 juin · 18h00',ts:20260620,venue:'Miami',team1:'🇦🇷',name1:'Argentine',team2:'🇦🇹',name2:'Autriche'},
+  {id:57, phase:'Groupes',groupe:'J',date:'20 juin · 18h00',ts:20260620,venue:'Miami',team1:'🇦🇷',name1:'Argentine',team2:'🇦🇹',name2:'Autriche',c1:1.55,cN:4.20,c2:6.00},
   // ── 21 JUIN ──
-  {id:58, phase:'Groupes',groupe:'J',date:'21 juin · 02h00',ts:20260620,venue:'Dallas',team1:'🇩🇿',name1:'Algérie',team2:'🇯🇴',name2:'Jordanie'},
-  {id:10, phase:'Groupes',groupe:'B',date:'21 juin · 21h00',ts:20260621,venue:'Toronto',team1:'🇨🇭',name1:'Suisse',team2:'🇶🇦',name2:'Qatar'},
-  {id:17, phase:'Groupes',groupe:'C',date:'21 juin · 21h00',ts:20260621,venue:'Los Angeles',team1:'🇧🇷',name1:'Brésil',team2:'🇭🇹',name2:'Haïti'},
+  {id:58, phase:'Groupes',groupe:'J',date:'21 juin · 02h00',ts:20260620,venue:'Dallas',team1:'🇩🇿',name1:'Algérie',team2:'🇯🇴',name2:'Jordanie',c1:1.80,cN:3.60,c2:4.80},
+  {id:10, phase:'Groupes',groupe:'B',date:'21 juin · 21h00',ts:20260621,venue:'Toronto',team1:'🇨🇭',name1:'Suisse',team2:'🇶🇦',name2:'Qatar',c1:1.40,cN:4.80,c2:9.00},
+  {id:17, phase:'Groupes',groupe:'C',date:'21 juin · 21h00',ts:20260621,venue:'Los Angeles',team1:'🇧🇷',name1:'Brésil',team2:'🇭🇹',name2:'Haïti',c1:1.15,cN:7.50,c2:20.0},
   // ── 22 JUIN ──
-  {id:18, phase:'Groupes',groupe:'C',date:'22 juin · 03h00',ts:20260621,venue:'Atlanta',team1:'🏴󠁧󠁢󠁳󠁣󠁴󠁿',name1:'Écosse',team2:'🇲🇦',name2:'Maroc'},
+  {id:18, phase:'Groupes',groupe:'C',date:'22 juin · 03h00',ts:20260621,venue:'Atlanta',team1:'🏴󠁧󠁢󠁳󠁣󠁴󠁿',name1:'Écosse',team2:'🇲🇦',name2:'Maroc',c1:2.80,cN:3.20,c2:2.60},
   // ── 21 JUIN ──
-  {id:63, phase:'Groupes',groupe:'K',date:'21 juin · 18h00',ts:20260621,venue:'Atlanta',team1:'🇵🇹',name1:'Portugal',team2:'🇺🇿',name2:'Ouzbékistan'},
+  {id:63, phase:'Groupes',groupe:'K',date:'21 juin · 18h00',ts:20260621,venue:'Atlanta',team1:'🇵🇹',name1:'Portugal',team2:'🇺🇿',name2:'Ouzbékistan',c1:1.25,cN:6.20,c2:14.0},
   // ── 22 JUIN ──
-  {id:64, phase:'Groupes',groupe:'K',date:'22 juin · 02h00',ts:20260621,venue:'Philadelphia',team1:'🇨🇴',name1:'Colombie',team2:'🇮🇶',name2:'Irak'},
+  {id:64, phase:'Groupes',groupe:'K',date:'22 juin · 02h00',ts:20260621,venue:'Philadelphia',team1:'🇨🇴',name1:'Colombie',team2:'🇮🇶',name2:'Irak',c1:1.55,cN:4.00,c2:6.50},
   // ── 21 JUIN ──
-  {id:69, phase:'Groupes',groupe:'L',date:'21 juin · 21h00',ts:20260621,venue:'Toronto',team1:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',name1:'Angleterre',team2:'🇬🇭',name2:'Ghana'},
+  {id:69, phase:'Groupes',groupe:'L',date:'21 juin · 21h00',ts:20260621,venue:'Toronto',team1:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',name1:'Angleterre',team2:'🇬🇭',name2:'Ghana',c1:1.50,cN:4.20,c2:7.00},
   // ── 22 JUIN ──
-  {id:70, phase:'Groupes',groupe:'L',date:'22 juin · 03h00',ts:20260621,venue:'Boston',team1:'🇭🇷',name1:'Croatie',team2:'🇵🇦',name2:'Panama'},
-  {id:29, phase:'Groupes',groupe:'E',date:'22 juin · 21h00',ts:20260622,venue:'Houston',team1:'🇩🇪',name1:'Allemagne',team2:'🇪🇨',name2:'Équateur'},
+  {id:70, phase:'Groupes',groupe:'L',date:'22 juin · 03h00',ts:20260621,venue:'Boston',team1:'🇭🇷',name1:'Croatie',team2:'🇵🇦',name2:'Panama',c1:1.60,cN:4.00,c2:6.00},
+  {id:29, phase:'Groupes',groupe:'E',date:'22 juin · 21h00',ts:20260622,venue:'Houston',team1:'🇩🇪',name1:'Allemagne',team2:'🇪🇨',name2:'Équateur',c1:1.60,cN:4.00,c2:6.00},
   // ── 23 JUIN ──
-  {id:30, phase:'Groupes',groupe:'E',date:'23 juin · 03h00',ts:20260622,venue:'Kansas City',team1:'🇨🇼',name1:'Curaçao',team2:'🇨🇮',name2:'Côte d\'Ivoire'},
+  {id:30, phase:'Groupes',groupe:'E',date:'23 juin · 03h00',ts:20260622,venue:'Kansas City',team1:'🇨🇼',name1:'Curaçao',team2:'🇨🇮',name2:'Côte d\'Ivoire',c1:5.00,cN:3.60,c2:1.75},
   // ── 22 JUIN ──
-  {id:35, phase:'Groupes',groupe:'F',date:'22 juin · 21h00',ts:20260622,venue:'San Francisco',team1:'🇳🇱',name1:'Pays-Bas',team2:'🇹🇳',name2:'Tunisie'},
+  {id:35, phase:'Groupes',groupe:'F',date:'22 juin · 21h00',ts:20260622,venue:'San Francisco',team1:'🇳🇱',name1:'Pays-Bas',team2:'🇹🇳',name2:'Tunisie',c1:1.40,cN:4.80,c2:9.00},
   // ── 23 JUIN ──
-  {id:36, phase:'Groupes',groupe:'F',date:'23 juin · 03h00',ts:20260622,venue:'Seattle',team1:'🇸🇪',name1:'Suède',team2:'🇯🇵',name2:'Japon'},
-  {id:41, phase:'Groupes',groupe:'G',date:'23 juin · 21h00',ts:20260623,venue:'Dallas',team1:'🇧🇪',name1:'Belgique',team2:'🇳🇿',name2:'Nouvelle-Zélande'},
+  {id:36, phase:'Groupes',groupe:'F',date:'23 juin · 03h00',ts:20260622,venue:'Seattle',team1:'🇸🇪',name1:'Suède',team2:'🇯🇵',name2:'Japon',c1:2.30,cN:3.30,c2:3.20},
+  {id:41, phase:'Groupes',groupe:'G',date:'23 juin · 21h00',ts:20260623,venue:'Dallas',team1:'🇧🇪',name1:'Belgique',team2:'🇳🇿',name2:'Nouvelle-Zélande',c1:1.25,cN:6.00,c2:14.0},
   // ── 24 JUIN ──
-  {id:42, phase:'Groupes',groupe:'G',date:'24 juin · 03h00',ts:20260623,venue:'Houston',team1:'🇮🇷',name1:'Iran',team2:'🇪🇬',name2:'Égypte'},
-  {id:47, phase:'Groupes',groupe:'H',date:'24 juin · 21h00',ts:20260624,venue:'Miami',team1:'🇪🇸',name1:'Espagne',team2:'🇺🇾',name2:'Uruguay'},
+  {id:42, phase:'Groupes',groupe:'G',date:'24 juin · 03h00',ts:20260623,venue:'Houston',team1:'🇮🇷',name1:'Iran',team2:'🇪🇬',name2:'Égypte',c1:2.20,cN:3.30,c2:3.40},
+  {id:47, phase:'Groupes',groupe:'H',date:'24 juin · 21h00',ts:20260624,venue:'Miami',team1:'🇪🇸',name1:'Espagne',team2:'🇺🇾',name2:'Uruguay',c1:1.55,cN:4.20,c2:6.00},
   // ── 25 JUIN ──
-  {id:48, phase:'Groupes',groupe:'H',date:'25 juin · 03h00',ts:20260624,venue:'Los Angeles',team1:'🇸🇦',name1:'Arabie saoudite',team2:'🇨🇻',name2:'Cap-Vert'},
+  {id:48, phase:'Groupes',groupe:'H',date:'25 juin · 03h00',ts:20260624,venue:'Los Angeles',team1:'🇸🇦',name1:'Arabie saoudite',team2:'🇨🇻',name2:'Cap-Vert',c1:1.80,cN:3.60,c2:4.80},
   // ── 24 JUIN ──
-  {id:53, phase:'Groupes',groupe:'I',date:'24 juin · 21h00',ts:20260624,venue:'Los Angeles',team1:'🇫🇷',name1:'France',team2:'🇧🇴',name2:'Bolivie'},
+  {id:53, phase:'Groupes',groupe:'I',date:'24 juin · 21h00',ts:20260624,venue:'Los Angeles',team1:'🇫🇷',name1:'France',team2:'🇧🇴',name2:'Bolivie',c1:1.15,cN:7.50,c2:20.0},
   // ── 25 JUIN ──
-  {id:54, phase:'Groupes',groupe:'I',date:'25 juin · 03h00',ts:20260624,venue:'Boston',team1:'🇳🇴',name1:'Norvège',team2:'🇸🇳',name2:'Sénégal'},
+  {id:54, phase:'Groupes',groupe:'I',date:'25 juin · 03h00',ts:20260624,venue:'Boston',team1:'🇳🇴',name1:'Norvège',team2:'🇸🇳',name2:'Sénégal',c1:1.75,cN:3.80,c2:4.80},
   // ── 24 JUIN ──
-  {id:59, phase:'Groupes',groupe:'J',date:'24 juin · 18h00',ts:20260624,venue:'MetLife, New York',team1:'🇦🇷',name1:'Argentine',team2:'🇯🇴',name2:'Jordanie'},
+  {id:59, phase:'Groupes',groupe:'J',date:'24 juin · 18h00',ts:20260624,venue:'MetLife, New York',team1:'🇦🇷',name1:'Argentine',team2:'🇯🇴',name2:'Jordanie',c1:1.15,cN:7.50,c2:20.0},
   // ── 25 JUIN ──
-  {id:60, phase:'Groupes',groupe:'J',date:'25 juin · 02h00',ts:20260624,venue:'Miami',team1:'🇦🇹',name1:'Autriche',team2:'🇩🇿',name2:'Algérie'},
-  {id:11, phase:'Groupes',groupe:'B',date:'25 juin · 21h00',ts:20260625,venue:'Kansas City',team1:'🇨🇦',name1:'Canada',team2:'🇨🇭',name2:'Suisse'},
+  {id:60, phase:'Groupes',groupe:'J',date:'25 juin · 02h00',ts:20260624,venue:'Miami',team1:'🇦🇹',name1:'Autriche',team2:'🇩🇿',name2:'Algérie',c1:2.00,cN:3.40,c2:4.00},
+  {id:11, phase:'Groupes',groupe:'B',date:'25 juin · 21h00',ts:20260625,venue:'Kansas City',team1:'🇨🇦',name1:'Canada',team2:'🇨🇭',name2:'Suisse',c1:2.40,cN:3.20,c2:3.10},
   // ── 26 JUIN ──
-  {id:12, phase:'Groupes',groupe:'B',date:'26 juin · 00h00',ts:20260625,venue:'Vancouver',team1:'🇮🇹',name1:'Italie',team2:'🇶🇦',name2:'Qatar'},
+  {id:12, phase:'Groupes',groupe:'B',date:'26 juin · 00h00',ts:20260625,venue:'Vancouver',team1:'🇮🇹',name1:'Italie',team2:'🇶🇦',name2:'Qatar',c1:1.35,cN:5.00,c2:10.0},
   // ── 25 JUIN ──
-  {id:65, phase:'Groupes',groupe:'K',date:'25 juin · 18h00',ts:20260625,venue:'Kansas City',team1:'🇵🇹',name1:'Portugal',team2:'🇮🇶',name2:'Irak'},
+  {id:65, phase:'Groupes',groupe:'K',date:'25 juin · 18h00',ts:20260625,venue:'Kansas City',team1:'🇵🇹',name1:'Portugal',team2:'🇮🇶',name2:'Irak',c1:1.20,cN:6.80,c2:16.0},
   // ── 26 JUIN ──
-  {id:66, phase:'Groupes',groupe:'K',date:'26 juin · 02h00',ts:20260625,venue:'Atlanta',team1:'🇨🇴',name1:'Colombie',team2:'🇺🇿',name2:'Ouzbékistan'},
+  {id:66, phase:'Groupes',groupe:'K',date:'26 juin · 02h00',ts:20260625,venue:'Atlanta',team1:'🇨🇴',name1:'Colombie',team2:'🇺🇿',name2:'Ouzbékistan',c1:1.65,cN:3.90,c2:5.50},
   // ── 25 JUIN ──
-  {id:71, phase:'Groupes',groupe:'L',date:'25 juin · 21h00',ts:20260625,venue:'San Francisco',team1:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',name1:'Angleterre',team2:'🇵🇦',name2:'Panama'},
+  {id:71, phase:'Groupes',groupe:'L',date:'25 juin · 21h00',ts:20260625,venue:'San Francisco',team1:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',name1:'Angleterre',team2:'🇵🇦',name2:'Panama',c1:1.25,cN:6.20,c2:14.0},
   // ── 26 JUIN ──
-  {id:72, phase:'Groupes',groupe:'L',date:'26 juin · 03h00',ts:20260625,venue:'Toronto',team1:'🇬🇭',name1:'Ghana',team2:'🇭🇷',name2:'Croatie'},
+  {id:72, phase:'Groupes',groupe:'L',date:'26 juin · 03h00',ts:20260625,venue:'Toronto',team1:'🇬🇭',name1:'Ghana',team2:'🇭🇷',name2:'Croatie',c1:3.40,cN:3.30,c2:2.20},
   // ── PHASES FINALES ──
-  {id:73, phase:'16es de finale',groupe:'',date:'28 juin · 21h00',ts:20260628,venue:'Los Angeles',team1:'🏆',name1:'1er Groupe A',team2:'🏆',name2:'2e Groupe B'},
-  {id:74, phase:'16es de finale',groupe:'',date:'29 juin · 21h00',ts:20260629,venue:'Houston',team1:'🏆',name1:'1er Groupe C',team2:'🏆',name2:'2e Groupe F'},
-  {id:75, phase:'16es de finale',groupe:'',date:'30 juin · 00h30',ts:20260629,venue:'Boston',team1:'🏆',name1:'1er Groupe E',team2:'🏆',name2:'3e repêché'},
-  {id:76, phase:'16es de finale',groupe:'',date:'30 juin · 03h00',ts:20260629,venue:'Monterrey',team1:'🏆',name1:'1er Groupe F',team2:'🏆',name2:'2e Groupe C'},
-  {id:77, phase:'16es de finale',groupe:'',date:'30 juin · 23h00',ts:20260630,venue:'Dallas',team1:'🏆',name1:'1er Groupe I',team2:'🏆',name2:'3e repêché'},
-  {id:78, phase:'16es de finale',groupe:'',date:'1 juil. · 03h00',ts:20260630,venue:'MetLife, New York',team1:'🏆',name1:'1er Groupe D',team2:'🏆',name2:'3e repêché'},
-  {id:79, phase:'16es de finale',groupe:'',date:'1 juil. · 03h00',ts:20260701,venue:'Azteca, Mexico',team1:'🏆',name1:'1er Groupe B',team2:'🏆',name2:'2e Groupe A'},
-  {id:80, phase:'16es de finale',groupe:'',date:'1 juil. · 18h00',ts:20260701,venue:'Atlanta',team1:'🏆',name1:'1er Groupe L',team2:'🏆',name2:'3e repêché'},
-  {id:81, phase:'16es de finale',groupe:'',date:'1 juil. · 22h00',ts:20260701,venue:'Seattle',team1:'🏆',name1:'1er Groupe G',team2:'🏆',name2:'3e repêché'},
-  {id:83, phase:'16es de finale',groupe:'',date:'2 juil. · 21h00',ts:20260702,venue:'Los Angeles',team1:'🏆',name1:'1er Groupe H',team2:'🏆',name2:'2e Groupe J'},
-  {id:84, phase:'16es de finale',groupe:'',date:'3 juil. · 01h00',ts:20260702,venue:'Toronto',team1:'🏆',name1:'2e Groupe K',team2:'🏆',name2:'2e Groupe L'},
-  {id:85, phase:'16es de finale',groupe:'',date:'3 juil. · 05h00',ts:20260702,venue:'Vancouver',team1:'🏆',name1:'1er Groupe B',team2:'🏆',name2:'3e repêché'},
-  {id:86, phase:'16es de finale',groupe:'',date:'3 juil. · 20h00',ts:20260703,venue:'Dallas',team1:'🏆',name1:'2e Groupe D',team2:'🏆',name2:'2e Groupe G'},
-  {id:87, phase:'16es de finale',groupe:'',date:'4 juil. · 00h00',ts:20260703,venue:'Miami',team1:'🏆',name1:'1er Groupe J',team2:'🏆',name2:'2e Groupe H'},
-  {id:88, phase:'16es de finale',groupe:'',date:'4 juil. · 03h30',ts:20260703,venue:'Kansas City',team1:'🏆',name1:'1er Groupe K',team2:'🏆',name2:'3e repêché'},
-  {id:89, phase:'8es de finale', groupe:'',date:'4 juil. · 19h00',ts:20260704,venue:'Houston',team1:'🏆',name1:'Vainqueur 16e #1',team2:'🏆',name2:'Vainqueur 16e #2'},
-  {id:90, phase:'8es de finale', groupe:'',date:'4 juil. · 23h00',ts:20260704,venue:'Philadelphia',team1:'🏆',name1:'Vainqueur 16e #3',team2:'🏆',name2:'Vainqueur 16e #4'},
-  {id:91, phase:'8es de finale', groupe:'',date:'5 juil. · 19h00',ts:20260705,venue:'MetLife, New York',team1:'🏆',name1:'Vainqueur 16e #5',team2:'🏆',name2:'Vainqueur 16e #6'},
-  {id:92, phase:'8es de finale', groupe:'',date:'5 juil. · 23h00',ts:20260705,venue:'Guadalajara',team1:'🏆',name1:'Vainqueur 16e #7',team2:'🏆',name2:'Vainqueur 16e #8'},
-  {id:93, phase:'Quarts de finale',groupe:'',date:'8 juil. · 19h00',ts:20260708,venue:'Los Angeles',team1:'🏆',name1:'Vainqueur 8e #1',team2:'🏆',name2:'Vainqueur 8e #2'},
-  {id:94, phase:'Quarts de finale',groupe:'',date:'8 juil. · 23h00',ts:20260708,venue:'Kansas City',team1:'🏆',name1:'Vainqueur 8e #3',team2:'🏆',name2:'Vainqueur 8e #4'},
-  {id:95, phase:'Quarts de finale',groupe:'',date:'9 juil. · 19h00',ts:20260709,venue:'Boston',team1:'🏆',name1:'Vainqueur 8e #5',team2:'🏆',name2:'Vainqueur 8e #6'},
-  {id:96, phase:'Quarts de finale',groupe:'',date:'9 juil. · 23h00',ts:20260709,venue:'Dallas',team1:'🏆',name1:'Vainqueur 8e #7',team2:'🏆',name2:'Vainqueur 8e #8'},
-  {id:97, phase:'Demi-finales',   groupe:'',date:'14 juil. · 21h00',ts:20260714,venue:'Dallas',team1:'🏆',name1:'Vainqueur QF #1',team2:'🏆',name2:'Vainqueur QF #2'},
-  {id:98, phase:'Demi-finales',   groupe:'',date:'15 juil. · 21h00',ts:20260715,venue:'Los Angeles',team1:'🏆',name1:'Vainqueur QF #3',team2:'🏆',name2:'Vainqueur QF #4'},
-  {id:99, phase:'Finale',         groupe:'',date:'19 juil. · 21h00',ts:20260719,venue:'MetLife Stadium, New York',team1:'🏆',name1:'Finaliste 1',team2:'🏆',name2:'Finaliste 2'},
+  {id:73, phase:'16es de finale',groupe:'',date:'28 juin · 21h00',ts:20260628,venue:'Los Angeles',team1:'🏆',name1:'1er Groupe A',team2:'🏆',name2:'2e Groupe B',c1:2.10,cN:3.40,c2:3.40},
+  {id:74, phase:'16es de finale',groupe:'',date:'29 juin · 21h00',ts:20260629,venue:'Houston',team1:'🏆',name1:'1er Groupe C',team2:'🏆',name2:'2e Groupe F',c1:2.10,cN:3.40,c2:3.40},
+  {id:75, phase:'16es de finale',groupe:'',date:'30 juin · 00h30',ts:20260629,venue:'Boston',team1:'🏆',name1:'1er Groupe E',team2:'🏆',name2:'3e repêché',c1:2.10,cN:3.40,c2:3.40},
+  {id:76, phase:'16es de finale',groupe:'',date:'30 juin · 03h00',ts:20260629,venue:'Monterrey',team1:'🏆',name1:'1er Groupe F',team2:'🏆',name2:'2e Groupe C',c1:2.10,cN:3.40,c2:3.40},
+  {id:77, phase:'16es de finale',groupe:'',date:'30 juin · 23h00',ts:20260630,venue:'Dallas',team1:'🏆',name1:'1er Groupe I',team2:'🏆',name2:'3e repêché',c1:2.10,cN:3.40,c2:3.40},
+  {id:78, phase:'16es de finale',groupe:'',date:'1 juil. · 03h00',ts:20260630,venue:'MetLife, New York',team1:'🏆',name1:'1er Groupe D',team2:'🏆',name2:'3e repêché',c1:2.10,cN:3.40,c2:3.40},
+  {id:79, phase:'16es de finale',groupe:'',date:'1 juil. · 03h00',ts:20260701,venue:'Azteca, Mexico',team1:'🏆',name1:'1er Groupe B',team2:'🏆',name2:'2e Groupe A',c1:2.10,cN:3.40,c2:3.40},
+  {id:80, phase:'16es de finale',groupe:'',date:'1 juil. · 18h00',ts:20260701,venue:'Atlanta',team1:'🏆',name1:'1er Groupe L',team2:'🏆',name2:'3e repêché',c1:2.10,cN:3.40,c2:3.40},
+  {id:81, phase:'16es de finale',groupe:'',date:'1 juil. · 22h00',ts:20260701,venue:'Seattle',team1:'🏆',name1:'1er Groupe G',team2:'🏆',name2:'3e repêché',c1:2.10,cN:3.40,c2:3.40},
+  {id:83, phase:'16es de finale',groupe:'',date:'2 juil. · 21h00',ts:20260702,venue:'Los Angeles',team1:'🏆',name1:'1er Groupe H',team2:'🏆',name2:'2e Groupe J',c1:2.10,cN:3.40,c2:3.40},
+  {id:84, phase:'16es de finale',groupe:'',date:'3 juil. · 01h00',ts:20260702,venue:'Toronto',team1:'🏆',name1:'2e Groupe K',team2:'🏆',name2:'2e Groupe L',c1:2.10,cN:3.40,c2:3.40},
+  {id:85, phase:'16es de finale',groupe:'',date:'3 juil. · 05h00',ts:20260702,venue:'Vancouver',team1:'🏆',name1:'1er Groupe B',team2:'🏆',name2:'3e repêché',c1:2.10,cN:3.40,c2:3.40},
+  {id:86, phase:'16es de finale',groupe:'',date:'3 juil. · 20h00',ts:20260703,venue:'Dallas',team1:'🏆',name1:'2e Groupe D',team2:'🏆',name2:'2e Groupe G',c1:2.10,cN:3.40,c2:3.40},
+  {id:87, phase:'16es de finale',groupe:'',date:'4 juil. · 00h00',ts:20260703,venue:'Miami',team1:'🏆',name1:'1er Groupe J',team2:'🏆',name2:'2e Groupe H',c1:2.10,cN:3.40,c2:3.40},
+  {id:88, phase:'16es de finale',groupe:'',date:'4 juil. · 03h30',ts:20260703,venue:'Kansas City',team1:'🏆',name1:'1er Groupe K',team2:'🏆',name2:'3e repêché',c1:2.10,cN:3.40,c2:3.40},
+  {id:89, phase:'8es de finale', groupe:'',date:'4 juil. · 19h00',ts:20260704,venue:'Houston',team1:'🏆',name1:'Vainqueur 16e #1',team2:'🏆',name2:'Vainqueur 16e #2',c1:2.10,cN:3.40,c2:3.40},
+  {id:90, phase:'8es de finale', groupe:'',date:'4 juil. · 23h00',ts:20260704,venue:'Philadelphia',team1:'🏆',name1:'Vainqueur 16e #3',team2:'🏆',name2:'Vainqueur 16e #4',c1:2.10,cN:3.40,c2:3.40},
+  {id:91, phase:'8es de finale', groupe:'',date:'5 juil. · 19h00',ts:20260705,venue:'MetLife, New York',team1:'🏆',name1:'Vainqueur 16e #5',team2:'🏆',name2:'Vainqueur 16e #6',c1:2.10,cN:3.40,c2:3.40},
+  {id:92, phase:'8es de finale', groupe:'',date:'5 juil. · 23h00',ts:20260705,venue:'Guadalajara',team1:'🏆',name1:'Vainqueur 16e #7',team2:'🏆',name2:'Vainqueur 16e #8',c1:2.10,cN:3.40,c2:3.40},
+  {id:93, phase:'Quarts de finale',groupe:'',date:'8 juil. · 19h00',ts:20260708,venue:'Los Angeles',team1:'🏆',name1:'Vainqueur 8e #1',team2:'🏆',name2:'Vainqueur 8e #2',c1:2.10,cN:3.40,c2:3.40},
+  {id:94, phase:'Quarts de finale',groupe:'',date:'8 juil. · 23h00',ts:20260708,venue:'Kansas City',team1:'🏆',name1:'Vainqueur 8e #3',team2:'🏆',name2:'Vainqueur 8e #4',c1:2.10,cN:3.40,c2:3.40},
+  {id:95, phase:'Quarts de finale',groupe:'',date:'9 juil. · 19h00',ts:20260709,venue:'Boston',team1:'🏆',name1:'Vainqueur 8e #5',team2:'🏆',name2:'Vainqueur 8e #6',c1:2.10,cN:3.40,c2:3.40},
+  {id:96, phase:'Quarts de finale',groupe:'',date:'9 juil. · 23h00',ts:20260709,venue:'Dallas',team1:'🏆',name1:'Vainqueur 8e #7',team2:'🏆',name2:'Vainqueur 8e #8',c1:2.10,cN:3.40,c2:3.40},
+  {id:97, phase:'Demi-finales',   groupe:'',date:'14 juil. · 21h00',ts:20260714,venue:'Dallas',team1:'🏆',name1:'Vainqueur QF #1',team2:'🏆',name2:'Vainqueur QF #2',c1:2.10,cN:3.40,c2:3.40},
+  {id:98, phase:'Demi-finales',   groupe:'',date:'15 juil. · 21h00',ts:20260715,venue:'Los Angeles',team1:'🏆',name1:'Vainqueur QF #3',team2:'🏆',name2:'Vainqueur QF #4',c1:2.10,cN:3.40,c2:3.40},
+  {id:99, phase:'Finale',         groupe:'',date:'19 juil. · 21h00',ts:20260719,venue:'MetLife Stadium, New York',team1:'🏆',name1:'Finaliste 1',team2:'🏆',name2:'Finaliste 2',c1:2.10,cN:3.40,c2:3.40},
 ];
 
 // 48 ÉQUIPES qualifiées CDM 2026
@@ -3754,6 +3801,34 @@ function coteToBonus(cote){
   return parseFloat((Math.log(c)+1).toFixed(2));
 }
 
+// ══ CONVERSION COTE → POINTS ══
+// Formule : cote × 4, plafonné à 30, plancher à 2
+function coteToPts(cote) {
+  if (!cote || cote <= 0) return 5;
+  return Math.min(30, Math.max(2, Math.round(cote * 4)));
+}
+
+function getMatchPts(match, typeRes) {
+  const cote = typeRes === 1 ? match.c1 : typeRes === 2 ? match.c2 : match.cN;
+  return coteToPts(cote);
+}
+
+function computeMatchPts(m, p, real) {
+  if (!p || p.s1 === undefined) return null;
+  const p1 = parseInt(p.s1), p2 = parseInt(p.s2);
+  const r1 = parseInt(real.s1), r2 = parseInt(real.s2);
+  if (isNaN(p1) || isNaN(p2)) return null;
+  const mult  = PHASES[m.phase] || 1;
+  const rRes  = r1 > r2 ? 1 : r1 < r2 ? 2 : 0;
+  const pRes  = p1 > p2 ? 1 : p1 < p2 ? 2 : 0;
+  if (rRes !== pRes) return 0;
+  const coteRes = rRes === 1 ? m.c1 : rRes === 2 ? m.c2 : m.cN;
+  const base    = coteToPts(coteRes);
+  if (p1 === r1 && p2 === r2)        return Math.round(base * mult);
+  if (r1 - r2 === p1 - p2)           return Math.round(base * 0.70 * mult);
+  return                                     Math.round(base * 0.40 * mult);
+}
+
 // ══ POINTS ══
 function calcPoints(j){
   let pts=0;
@@ -3761,21 +3836,9 @@ function calcPoints(j){
   for(const m of MATCHS){
     const real=allScores[m.id];if(!real)continue;
     const p=prog[m.id];if(!p)continue;
-    const p1=parseInt(p.s1),p2=parseInt(p.s2),r1=parseInt(real.s1),r2=parseInt(real.s2);
-    if(isNaN(p1)||isNaN(p2))continue;
-    const mult=PHASES[m.phase]||1;
-
-    // Bonus côte : snapshot figé au moment du prono, sinon côte actuelle
-    const cotesMatch=allCotes[m.id]||{cote1:2.0,coteN:3.2,cote2:2.0};
-    const coteReelle=r1>r2?(p.cote1_snap||cotesMatch.cote1)
-                    :r2>r1?(p.cote2_snap||cotesMatch.cote2)
-                    :(p.coteN_snap||cotesMatch.coteN);
-    const bonus=coteToBonus(coteReelle);
-
-    if(p1===r1&&p2===r2){pts+=Math.round(5*mult*bonus);continue;}
-    const rw=r1>r2?1:r1<r2?2:0,pw=p1>p2?1:p1<p2?2:0;
-    if(rw!==pw)continue;
-    pts+=Math.round((r1-r2===p1-p2)?3*mult*bonus:1*mult*bonus);
+    if(isNaN(parseInt(p.s1))||isNaN(parseInt(p.s2)))continue;
+    const pts_match=computeMatchPts(m,p,real);
+    if(pts_match!==null)pts+=pts_match;
   }
   for(const g of GLOBAUX_DEF){
     const real=allGlobaux[g.id];if(!real)continue;
@@ -4074,28 +4137,9 @@ function renderMatchs(){
     const real=allScores[m.id],isLocked=!!real,p=prog[m.id]||{};
     // Label groupe : "Groupe A" au lieu de "A"
     const groupeLabel=m.groupe?'Groupe '+m.groupe:m.phase;
-    const cotesM=allCotes[m.id]||{cote1:2.0,coteN:3.2,cote2:2.0};
-    const maxBonus=Math.max(coteToBonus(cotesM.cote1),coteToBonus(cotesM.cote2));
-    const bonusColor=maxBonus>=2.5?'var(--orange-fire)':maxBonus>=1.8?'var(--gold)':'var(--text2)';
-    const badgeCote=`<span style="font-size:11px;font-family:'Oswald',sans-serif;background:rgba(255,138,61,0.15);color:${bonusColor};border:1px solid ${bonusColor};border-radius:6px;padding:2px 7px;font-weight:600;letter-spacing:0.5px">⚡ ×${maxBonus.toFixed(1)} max</span>`;
-    const ptsMaxCard=Math.round(5*(PHASES[m.phase]||1));
-    const badgePts=!isLocked?`<span style="margin-left:auto;font-family:'Bebas Neue',sans-serif;font-size:13px;color:var(--gold);letter-spacing:1px;background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.2);border-radius:6px;padding:1px 7px;white-space:nowrap">🎯 max +${ptsMaxCard} pts</span>`:'';
-
     let footer='';
     if(real){
-      const pts=(()=>{
-        if(p.s1===undefined)return null;
-        const p1=parseInt(p.s1),p2=parseInt(p.s2),r1=parseInt(real.s1),r2=parseInt(real.s2);
-        const mult=PHASES[m.phase]||1;
-        const cm=allCotes[m.id]||{cote1:2.0,coteN:3.2,cote2:2.0};
-        const cr=r1>r2?(p.cote1_snap||cm.cote1):r2>r1?(p.cote2_snap||cm.cote2):(p.coteN_snap||cm.coteN);
-        const bon=coteToBonus(cr);
-        if(p1===r1&&p2===r2)return Math.round(5*mult*bon);
-        const rw=r1>r2?1:r1<r2?2:0,pw=p1>p2?1:p1<p2?2:0;
-        if(rw!==pw)return 0;
-        return Math.round((r1-r2===p1-p2)?3*mult*bon:1*mult*bon);
-      })();
-      // Bloc résultat cliquable avec indication visuelle
+      const pts=computeMatchPts(m,p.s1!==undefined?p:null,real);
       footer=`<div class="match-footer" style="cursor:pointer" onclick="openMatchModal(${m.id})" title="Voir les pronos de tous">
         <span class="badge badge-locked">✔ Score réel : ${real.s1}–${real.s2}</span>
         ${pts!==null?`<span class="badge badge-pts">+${pts} pts</span>`:''}
@@ -4103,14 +4147,33 @@ function renderMatchs(){
       </div>`;
     }else{
       const hasSaved = p.s1 !== undefined && p.s2 !== undefined;
+      const ptsV1=getMatchPts(m,1),ptsNul=getMatchPts(m,0),ptsV2=getMatchPts(m,2);
+      const cotesHtml=`
+        <div class="match-odds-row">
+          <div class="match-odd-item">
+            <span class="odd-label">${m.name1}</span>
+            <span class="odd-cote">${m.c1?m.c1.toFixed(2):'—'}</span>
+            <span class="odd-pts">+${ptsV1} pts</span>
+          </div>
+          <div class="match-odd-item odd-nul">
+            <span class="odd-label">Nul</span>
+            <span class="odd-cote">${m.cN?m.cN.toFixed(2):'—'}</span>
+            <span class="odd-pts">+${ptsNul} pts</span>
+          </div>
+          <div class="match-odd-item">
+            <span class="odd-label">${m.name2}</span>
+            <span class="odd-cote">${m.c2?m.c2.toFixed(2):'—'}</span>
+            <span class="odd-pts">+${ptsV2} pts</span>
+          </div>
+        </div>`;
       footer=`<div class="match-footer"><span class="badge badge-open">Ouvert</span>${hasSaved?`<span class="badge badge-diff" style="margin-left:6px">✓ ${p.s1}–${p.s2} sauvegardé</span>`:''}</div>
+      ${cotesHtml}
       <button class="save-btn${hasSaved?' saved':''}" id="sbtn-${m.id}" onclick="savePronostic(${m.id})">${hasSaved?'✎ Modifier mon pronostic':'Enregistrer ce pronostic'}</button>`;
     }
     html+=`<div class="match-card">
       <div class="match-meta">
         <span class="match-group">${groupeLabel}</span>
         <span class="match-venue">${m.venue}</span>
-        ${isLocked?badgeCote:badgePts}
       </div>
       <div class="match-meta" style="margin-bottom:0"><span class="match-date">${m.date}</span></div>
       <div class="teams-row" style="margin-top:14px">
@@ -4123,7 +4186,6 @@ function renderMatchs(){
         <span class="score-sep">:</span>
         <input class="score-inp" type="number" min="0" max="20" id="s2-${m.id}" value="${p.s2!==undefined?p.s2:''}" placeholder="—" ${isLocked?'disabled':''}>
       </div>
-      ${!isLocked?renderPtsPreview(m):''}
       ${footer}
     </div>`;
   }
@@ -4139,21 +4201,18 @@ function openMatchModal(matchId){
   document.getElementById('mm-score').textContent=real.s1+' — '+real.s2;
   document.getElementById('mm-date').textContent=m.date+' · '+(m.groupe?'Groupe '+m.groupe:m.phase);
   const r1=parseInt(real.s1),r2=parseInt(real.s2);
-  const mult=PHASES[m.phase]||1;
-  const cm=allCotes[matchId]||{cote1:2.0,coteN:3.2,cote2:2.0};
   const rows=allJoueurs.map(function(j){
     const p=(j.pronostics||{})[matchId];
     let badgeHtml='',pts=null,badgeColor='var(--text3)';
-    if(p){
+    if(p&&p.s1!==undefined){
+      pts=computeMatchPts(m,p,real);
       const p1=parseInt(p.s1),p2=parseInt(p.s2);
-      const cr=r1>r2?(p.cote1_snap||cm.cote1):r2>r1?(p.cote2_snap||cm.cote2):(p.coteN_snap||cm.coteN);
-      const bon=coteToBonus(cr);
-      if(p1===r1&&p2===r2){pts=Math.round(5*mult*bon);badgeHtml='<span class="badge badge-exact">Score exact</span>';badgeColor='var(--gold)';}
+      if(p1===r1&&p2===r2){badgeHtml='<span class="badge badge-exact">Score exact</span>';badgeColor='var(--gold)';}
+      else if(pts===0){badgeHtml='<span class="badge badge-miss">Raté</span>';badgeColor='#f87171';}
       else{
         const rw=r1>r2?1:r1<r2?2:0,pw=p1>p2?1:p1<p2?2:0;
-        if(rw!==pw){pts=0;badgeHtml='<span class="badge badge-miss">Raté</span>';badgeColor='#f87171';}
-        else if(r1-r2===p1-p2){pts=Math.round(3*mult*bon);badgeHtml='<span class="badge badge-diff">Bonne diff</span>';badgeColor='var(--green)';}
-        else{pts=Math.round(1*mult*bon);badgeHtml='<span class="badge badge-win">Bon vainq.</span>';badgeColor='var(--blue)';}
+        if(r1-r2===p1-p2&&rw===pw){badgeHtml='<span class="badge badge-diff">Bonne diff</span>';badgeColor='var(--green)';}
+        else{badgeHtml='<span class="badge badge-win">Bon vainq.</span>';badgeColor='var(--blue)';}
       }
     }else{badgeHtml='<span class="badge" style="background:var(--surface2);color:var(--text3);border:1px solid var(--border)">Non saisi</span>';}
     const avHtml=renderAvatarEl(j,34,10);
@@ -4179,9 +4238,7 @@ async function savePronostic(id){
   btn.disabled=true;btn.textContent='Sauvegarde...';
   const joueur=allJoueurs.find(j=>j.id===currentUser);
 
-  // Snapshot des côtes au moment du pronostic
-  const cotesMatch=allCotes[id]||{cote1:2.0,coteN:3.2,cote2:2.0};
-  const pronosticEntry={s1,s2,cote1_snap:cotesMatch.cote1,coteN_snap:cotesMatch.coteN,cote2_snap:cotesMatch.cote2};
+  const pronosticEntry={s1,s2};
 
   const newProg={...(joueur?.pronostics||{}),[id]:pronosticEntry};
   const{error}=await sb.from('joueurs').update({pronostics:newProg}).eq('id',currentUser);
@@ -4789,17 +4846,15 @@ function renderAdminMatchs(){
     }
     card.appendChild(row);
 
-    // Bloc saisie manuelle des côtes
+    // Cotes intégrées dans le match (lecture seule)
     const cotesRow=document.createElement('div');
-    cotesRow.style.cssText='display:flex;align-items:center;gap:6px;margin-top:10px;flex-wrap:wrap';
-    const c=allCotes[m.id]||{cote1:2.0,coteN:3.2,cote2:2.0};
+    cotesRow.style.cssText='display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap';
     cotesRow.innerHTML=`
       <span style="font-size:11px;color:var(--text3);font-family:'Oswald',sans-serif">CÔTES :</span>
-      <input id="c1-${m.id}" type="number" step="0.01" min="1.01" max="99" value="${c.cote1}" style="width:60px;padding:4px 6px;border-radius:6px;border:1px solid var(--border);background:var(--card2);color:var(--text1);font-size:12px;text-align:center" placeholder="1">
-      <input id="cN-${m.id}" type="number" step="0.01" min="1.01" max="99" value="${c.coteN}" style="width:60px;padding:4px 6px;border-radius:6px;border:1px solid var(--border);background:var(--card2);color:var(--text1);font-size:12px;text-align:center" placeholder="N">
-      <input id="c2-${m.id}" type="number" step="0.01" min="1.01" max="99" value="${c.cote2}" style="width:60px;padding:4px 6px;border-radius:6px;border:1px solid var(--border);background:var(--card2);color:var(--text1);font-size:12px;text-align:center" placeholder="2">
-      <button onclick="saveCoteManuelle(${m.id})" style="padding:4px 10px;border-radius:6px;border:1px solid var(--accent);background:rgba(255,138,61,0.1);color:var(--accent);font-size:12px;cursor:pointer;font-family:inherit">💾 Sauver</button>
-      <span style="font-size:10px;color:var(--text3)">⚡ ×${Math.max(coteToBonus(c.cote1),coteToBonus(c.cote2)).toFixed(2)} max</span>
+      <span style="font-size:12px;color:var(--text2)">${m.name1} <strong style="color:var(--text)">${m.c1??'—'}</strong></span>
+      <span style="font-size:12px;color:var(--text2)">Nul <strong style="color:var(--gold)">${m.cN??'—'}</strong></span>
+      <span style="font-size:12px;color:var(--text2)">${m.name2} <strong style="color:var(--text)">${m.c2??'—'}</strong></span>
+      <span style="font-size:10px;color:var(--text3)">max +${Math.max(coteToPts(m.c1),coteToPts(m.c2))} pts</span>
     `;
     card.appendChild(cotesRow);
     container.appendChild(card);
