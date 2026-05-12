@@ -4091,10 +4091,10 @@ function togglePtsLegend(){
 let currentFilter='tous';
 function goToMatch(id){
   _pendingScrollMatchId=id;
-  currentFilter='tous';
+  // "À parier" = liste courte, le match du hero est forcément dedans (non encore joué)
+  currentFilter='prochain';
   document.querySelectorAll('#page-matchs .filter-btn').forEach(b=>b.classList.remove('active'));
-  const tousBtn=document.getElementById('f-tous');
-  if(tousBtn) tousBtn.classList.add('active');
+  document.getElementById('f-prochain')?.classList.add('active');
   switchTab('pronos',document.getElementById('tab-pronos'));
 }
 function setFilter(f,btn){
@@ -4197,16 +4197,14 @@ function renderMatchs(){
   if(_pendingScrollMatchId!==null){
     const id=_pendingScrollMatchId;
     _pendingScrollMatchId=null;
-    // Wait past the 220ms page-enter animation before scrolling
+    // 400ms : dépasse l'animation page-enter (220ms) + le timer switchTab (150ms)
     setTimeout(()=>{
       const el=document.getElementById('match-card-'+id);
       if(!el) return;
-      const top=el.getBoundingClientRect().top+window.pageYOffset-80;
-      window.scrollTo({top:Math.max(0,top),behavior:'instant'});
-      el.style.transition='box-shadow .4s';
-      el.style.boxShadow='0 0 0 2px var(--gold)';
-      setTimeout(()=>{el.style.boxShadow='';el.style.transition='';},1500);
-    },300);
+      el.scrollIntoView(true);
+      el.style.boxShadow='0 0 0 3px #FFD700';
+      setTimeout(()=>{ el.style.boxShadow=''; },2000);
+    },400);
   }
 }
 
