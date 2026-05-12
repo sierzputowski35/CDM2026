@@ -3561,8 +3561,8 @@ function renderHeroCard() {
   const code2 = FLAG_CODES[match.name2] ?? 'un';
   const f1 = document.getElementById('hero-flag1');
   const f2 = document.getElementById('hero-flag2');
-  if (f1) { f1.src = 'https://flagcdn.com/w80/' + code1 + '.png'; f1.alt = match.name1; }
-  if (f2) { f2.src = 'https://flagcdn.com/w80/' + code2 + '.png'; f2.alt = match.name2; }
+  if (f1) { f1.style.display = ''; f1.src = 'https://flagcdn.com/w80/' + code1 + '.png'; f1.alt = match.name1; }
+  if (f2) { f2.style.display = ''; f2.src = 'https://flagcdn.com/w80/' + code2 + '.png'; f2.alt = match.name2; }
 
   const n1 = document.getElementById('hero-name1');
   const n2 = document.getElementById('hero-name2');
