@@ -3894,10 +3894,13 @@ function renderMatchs(){
         if(p.s1===undefined)return null;
         const p1=parseInt(p.s1),p2=parseInt(p.s2),r1=parseInt(real.s1),r2=parseInt(real.s2);
         const mult=PHASES[m.phase]||1;
-        if(p1===r1&&p2===r2)return Math.round(5*mult);
+        const cm=allCotes[m.id]||{cote1:2.0,coteN:3.2,cote2:2.0};
+        const cr=r1>r2?(p.cote1_snap||cm.cote1):r2>r1?(p.cote2_snap||cm.cote2):(p.coteN_snap||cm.coteN);
+        const bon=coteToBonus(cr);
+        if(p1===r1&&p2===r2)return Math.round(5*mult*bon);
         const rw=r1>r2?1:r1<r2?2:0,pw=p1>p2?1:p1<p2?2:0;
         if(rw!==pw)return 0;
-        return Math.round((r1-r2===p1-p2)?3*mult:1*mult);
+        return Math.round((r1-r2===p1-p2)?3*mult*bon:1*mult*bon);
       })();
       // Bloc résultat cliquable avec indication visuelle
       footer=`<div class="match-footer" style="cursor:pointer" onclick="openMatchModal(${m.id})" title="Voir les pronos de tous">
@@ -3943,17 +3946,20 @@ function openMatchModal(matchId){
   document.getElementById('mm-date').textContent=m.date+' · '+(m.groupe?'Groupe '+m.groupe:m.phase);
   const r1=parseInt(real.s1),r2=parseInt(real.s2);
   const mult=PHASES[m.phase]||1;
+  const cm=allCotes[matchId]||{cote1:2.0,coteN:3.2,cote2:2.0};
   const rows=allJoueurs.map(function(j){
     const p=(j.pronostics||{})[matchId];
     let badgeHtml='',pts=null,badgeColor='var(--text3)';
     if(p){
       const p1=parseInt(p.s1),p2=parseInt(p.s2);
-      if(p1===r1&&p2===r2){pts=Math.round(5*mult);badgeHtml='<span class="badge badge-exact">Score exact</span>';badgeColor='var(--gold)';}
+      const cr=r1>r2?(p.cote1_snap||cm.cote1):r2>r1?(p.cote2_snap||cm.cote2):(p.coteN_snap||cm.coteN);
+      const bon=coteToBonus(cr);
+      if(p1===r1&&p2===r2){pts=Math.round(5*mult*bon);badgeHtml='<span class="badge badge-exact">Score exact</span>';badgeColor='var(--gold)';}
       else{
         const rw=r1>r2?1:r1<r2?2:0,pw=p1>p2?1:p1<p2?2:0;
         if(rw!==pw){pts=0;badgeHtml='<span class="badge badge-miss">Raté</span>';badgeColor='#f87171';}
-        else if(r1-r2===p1-p2){pts=Math.round(3*mult);badgeHtml='<span class="badge badge-diff">Bonne diff</span>';badgeColor='var(--green)';}
-        else{pts=Math.round(1*mult);badgeHtml='<span class="badge badge-win">Bon vainq.</span>';badgeColor='var(--blue)';}
+        else if(r1-r2===p1-p2){pts=Math.round(3*mult*bon);badgeHtml='<span class="badge badge-diff">Bonne diff</span>';badgeColor='var(--green)';}
+        else{pts=Math.round(1*mult*bon);badgeHtml='<span class="badge badge-win">Bon vainq.</span>';badgeColor='var(--blue)';}
       }
     }else{badgeHtml='<span class="badge" style="background:var(--surface2);color:var(--text3);border:1px solid var(--border)">Non saisi</span>';}
     const avHtml=renderAvatarEl(j,34,10);
