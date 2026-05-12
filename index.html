@@ -3133,67 +3133,107 @@ const MATCHS = [
 ];
 
 // ══ BUTEURS & PARIS BONUS ══
+// Points fixes : 6 pts pour buteur correct, 6 pts pour pari bonus réalisé
+const BONUS_PTS = 6;
+const B6 = BONUS_PTS; // alias court
+
 const BUTEURS_PAR_MATCH = {
-  1:  [{nom:'Hirving Lozano',    cote:3}, {nom:'Raúl Jiménez',      cote:4},
-       {nom:'Percy Tau',         cote:6}, {nom:'Evidence Makgopa',  cote:8}],
-  2:  [{nom:'Son Heung-min',     cote:3}, {nom:'Patrik Schick',     cote:4},
-       {nom:'Cho Gue-sung',      cote:5}, {nom:'Tomáš Souček',      cote:6}],
-  7:  [{nom:'Ciro Immobile',     cote:3}, {nom:'Jonathan David',    cote:3},
-       {nom:'Federico Chiesa',   cote:4}, {nom:'Alphonso Davies',   cote:5}],
-  13: [{nom:'Vinícius Jr.',      cote:2}, {nom:'Youssef En-Nesyri', cote:4},
-       {nom:'Rodrygo',           cote:4}, {nom:'Hakim Ziyech',      cote:6}],
-  19: [{nom:'Christian Pulisic', cote:3}, {nom:'Daryl Dike',        cote:4},
-       {nom:'Miguel Almirón',    cote:7}, {nom:'Julio Enciso',      cote:8}],
-  25: [{nom:'Kai Havertz',       cote:3}, {nom:'Leroy Sané',        cote:3},
-       {nom:'Serhou Guirassy',   cote:5}, {nom:'Simon Adingra',     cote:7}],
-  31: [{nom:'Memphis Depay',     cote:3}, {nom:'Cody Gakpo',        cote:3},
-       {nom:'Ritsu Doan',        cote:5}, {nom:'Kaoru Mitoma',      cote:5}],
-  37: [{nom:'Romelu Lukaku',     cote:3}, {nom:'Mohamed Salah',     cote:3},
-       {nom:'Dodi Lukébakio',    cote:5}, {nom:'Omar Marmoush',     cote:6}],
-  43: [{nom:'Álvaro Morata',     cote:3}, {nom:'Ferran Torres',     cote:3},
-       {nom:'Ryan Johansson',    cote:9}, {nom:'Garry Rodrigues',   cote:10}],
-  49: [{nom:'Kylian Mbappé',     cote:2}, {nom:'Antoine Griezmann', cote:3},
-       {nom:'Sadio Mané',        cote:4}, {nom:'Ismaïla Sarr',      cote:5}],
-  55: [{nom:'Lautaro Martínez',  cote:2}, {nom:'Lionel Messi',      cote:3},
-       {nom:'Riyad Mahrez',      cote:5}, {nom:'Islam Slimani',     cote:7}],
-  61: [{nom:'Cristiano Ronaldo', cote:2}, {nom:'Rafael Leão',       cote:3},
-       {nom:'Luis Díaz',         cote:4}, {nom:'Jhon Córdoba',      cote:6}],
-  73: [{nom:'À déterminer',      cote:3}],
+  // ── Groupe A ──
+  1:  [{nom:'Raúl Jiménez',        cote:B6},{nom:'Henry Martín',        cote:B6},{nom:'Percy Tau',            cote:B6},{nom:'Evidence Makgopa',   cote:B6}],
+  2:  [{nom:'Son Heung-min',       cote:B6},{nom:'Cho Gue-sung',        cote:B6},{nom:'Patrik Schick',        cote:B6},{nom:'Ondřej Lingr',        cote:B6}],
+  3:  [{nom:'Raúl Jiménez',        cote:B6},{nom:'Henry Martín',        cote:B6},{nom:'Son Heung-min',       cote:B6},{nom:'Hwang Hee-chan',       cote:B6}],
+  4:  [{nom:'Percy Tau',            cote:B6},{nom:'Evidence Makgopa',   cote:B6},{nom:'Patrik Schick',        cote:B6},{nom:'Tomáš Souček',        cote:B6}],
+  5:  [{nom:'Raúl Jiménez',        cote:B6},{nom:'Henry Martín',        cote:B6},{nom:'Patrik Schick',        cote:B6},{nom:'Ondřej Lingr',        cote:B6}],
+  6:  [{nom:'Percy Tau',            cote:B6},{nom:'Lyle Foster',         cote:B6},{nom:'Son Heung-min',       cote:B6},{nom:'Cho Gue-sung',        cote:B6}],
+  // ── Groupe B ──
+  7:  [{nom:'Jonathan David',      cote:B6},{nom:'Alphonso Davies',     cote:B6},{nom:'Ciro Immobile',       cote:B6},{nom:'Federico Chiesa',     cote:B6}],
+  8:  [{nom:'Jonathan David',      cote:B6},{nom:'Cyle Larin',          cote:B6},{nom:'Almoez Ali',          cote:B6},{nom:'Akram Afif',          cote:B6}],
+  9:  [{nom:'Ciro Immobile',       cote:B6},{nom:'Giacomo Raspadori',   cote:B6},{nom:'Breel Embolo',        cote:B6},{nom:'Xherdan Shaqiri',     cote:B6}],
+  10: [{nom:'Breel Embolo',        cote:B6},{nom:'Ruben Vargas',        cote:B6},{nom:'Almoez Ali',          cote:B6},{nom:'Akram Afif',          cote:B6}],
+  11: [{nom:'Jonathan David',      cote:B6},{nom:'Cyle Larin',          cote:B6},{nom:'Breel Embolo',        cote:B6},{nom:'Granit Xhaka',        cote:B6}],
+  12: [{nom:'Ciro Immobile',       cote:B6},{nom:'Federico Chiesa',     cote:B6},{nom:'Almoez Ali',          cote:B6},{nom:'Akram Afif',          cote:B6}],
+  // ── Groupe C ──
+  13: [{nom:'Vinícius Jr.',         cote:B6},{nom:'Rodrygo',             cote:B6},{nom:'Youssef En-Nesyri',  cote:B6},{nom:'Hakim Ziyech',        cote:B6}],
+  14: [{nom:'Lyndon Dykes',         cote:B6},{nom:'Scott McTominay',    cote:B6},{nom:'Frantzdy Pierrot',   cote:B6},{nom:'Duckens Nazon',       cote:B6}],
+  15: [{nom:'Vinícius Jr.',         cote:B6},{nom:'Raphinha',            cote:B6},{nom:'Lyndon Dykes',        cote:B6},{nom:'Scott McTominay',    cote:B6}],
+  16: [{nom:'Youssef En-Nesyri',   cote:B6},{nom:'Soufiane Boufal',    cote:B6},{nom:'Frantzdy Pierrot',   cote:B6},{nom:'Duckens Nazon',       cote:B6}],
+  17: [{nom:'Vinícius Jr.',         cote:B6},{nom:'Endrick',             cote:B6},{nom:'Frantzdy Pierrot',   cote:B6},{nom:'Duckens Nazon',       cote:B6}],
+  18: [{nom:'Scott McTominay',     cote:B6},{nom:'Lyndon Dykes',        cote:B6},{nom:'Youssef En-Nesyri',  cote:B6},{nom:'Hakim Ziyech',        cote:B6}],
+  // ── Groupe D ──
+  19: [{nom:'Christian Pulisic',   cote:B6},{nom:'Daryl Dike',          cote:B6},{nom:'Miguel Almirón',     cote:B6},{nom:'Julio Enciso',        cote:B6}],
+  20: [{nom:'Mathew Leckie',       cote:B6},{nom:'Martin Boyle',        cote:B6},{nom:'Kerem Aktürkoğlu',  cote:B6},{nom:'Cenk Tosun',          cote:B6}],
+  21: [{nom:'Christian Pulisic',   cote:B6},{nom:'Josh Sargent',        cote:B6},{nom:'Mathew Leckie',       cote:B6},{nom:'Mitchell Duke',       cote:B6}],
+  22: [{nom:'Miguel Almirón',      cote:B6},{nom:'Julio Enciso',        cote:B6},{nom:'Kerem Aktürkoğlu',  cote:B6},{nom:'Hakan Çalhanoğlu',   cote:B6}],
+  23: [{nom:'Christian Pulisic',   cote:B6},{nom:'Daryl Dike',          cote:B6},{nom:'Kerem Aktürkoğlu',  cote:B6},{nom:'Cenk Tosun',          cote:B6}],
+  24: [{nom:'Mathew Leckie',       cote:B6},{nom:'Martin Boyle',        cote:B6},{nom:'Miguel Almirón',     cote:B6},{nom:'Carlos González',     cote:B6}],
+  // ── Groupe E ──
+  25: [{nom:'Kai Havertz',         cote:B6},{nom:'Leroy Sané',          cote:B6},{nom:'Serhou Guirassy',    cote:B6},{nom:'Simon Adingra',       cote:B6}],
+  26: [{nom:'Enner Valencia',      cote:B6},{nom:'Moisés Caicedo',      cote:B6},{nom:'Leandro Bacuna',     cote:B6},{nom:'Elson Hooi',          cote:B6}],
+  27: [{nom:'Kai Havertz',         cote:B6},{nom:'Florian Wirtz',       cote:B6},{nom:'Leandro Bacuna',     cote:B6},{nom:'Elson Hooi',          cote:B6}],
+  28: [{nom:'Serhou Guirassy',     cote:B6},{nom:'Simon Adingra',       cote:B6},{nom:'Enner Valencia',     cote:B6},{nom:'Ángel Mena',          cote:B6}],
+  29: [{nom:'Kai Havertz',         cote:B6},{nom:'Leroy Sané',          cote:B6},{nom:'Enner Valencia',     cote:B6},{nom:'Moisés Caicedo',      cote:B6}],
+  30: [{nom:'Leandro Bacuna',      cote:B6},{nom:'Elson Hooi',          cote:B6},{nom:'Serhou Guirassy',    cote:B6},{nom:'Sébastien Haller',   cote:B6}],
+  // ── Groupe F ──
+  31: [{nom:'Memphis Depay',       cote:B6},{nom:'Cody Gakpo',          cote:B6},{nom:'Ritsu Doan',          cote:B6},{nom:'Kaoru Mitoma',        cote:B6}],
+  32: [{nom:'Viktor Gyökeres',     cote:B6},{nom:'Alexander Isak',      cote:B6},{nom:'Youssef Msakni',     cote:B6},{nom:'Wahbi Khazri',        cote:B6}],
+  33: [{nom:'Memphis Depay',       cote:B6},{nom:'Donyell Malen',       cote:B6},{nom:'Viktor Gyökeres',    cote:B6},{nom:'Alexander Isak',      cote:B6}],
+  34: [{nom:'Ritsu Doan',           cote:B6},{nom:'Takefusa Kubo',       cote:B6},{nom:'Youssef Msakni',     cote:B6},{nom:'Seifeddine Jaziri',   cote:B6}],
+  35: [{nom:'Memphis Depay',       cote:B6},{nom:'Wout Weghorst',       cote:B6},{nom:'Youssef Msakni',     cote:B6},{nom:'Wahbi Khazri',        cote:B6}],
+  36: [{nom:'Viktor Gyökeres',     cote:B6},{nom:'Dejan Kulusevski',    cote:B6},{nom:'Ritsu Doan',          cote:B6},{nom:'Kaoru Mitoma',        cote:B6}],
+  // ── Groupe G ──
+  37: [{nom:'Romelu Lukaku',       cote:B6},{nom:'Lois Openda',         cote:B6},{nom:'Mohamed Salah',      cote:B6},{nom:'Omar Marmoush',       cote:B6}],
+  38: [{nom:'Mehdi Taremi',        cote:B6},{nom:'Sardar Azmoun',       cote:B6},{nom:'Chris Wood',          cote:B6},{nom:'Matthew Garbett',     cote:B6}],
+  39: [{nom:'Romelu Lukaku',       cote:B6},{nom:'Dodi Lukébakio',      cote:B6},{nom:'Mehdi Taremi',       cote:B6},{nom:'Sardar Azmoun',       cote:B6}],
+  40: [{nom:'Mohamed Salah',       cote:B6},{nom:'Mostafa Mohamed',     cote:B6},{nom:'Chris Wood',          cote:B6},{nom:'Matthew Garbett',     cote:B6}],
+  41: [{nom:'Romelu Lukaku',       cote:B6},{nom:'Charles De Ketelaere',cote:B6},{nom:'Chris Wood',          cote:B6},{nom:'Matthew Garbett',     cote:B6}],
+  42: [{nom:'Mehdi Taremi',        cote:B6},{nom:'Ali Gholizadeh',      cote:B6},{nom:'Mohamed Salah',      cote:B6},{nom:'Omar Marmoush',       cote:B6}],
+  // ── Groupe H ──
+  43: [{nom:'Álvaro Morata',       cote:B6},{nom:'Ferran Torres',       cote:B6},{nom:'Ryan Johansson',     cote:B6},{nom:'Garry Rodrigues',     cote:B6}],
+  44: [{nom:'Salem Al-Dawsari',    cote:B6},{nom:'Firas Al-Buraikan',   cote:B6},{nom:'Darwin Núñez',       cote:B6},{nom:'Facundo Torres',      cote:B6}],
+  45: [{nom:'Álvaro Morata',       cote:B6},{nom:'Nico Williams',       cote:B6},{nom:'Salem Al-Dawsari',   cote:B6},{nom:'Saleh Al-Shehri',    cote:B6}],
+  46: [{nom:'Ryan Johansson',      cote:B6},{nom:'Garry Rodrigues',     cote:B6},{nom:'Darwin Núñez',       cote:B6},{nom:'Facundo Torres',      cote:B6}],
+  47: [{nom:'Álvaro Morata',       cote:B6},{nom:'Pedri',               cote:B6},{nom:'Darwin Núñez',       cote:B6},{nom:'Rodrigo Bentancur',   cote:B6}],
+  48: [{nom:'Firas Al-Buraikan',   cote:B6},{nom:'Salem Al-Dawsari',    cote:B6},{nom:'Ryan Johansson',     cote:B6},{nom:'Garry Rodrigues',     cote:B6}],
+  // ── Groupe I ──
+  49: [{nom:'Kylian Mbappé',       cote:B6},{nom:'Antoine Griezmann',   cote:B6},{nom:'Sadio Mané',          cote:B6},{nom:'Ismaïla Sarr',        cote:B6}],
+  50: [{nom:'Erling Haaland',      cote:B6},{nom:'Martin Ødegaard',     cote:B6},{nom:'Marcelo Martins',    cote:B6},{nom:'Rodrigo Ramallo',     cote:B6}],
+  51: [{nom:'Kylian Mbappé',       cote:B6},{nom:'Ousmane Dembélé',     cote:B6},{nom:'Erling Haaland',     cote:B6},{nom:'Alexander Sørloth',   cote:B6}],
+  52: [{nom:'Sadio Mané',           cote:B6},{nom:'Nicolas Jackson',     cote:B6},{nom:'Marcelo Martins',    cote:B6},{nom:'Rodrigo Ramallo',     cote:B6}],
+  53: [{nom:'Kylian Mbappé',       cote:B6},{nom:'Marcus Thuram',       cote:B6},{nom:'Marcelo Martins',    cote:B6},{nom:'Rodrigo Ramallo',     cote:B6}],
+  54: [{nom:'Erling Haaland',      cote:B6},{nom:'Martin Ødegaard',     cote:B6},{nom:'Sadio Mané',          cote:B6},{nom:'Ismaïla Sarr',        cote:B6}],
+  // ── Groupe J ──
+  55: [{nom:'Lautaro Martínez',    cote:B6},{nom:'Lionel Messi',        cote:B6},{nom:'Riyad Mahrez',       cote:B6},{nom:'Islam Slimani',       cote:B6}],
+  56: [{nom:'Marcel Sabitzer',     cote:B6},{nom:'Marko Arnautovic',    cote:B6},{nom:'Ahmad Hajahmad',     cote:B6},{nom:'Baha\'a Faisal',      cote:B6}],
+  57: [{nom:'Lautaro Martínez',    cote:B6},{nom:'Julián Álvarez',      cote:B6},{nom:'Marcel Sabitzer',    cote:B6},{nom:'Christoph Baumgartner',cote:B6}],
+  58: [{nom:'Riyad Mahrez',        cote:B6},{nom:'Islam Slimani',       cote:B6},{nom:'Ahmad Hajahmad',     cote:B6},{nom:'Baha\'a Faisal',      cote:B6}],
+  59: [{nom:'Lautaro Martínez',    cote:B6},{nom:'Ángel Di María',      cote:B6},{nom:'Ahmad Hajahmad',     cote:B6},{nom:'Baha\'a Faisal',      cote:B6}],
+  60: [{nom:'Marcel Sabitzer',     cote:B6},{nom:'Marko Arnautovic',    cote:B6},{nom:'Riyad Mahrez',       cote:B6},{nom:'Sofiane Feghouli',    cote:B6}],
+  // ── Groupe K ──
+  61: [{nom:'Cristiano Ronaldo',   cote:B6},{nom:'Rafael Leão',         cote:B6},{nom:'Luis Díaz',          cote:B6},{nom:'James Rodríguez',     cote:B6}],
+  62: [{nom:'Eldor Shomurodov',    cote:B6},{nom:'Jaloliddin Masharipov',cote:B6},{nom:'Aymen Hussein',     cote:B6},{nom:'Ahmed Yasin',         cote:B6}],
+  63: [{nom:'Cristiano Ronaldo',   cote:B6},{nom:'Bruno Fernandes',     cote:B6},{nom:'Eldor Shomurodov',   cote:B6},{nom:'Jaloliddin Masharipov',cote:B6}],
+  64: [{nom:'Luis Díaz',            cote:B6},{nom:'Jhon Córdoba',        cote:B6},{nom:'Aymen Hussein',     cote:B6},{nom:'Ahmed Yasin',         cote:B6}],
+  65: [{nom:'Cristiano Ronaldo',   cote:B6},{nom:'João Félix',           cote:B6},{nom:'Aymen Hussein',     cote:B6},{nom:'Ahmed Yasin',         cote:B6}],
+  66: [{nom:'Luis Díaz',            cote:B6},{nom:'James Rodríguez',    cote:B6},{nom:'Eldor Shomurodov',   cote:B6},{nom:'Jaloliddin Masharipov',cote:B6}],
+  // ── Groupe L ──
+  67: [{nom:'Harry Kane',           cote:B6},{nom:'Jude Bellingham',    cote:B6},{nom:'Andrej Kramarić',    cote:B6},{nom:'Ivan Perišić',        cote:B6}],
+  68: [{nom:'André Ayew',           cote:B6},{nom:'Inaki Williams',     cote:B6},{nom:'Ismael Díaz',        cote:B6},{nom:'Cecilio Waterman',    cote:B6}],
+  69: [{nom:'Harry Kane',           cote:B6},{nom:'Bukayo Saka',        cote:B6},{nom:'Antoine Semenyo',   cote:B6},{nom:'Inaki Williams',      cote:B6}],
+  70: [{nom:'Andrej Kramarić',      cote:B6},{nom:'Luka Modrić',        cote:B6},{nom:'Ismael Díaz',        cote:B6},{nom:'Cecilio Waterman',    cote:B6}],
+  71: [{nom:'Harry Kane',           cote:B6},{nom:'Phil Foden',         cote:B6},{nom:'Ismael Díaz',        cote:B6},{nom:'Cecilio Waterman',    cote:B6}],
+  72: [{nom:'Inaki Williams',       cote:B6},{nom:'Jordan Ayew',        cote:B6},{nom:'Andrej Kramarić',    cote:B6},{nom:'Bruno Petković',      cote:B6}],
+  // Phases finales : buteurs ajoutés par l'admin au fur et à mesure
 };
 
-const PARIS_BONUS_PAR_MATCH = {
-  1: [
-    {id:'plus2buts',   label:'Plus de 2 buts au total',       cote:2.0},
-    {id:'btts',        label:'Les deux équipes marquent',      cote:2.5},
-    {id:'nul_mi',      label:'Score nul à la mi-temps',        cote:3.5},
-    {id:'clean_sheet', label:'Mexique gardé clean sheet',      cote:3.0},
-  ],
-  13: [
-    {id:'plus3buts',   label:'Plus de 3 buts au total',        cote:2.5},
-    {id:'btts',        label:'Les deux équipes marquent',       cote:2.0},
-    {id:'bresil_2p',   label:'Brésil mène à la mi-temps',      cote:1.8},
-    {id:'vini_score',  label:'Vinícius Jr. buteur & passeur',  cote:7.0},
-  ],
-  49: [
-    {id:'mbappe_db',   label:'Mbappé doublé',                  cote:6.0},
-    {id:'btts',        label:'Les deux équipes marquent',       cote:2.2},
-    {id:'france_2p',   label:'France gagne les deux mi-temps', cote:2.8},
-    {id:'plus3buts',   label:'Plus de 3 buts au total',        cote:3.0},
-    {id:'mane_score',  label:'Sadio Mané buteur',              cote:4.5},
-  ],
-  55: [
-    {id:'messi_score', label:'Messi buteur ou passeur',        cote:2.5},
-    {id:'plus2buts',   label:'Plus de 2 buts au total',        cote:1.9},
-    {id:'btts',        label:'Les deux équipes marquent',       cote:2.8},
-    {id:'arg_avan',    label:'Argentine mène à la mi-temps',   cote:1.7},
-  ],
-  61: [
-    {id:'cr7_score',   label:'Cristiano Ronaldo buteur',       cote:2.5},
-    {id:'plus2buts',   label:'Plus de 2 buts au total',        cote:2.0},
-    {id:'btts',        label:'Les deux équipes marquent',       cote:2.5},
-    {id:'por_cs',      label:'Portugal gardé clean sheet',     cote:3.5},
-  ],
-};
+// Paris bonus : 4 options standard générées automatiquement sur tous les matchs
+const STANDARD_PARIS_BONUS = [
+  {id:'plus2buts',   label:'Plus de 2 buts au total',           cote:B6},
+  {id:'btts',        label:'Les deux équipes marquent',          cote:B6},
+  {id:'nul_mi',      label:'Score nul à la mi-temps',            cote:B6},
+  {id:'clean_sheet', label:'Une équipe gardée clean sheet',      cote:B6},
+];
+const PARIS_BONUS_PAR_MATCH = {};
+MATCHS.forEach(m => { PARIS_BONUS_PAR_MATCH[m.id] = STANDARD_PARIS_BONUS; });
 
 // 48 ÉQUIPES qualifiées CDM 2026
 const EQUIPES = [
@@ -4296,7 +4336,7 @@ function renderBonusSection(m, p, isLocked) {
 
       return `<button class="${cls}" ${isLocked ? 'disabled' : `onclick="selectButeur(${m.id},'${b.nom.replace(/'/g,"\\'")}')"`}>
         <div class="buteur-nom">${b.nom}</div>
-        <div class="buteur-cote">×${b.cote} · ${pts} pts</div>
+        <div class="buteur-cote">+${pts} pts si buteur</div>
         ${resultBadge}
       </button>`;
     }).join('');
@@ -4336,7 +4376,7 @@ function renderBonusSection(m, p, isLocked) {
 
       return `<button class="${cls}" ${isLocked ? 'disabled' : `onclick="selectPariBonus(${m.id},'${b.id}')"`}>
         <span class="bonus-label">${b.label}</span>
-        <span class="bonus-cote">×${b.cote} → ${pts} pts</span>
+        <span class="bonus-cote">+${pts} pts</span>
         ${resultBadge}
       </button>`;
     }).join('');
