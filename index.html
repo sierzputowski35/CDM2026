@@ -3647,7 +3647,7 @@ function renderQuickMatches() {
     const badge = locked
       ? '<div class="qmc-badge qmc-badge--lock"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg><span>Ferme</span></div>'
       : '<div class="qmc-badge qmc-badge--xp"><span>x' + multi + ' XP</span></div>';
-    return '<div class="quick-match-card" onclick="_pendingScrollMatchId=' + m.id + ';switchTab(\'pronos\',document.getElementById(\'tab-pronos\'))">'
+    return '<div class="quick-match-card" onclick="goToMatch(' + m.id + ')">'
       + '<div class="qmc-time">' + heure + '</div>'
       + '<div class="qmc-teams">'
       + '<div class="qmc-team"><div class="qmc-flag"><img src="https://flagcdn.com/w40/' + code1 + '.png" alt="' + m.name1 + '" loading="lazy" onerror="this.style.display=\'none\'"/></div><span>' + m.name1 + '</span></div>'
@@ -4084,6 +4084,14 @@ function togglePtsLegend(){
 
 // ══ FILTRE MATCHS ══
 let currentFilter='tous';
+function goToMatch(id){
+  _pendingScrollMatchId=id;
+  currentFilter='tous';
+  document.querySelectorAll('#page-matchs .filter-btn').forEach(b=>b.classList.remove('active'));
+  const tousBtn=document.getElementById('f-tous');
+  if(tousBtn) tousBtn.classList.add('active');
+  switchTab('pronos',document.getElementById('tab-pronos'));
+}
 function setFilter(f,btn){
   currentFilter=f;
   document.querySelectorAll('#page-matchs .filter-btn').forEach(b=>b.classList.remove('active'));
@@ -4182,9 +4190,18 @@ function renderMatchs(){
   }
   document.getElementById('matchs-list').innerHTML=html;
   if(_pendingScrollMatchId!==null){
-    const el=document.getElementById('match-card-'+_pendingScrollMatchId);
-    if(el) setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'center'}),100);
+    const id=_pendingScrollMatchId;
     _pendingScrollMatchId=null;
+    // Wait past the 220ms page-enter animation before scrolling
+    setTimeout(()=>{
+      const el=document.getElementById('match-card-'+id);
+      if(!el) return;
+      const top=el.getBoundingClientRect().top+window.pageYOffset-80;
+      window.scrollTo({top:Math.max(0,top),behavior:'instant'});
+      el.style.transition='box-shadow .4s';
+      el.style.boxShadow='0 0 0 2px var(--gold)';
+      setTimeout(()=>{el.style.boxShadow='';el.style.transition='';},1500);
+    },300);
   }
 }
 
