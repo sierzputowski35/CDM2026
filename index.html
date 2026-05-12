@@ -3106,7 +3106,7 @@ const GLOBAUX_DEF = [
 ];
 
 // ══ STATE ══
-let currentUser=null,isAdmin=false,allJoueurs=[],allScores={},allGlobaux={};
+let currentUser=null,isAdmin=false,allJoueurs=[],allScores={},allGlobaux={},allCotes={};
 
 async function init(){
   try{
@@ -3136,14 +3136,27 @@ async function init(){
 
 let allMessages=[];
 async function loadData(){
-  const [j,s,g]=await Promise.all([
+  const [j,s,g,c]=await Promise.all([
     sb.from('joueurs').select('*'),
     sb.from('scores_reels').select('*'),
     sb.from('globaux_reels').select('*'),
+    sb.from('cotes_raw').select('*'),
   ]);
   allJoueurs=j.data||[];
   allScores={};(s.data||[]).forEach(x=>allScores[x.match_id]=x);
   allGlobaux={};(g.data||[]).forEach(x=>allGlobaux[x.id]=x.valeur);
+
+  // Construire un index côtes par match_id CDM (matching par nom d'équipe)
+  allCotes={};
+  const rawCotes=c.data||[];
+  for(const m of MATCHS){
+    const row=rawCotes.find(r=>r.home_team===m.name1&&r.away_team===m.name2);
+    if(row){
+      allCotes[m.id]={cote1:parseFloat(row.cote1),coteN:parseFloat(row.coteN),cote2:parseFloat(row.cote2)};
+    }else{
+      allCotes[m.id]={cote1:2.00,coteN:3.20,cote2:2.00};
+    }
+  }
 }
 
 async function loadMessages(){
@@ -3600,6 +3613,13 @@ function showAdminPage(id,btn){
   ({'admin-matchs':renderAdminMatchs,'admin-globaux':renderAdminGlobaux,'admin-cagnotte':renderAdminCagnotte,'admin-joueurs':renderAdminJoueurs,'admin-codes':renderAdminCodes})[id]?.();
 }
 
+// ══ BONUS CÔTE ══
+// Courbe logarithmique : côte 1.2 → ×1.18 | côte 2.0 → ×1.69 | côte 5.0 → ×2.61
+function coteToBonus(cote){
+  const c=Math.max(1.01,Math.min(parseFloat(cote)||2.0,25));
+  return parseFloat((Math.log(c)+1).toFixed(2));
+}
+
 // ══ POINTS ══
 function calcPoints(j){
   let pts=0;
@@ -3610,10 +3630,18 @@ function calcPoints(j){
     const p1=parseInt(p.s1),p2=parseInt(p.s2),r1=parseInt(real.s1),r2=parseInt(real.s2);
     if(isNaN(p1)||isNaN(p2))continue;
     const mult=PHASES[m.phase]||1;
-    if(p1===r1&&p2===r2){pts+=Math.round(5*mult);continue;}
+
+    // Bonus côte : snapshot figé au moment du prono, sinon côte actuelle
+    const cotesMatch=allCotes[m.id]||{cote1:2.0,coteN:3.2,cote2:2.0};
+    const coteReelle=r1>r2?(p.cote1_snap||cotesMatch.cote1)
+                    :r2>r1?(p.cote2_snap||cotesMatch.cote2)
+                    :(p.coteN_snap||cotesMatch.coteN);
+    const bonus=coteToBonus(coteReelle);
+
+    if(p1===r1&&p2===r2){pts+=Math.round(5*mult*bonus);continue;}
     const rw=r1>r2?1:r1<r2?2:0,pw=p1>p2?1:p1<p2?2:0;
     if(rw!==pw)continue;
-    pts+=Math.round((r1-r2===p1-p2)?3*mult:1*mult);
+    pts+=Math.round((r1-r2===p1-p2)?3*mult*bonus:1*mult*bonus);
   }
   for(const g of GLOBAUX_DEF){
     const real=allGlobaux[g.id];if(!real)continue;
@@ -3856,6 +3884,10 @@ function renderMatchs(){
     const real=allScores[m.id],isLocked=!!real,p=prog[m.id]||{};
     // Label groupe : "Groupe A" au lieu de "A"
     const groupeLabel=m.groupe?'Groupe '+m.groupe:m.phase;
+    const cotesM=allCotes[m.id]||{cote1:2.0,coteN:3.2,cote2:2.0};
+    const maxBonus=Math.max(coteToBonus(cotesM.cote1),coteToBonus(cotesM.cote2));
+    const bonusColor=maxBonus>=2.5?'var(--orange-fire)':maxBonus>=1.8?'var(--gold)':'var(--text2)';
+    const badgeCote=`<span style="font-size:11px;font-family:'Oswald',sans-serif;background:rgba(255,138,61,0.15);color:${bonusColor};border:1px solid ${bonusColor};border-radius:6px;padding:2px 7px;font-weight:600;letter-spacing:0.5px">⚡ ×${maxBonus.toFixed(1)} max</span>`;
     let footer='';
     if(real){
       const pts=(()=>{
@@ -3882,6 +3914,7 @@ function renderMatchs(){
       <div class="match-meta">
         <span class="match-group">${groupeLabel}</span>
         <span class="match-venue">${m.venue}</span>
+        ${badgeCote}
       </div>
       <div class="match-meta" style="margin-bottom:0"><span class="match-date">${m.date}</span></div>
       <div class="teams-row" style="margin-top:14px">
@@ -3945,7 +3978,12 @@ async function savePronostic(id){
   const btn=document.getElementById('sbtn-'+id);
   btn.disabled=true;btn.textContent='Sauvegarde...';
   const joueur=allJoueurs.find(j=>j.id===currentUser);
-  const newProg={...(joueur?.pronostics||{}),[id]:{s1,s2}};
+
+  // Snapshot des côtes au moment du pronostic
+  const cotesMatch=allCotes[id]||{cote1:2.0,coteN:3.2,cote2:2.0};
+  const pronosticEntry={s1,s2,cote1_snap:cotesMatch.cote1,coteN_snap:cotesMatch.coteN,cote2_snap:cotesMatch.cote2};
+
+  const newProg={...(joueur?.pronostics||{}),[id]:pronosticEntry};
   const{error}=await sb.from('joueurs').update({pronostics:newProg}).eq('id',currentUser);
   if(error){showToast('Erreur');btn.disabled=false;btn.textContent='Enregistrer ce pronostic';return;}
   await loadData();
@@ -4533,6 +4571,20 @@ function renderAdminMatchs(){
       row.appendChild(valBtn);
     }
     card.appendChild(row);
+
+    // Bloc saisie manuelle des côtes
+    const cotesRow=document.createElement('div');
+    cotesRow.style.cssText='display:flex;align-items:center;gap:6px;margin-top:10px;flex-wrap:wrap';
+    const c=allCotes[m.id]||{cote1:2.0,coteN:3.2,cote2:2.0};
+    cotesRow.innerHTML=`
+      <span style="font-size:11px;color:var(--text3);font-family:'Oswald',sans-serif">CÔTES :</span>
+      <input id="c1-${m.id}" type="number" step="0.01" min="1.01" max="99" value="${c.cote1}" style="width:60px;padding:4px 6px;border-radius:6px;border:1px solid var(--border);background:var(--card2);color:var(--text1);font-size:12px;text-align:center" placeholder="1">
+      <input id="cN-${m.id}" type="number" step="0.01" min="1.01" max="99" value="${c.coteN}" style="width:60px;padding:4px 6px;border-radius:6px;border:1px solid var(--border);background:var(--card2);color:var(--text1);font-size:12px;text-align:center" placeholder="N">
+      <input id="c2-${m.id}" type="number" step="0.01" min="1.01" max="99" value="${c.cote2}" style="width:60px;padding:4px 6px;border-radius:6px;border:1px solid var(--border);background:var(--card2);color:var(--text1);font-size:12px;text-align:center" placeholder="2">
+      <button onclick="saveCoteManuelle(${m.id})" style="padding:4px 10px;border-radius:6px;border:1px solid var(--accent);background:rgba(255,138,61,0.1);color:var(--accent);font-size:12px;cursor:pointer;font-family:inherit">💾 Sauver</button>
+      <span style="font-size:10px;color:var(--text3)">⚡ ×${Math.max(coteToBonus(c.cote1),coteToBonus(c.cote2)).toFixed(2)} max</span>
+    `;
+    card.appendChild(cotesRow);
     container.appendChild(card);
   }
 }
@@ -4555,6 +4607,21 @@ async function resetMatch(id){
   await loadData();
   showToast('Score supprimé — tu peux resaisir');
   renderAdminMatchs();
+}
+
+async function saveCoteManuelle(matchId){
+  const c1=document.getElementById('c1-'+matchId).value;
+  const cN=document.getElementById('cN-'+matchId).value;
+  const c2=document.getElementById('c2-'+matchId).value;
+  const m=MATCHS.find(x=>x.id===matchId);
+  if(!m)return;
+  const{error}=await sb.from('cotes_raw').upsert({
+    home_team:m.name1,away_team:m.name2,
+    cote1:parseFloat(c1)||2.0,coteN:parseFloat(cN)||3.2,cote2:parseFloat(c2)||2.0,
+    source:'manual',updated_at:new Date().toISOString(),
+  },{onConflict:'home_team,away_team'});
+  if(!error){await loadData();showToast('Côtes mises à jour ✓');renderAdminMatchs();}
+  else showToast('Erreur sauvegarde côtes');
 }
 
 // ══ ADMIN GLOBAUX ══
