@@ -4844,7 +4844,7 @@ function renderAdminMatchs(){
       <span style="font-size:12px;color:var(--text2)">${m.name1} <strong style="color:var(--text)">${m.c1??'—'}</strong></span>
       <span style="font-size:12px;color:var(--text2)">Nul <strong style="color:var(--gold)">${m.cN??'—'}</strong></span>
       <span style="font-size:12px;color:var(--text2)">${m.name2} <strong style="color:var(--text)">${m.c2??'—'}</strong></span>
-      <span style="font-size:10px;color:var(--text3)">max +${Math.max(coteToPts(m.c1),coteToPts(m.c2))} pts</span>
+      <span style="font-size:10px;color:var(--text3)">max +${Math.max(Math.round(5*(m.c1||1)),Math.round(5*(m.c2||1)))} pts</span>
     `;
     card.appendChild(cotesRow);
     container.appendChild(card);
