@@ -3584,9 +3584,14 @@ function renderHeroCard() {
   if (hintEl) hintEl.textContent = "Jusqu'a +12 pts · Multiplicateur x" + multi;
 
   const ctaBtn = document.getElementById('hero-cta-btn');
-  if (ctaBtn && allScores[match.id]) {
-    ctaBtn.disabled = true;
-    ctaBtn.textContent = 'Pronostic enregistre';
+  if (ctaBtn) {
+    if (allScores[match.id]) {
+      ctaBtn.disabled = true;
+      ctaBtn.textContent = 'Pronostic enregistre';
+    } else {
+      ctaBtn.disabled = false;
+      ctaBtn.onclick = function(){ goToMatch(match.id); };
+    }
   }
 
   startHeroCountdown(match);
