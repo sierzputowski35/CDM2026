@@ -3664,6 +3664,70 @@ function getTypePronostic(s1, s2) {
   return 'cote_nul';
 }
 
+// ══ SPRINT 3 : SYSTÈME DE LIGUES ══
+const LEAGUES = [
+  { id:'bronze',  name:'Bronze',  min:0,    max:500,      color:'#CD7F32', icon:'🥉', bg:'rgba(205,127,50,.12)'  },
+  { id:'argent',  name:'Argent',  min:500,  max:1200,     color:'#C0C0C0', icon:'🥈', bg:'rgba(192,192,192,.12)' },
+  { id:'or',      name:'Or',      min:1200, max:2000,     color:'#F4C542', icon:'🥇', bg:'rgba(244,197,66,.12)'  },
+  { id:'diamant', name:'Diamant', min:2000, max:3000,     color:'#58C8FA', icon:'💎', bg:'rgba(88,200,250,.12)'  },
+  { id:'legende', name:'Légende', min:3000, max:Infinity, color:'#A855F7', icon:'👑', bg:'rgba(168,85,247,.12)'  },
+];
+
+function getLeagueForPoints(pts) {
+  return [...LEAGUES].reverse().find(l => pts >= l.min) || LEAGUES[0];
+}
+
+function renderLeagueBadge(leagueId, size = 'normal') {
+  const l = LEAGUES.find(x => x.id === leagueId) || LEAGUES[0];
+  const px = size === 'small' ? 18 : size === 'big' ? 48 : 22;
+  return `<span style="display:inline-flex;align-items:center;justify-content:center;width:${px}px;height:${px}px;border-radius:50%;background:${l.color}22;border:1px solid ${l.color}66;font-size:${Math.floor(px*.55)}px;flex-shrink:0" title="Ligue ${l.name}">${l.icon}</span>`;
+}
+
+async function syncAllLeagues() {
+  const toUpdate = [];
+  for (const joueur of allJoueurs) {
+    const pts = calcPoints(joueur);
+    const oldLeague = joueur.league || 'bronze';
+    const newLeague = getLeagueForPoints(pts).id;
+    if (newLeague !== oldLeague) toUpdate.push({ id: joueur.id, league: newLeague, oldLeague });
+  }
+  if (!toUpdate.length) return;
+  await Promise.all(toUpdate.map(u => sb.from('joueurs').update({ league: u.league }).eq('id', u.id)));
+  const myUp = toUpdate.find(u => u.id === currentUser);
+  if (myUp) {
+    const oldIdx = LEAGUES.findIndex(l => l.id === myUp.oldLeague);
+    const newIdx = LEAGUES.findIndex(l => l.id === myUp.league);
+    if (newIdx > oldIdx) {
+      const newLig = LEAGUES[newIdx];
+      setTimeout(() => showLeaguePromotionModal(newLig), 200);
+      gainXP(XP_REWARDS.league_promotion, 'league_promotion');
+      await sb.from('coffres_inventaire').insert({
+        joueur_id: currentUser,
+        type: myUp.league === 'legende' ? 'legende' : 'or',
+        source: 'league_promotion'
+      });
+    }
+  }
+}
+
+function showLeaguePromotionModal(league) {
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;z-index:10002;display:flex;align-items:center;justify-content:center;background:rgba(5,8,22,.94);backdrop-filter:blur(12px);opacity:0;transition:opacity 300ms';
+  modal.innerHTML = `
+    <div style="background:linear-gradient(180deg,var(--bg-elevated),var(--bg-card));border:2px solid ${league.color};border-radius:24px;padding:32px 36px;text-align:center;box-shadow:0 0 60px ${league.color}55;max-width:320px;width:88%">
+      <div style="font-size:72px;line-height:1;margin-bottom:10px">${league.icon}</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:4px;color:var(--text2)">PROMOTION</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:2px;color:${league.color};line-height:1;margin:4px 0 14px">${league.name.toUpperCase()}</div>
+      <div style="background:${league.color}18;border:1px solid ${league.color}33;border-radius:12px;padding:10px 14px;font-size:13px;color:var(--text);margin-bottom:22px">
+        🎁 Coffre ${league.id === 'legende' ? 'Légendaire' : 'Or'} offert · +${XP_REWARDS.league_promotion} XP
+      </div>
+      <button onclick="this.closest('div[style]').style.opacity='0';setTimeout(()=>this.closest('div[style]').remove(),300)" style="width:100%;background:linear-gradient(180deg,var(--gold-light),var(--gold-dark));color:var(--bg-primary);border:none;border-radius:14px;padding:14px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;cursor:pointer;box-shadow:0 6px 20px rgba(244,197,66,.4)">FÉLICITATIONS !</button>
+    </div>`;
+  document.body.appendChild(modal);
+  requestAnimationFrame(() => { modal.style.opacity = '1'; });
+  if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
+}
+
 const LEAGUES_HOME = [
   { name:'Bronze',  color:'#CD7F32', minPts:0,    maxPts:500  },
   { name:'Argent',  color:'#C0C0C0', minPts:500,  maxPts:1200 },
@@ -5554,22 +5618,16 @@ function renderClassement(){
   const meBoard=board.find(p=>p.id===currentUser);
   const mePts=meBoard?.pts||0;
   const meRank=board.findIndex(p=>p.id===currentUser)+1;
-  const LIGUES=[
-    {name:'BRONZE', min:0,   max:500,  color:'#FF8A3D', bg:'rgba(255,138,61,.12)'},
-    {name:'ARGENT', min:500, max:1200, color:'#C0C0C0', bg:'rgba(192,192,192,.12)'},
-    {name:'OR',     min:1200,max:2000, color:'#F4C542', bg:'rgba(244,197,66,.12)'},
-    {name:'DIAMANT',min:2000,max:3000, color:'#58C8FA', bg:'rgba(88,200,250,.12)'},
-    {name:'LÉGENDE',min:3000,max:99999,color:'#A855F7', bg:'rgba(168,85,247,.12)'},
-  ];
-  const myLig=LIGUES.find(l=>mePts<l.max)||LIGUES[0];
-  const nextLig=LIGUES[LIGUES.indexOf(myLig)+1];
+  const myLig=getLeagueForPoints(mePts);
+  const nextLigIdx=LEAGUES.indexOf(myLig)+1;
+  const nextLig=LEAGUES[nextLigIdx]||null;
   const ligPct=nextLig?Math.round(Math.min(100,(mePts-myLig.min)/(nextLig.min-myLig.min)*100)):100;
   const ligGap=nextLig?nextLig.min-mePts:0;
   document.getElementById('stats-grid').innerHTML=`
     <div class="ligue-header-v2">
-      <div class="ligue-icon-v2" style="background:${myLig.bg};color:${myLig.color};border:1px solid ${myLig.color}44">${myLig.name[0]}</div>
+      <div class="ligue-icon-v2" style="background:${myLig.bg};color:${myLig.color};border:1px solid ${myLig.color}44;font-size:28px">${myLig.icon}</div>
       <div class="ligue-details-v2">
-        <div class="ligue-name-v2" style="color:${myLig.color}">LIGUE ${myLig.name} <span style="font-size:14px;color:var(--text2)">· #${meRank}</span></div>
+        <div class="ligue-name-v2" style="color:${myLig.color}">LIGUE ${myLig.name.toUpperCase()} <span style="font-size:14px;color:var(--text2)">· #${meRank}</span></div>
         <div class="ligue-pts-v2">${mePts} pts${nextLig?` · encore ${ligGap} pts pour ${nextLig.name}`:' · Rang maximum !'}</div>
         <div class="ligue-bar-v2"><div class="ligue-bar-fill-v2" style="width:${ligPct}%;background:${myLig.color}"></div></div>
       </div>
@@ -5616,11 +5674,12 @@ function renderClassement(){
     if(stats.exact>0) subParts.push(`⭐ ${stats.exact} exact`);
     if(streak>=3) subParts.push(`🔥 ${streak} série`);
     const subText=subParts.join(' · ')||`${Object.keys(p.pronostics||{}).length} pronos`;
+    const pLeague = getLeagueForPoints(p.pts);
     return `<div class="ranking-row-v2${isMe?' me-v2':''}" data-playerid="${p.id}">
       <div class="rank-pos-v2 ${posClass}">${i+1}</div>
       ${renderAvatarEl(p,36,10)}
       <div class="rank-info-v2">
-        <div class="rank-pseudo-v2">${p.pseudo}${isMe?' <span style="font-size:9px;color:var(--gold-primary);font-weight:800;background:rgba(244,197,66,.15);border-radius:4px;padding:1px 5px">MOI</span>':''}</div>
+        <div class="rank-pseudo-v2" style="display:flex;align-items:center;gap:5px">${renderLeagueBadge(p.league||pLeague.id,'small')}${p.pseudo}${isMe?' <span style="font-size:9px;color:var(--gold-primary);font-weight:800;background:rgba(244,197,66,.15);border-radius:4px;padding:1px 5px">MOI</span>':''}</div>
         <div class="rank-sub-v2">${subText}</div>
       </div>
       <div class="rank-pts-v2">${p.pts}<small>pts</small></div>
@@ -6816,10 +6875,10 @@ async function validateMatch(id){
     :await sb.from('scores_reels').insert({match_id:id,s1,s2});
   if(error){showToast('Erreur');return;}
   await loadData();
-  // Distribuer XP aux joueurs ayant bien pronostiqué
   await distributeMatchXP(id, parseInt(s1), parseInt(s2));
   await loadData();
-  showToast('Score validé ! XP distribués ✓');renderAdminMatchs();
+  await syncAllLeagues();
+  showToast('Score validé ! XP + Ligues mis à jour ✓');renderAdminMatchs();
 }
 
 async function resetMatch(id){
