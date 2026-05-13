@@ -2359,13 +2359,12 @@ body {
     </div>
     <button class="btn-sm" onclick="logout()">Déconnexion</button>
   </div>
-  <div class="nav">
-    <button class="nav-btn active" onclick="showAdminPage('admin-matchs',this)">Scores réels</button>
-    <button class="nav-btn" onclick="showAdminPage('admin-globaux',this)">Résultats globaux</button>
+  <div class="nav" style="display:flex;overflow-x:auto;flex-wrap:nowrap;border-bottom:1px solid var(--border)">
+    <button class="nav-btn active" onclick="showAdminPage('admin-matchs',this)">Scores</button>
+    <button class="nav-btn" onclick="showAdminPage('admin-globaux',this)">Globaux</button>
     <button class="nav-btn" onclick="showAdminPage('admin-cagnotte',this)">Cagnotte</button>
     <button class="nav-btn" onclick="showAdminPage('admin-joueurs',this)">Joueurs</button>
     <button class="nav-btn" onclick="showAdminPage('admin-cotes',this)">🎲 Cotes</button>
-
   </div>
   <div class="main">
     <div id="page-admin-matchs" class="page active">
