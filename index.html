@@ -5149,29 +5149,37 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) stopC
 console.log('[CDM2026] Rewards system v1 loaded');
 
 async function init(){
+  const u=localStorage.getItem('cdm2026_user');
+  const a=localStorage.getItem('cdm2026_admin');
   try{
     await loadData();
+    if(!allJoueurs.length) await loadData(); // retry si Supabase répond vide
     hide('loading');
-    const u=localStorage.getItem('cdm2026_user');
-    const a=localStorage.getItem('cdm2026_admin');
     if(a==='true'){
       isAdmin=true;openAdminApp();
     } else if(u){
-      // Vérifier que le joueur existe encore en base
       const joueurExiste=allJoueurs.find(j=>j.id===u);
       if(joueurExiste){
         currentUser=u;openApp();
+      } else if(!allJoueurs.length){
+        // Données toujours vides = réseau lent → ouvrir quand même
+        currentUser=u;openApp();showToast('Connexion lente…');
       } else {
-        // Joueur supprimé ou base réinitialisée
+        // Données chargées mais joueur absent = compte supprimé
         localStorage.removeItem('cdm2026_user');
-        showLoginScreen();
-        showToast('Session expirée, reconnecte-toi avec ton code');
+        showLoginScreen();showToast('Session expirée, reconnecte-toi');
       }
     } else {
       showLoginScreen();
     }
     startRealtime();
-  }catch(e){hide('loading');showLoginScreen();showToast('Erreur de connexion');}
+  }catch(e){
+    hide('loading');
+    // Erreur réseau : ne jamais déconnecter un utilisateur connu
+    if(a==='true'){ isAdmin=true;openAdminApp();showToast('Connexion lente…'); }
+    else if(u)    { currentUser=u;openApp();showToast('Connexion lente…'); }
+    else          { showLoginScreen(); }
+  }
 }
 
 let allMessages=[];
