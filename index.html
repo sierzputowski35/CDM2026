@@ -6776,7 +6776,8 @@ async function savePronostic(id){
     mp[today]=mp[today]||{pronosFaits:0};
     mp[today].pronosFaits+=1;
     const missionComplete=mp[today].pronosFaits===3;
-    await sb.from('joueurs').update({pronostics:newProg,missions_progress:mp}).eq('id',currentUser);
+    const{error:errM}=await sb.from('joueurs').update({pronostics:newProg,missions_progress:mp}).eq('id',currentUser);
+    if(errM){showToast('Erreur');btn.disabled=false;btn.textContent='Enregistrer ce pronostic';return;}
     if(!joueurLocal.missions_progress) joueurLocal.missions_progress={};
     joueurLocal.missions_progress=mp;
     missionUpdated=true;
