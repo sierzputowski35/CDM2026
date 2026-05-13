@@ -52,6 +52,78 @@
   --radius:    10px;
   --radius-lg: 20px;
   --radius-xl: 26px;
+
+  /* ── V2 PALETTE DOPAMINE ── */
+  --bg-primary:   #050816;
+  --bg-secondary: #0B1020;
+  --bg-card:      #111827;
+  --bg-elevated:  #1A2235;
+  --gold-primary: #F4C542;
+  --gold-light:   #FFCC33;
+  --gold-dark:    #C99812;
+  --emerald:      #22D16B;
+  --crimson:      #FF4D5A;
+  --royal-purple: #A855F7;
+  --electric-blue:#58C8FA;
+  --orange-fire:  #FF8A3D;
+}
+
+/* ── V2 ANIMATIONS GLOBALES ── */
+@keyframes pulse-gold {
+  0%,100% { box-shadow: 0 0 20px rgba(244,197,66,.4), 0 0 40px rgba(244,197,66,.2); }
+  50%     { box-shadow: 0 0 30px rgba(244,197,66,.7), 0 0 60px rgba(244,197,66,.4); }
+}
+@keyframes pulse-orange {
+  0%,100% { box-shadow: 0 0 20px rgba(255,138,61,.4); }
+  50%     { box-shadow: 0 0 35px rgba(255,138,61,.7); }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+@keyframes flame {
+  0%,100% { transform: scaleY(1) rotate(-2deg); }
+  50%     { transform: scaleY(1.15) rotate(2deg); }
+}
+@keyframes float-up-pts {
+  0%   { opacity:0; transform:translateY(20px) scale(.6); }
+  20%  { opacity:1; transform:translateY(-10px) scale(1.2); }
+  80%  { opacity:1; transform:translateY(-60px) scale(1); }
+  100% { opacity:0; transform:translateY(-90px) scale(.9); }
+}
+@keyframes confetti-fall {
+  0%   { transform:translateY(-50vh) rotate(0deg);   opacity:1; }
+  100% { transform:translateY(50vh)  rotate(720deg); opacity:0; }
+}
+@keyframes bounce-in {
+  0%   { transform:scale(0)   rotate(-180deg); }
+  60%  { transform:scale(1.2) rotate(10deg);   }
+  100% { transform:scale(1)   rotate(0deg);    }
+}
+@keyframes proba-glow {
+  0%,100% { filter:drop-shadow(0 0 6px  rgba(34,209,107,.6)); }
+  50%     { filter:drop-shadow(0 0 14px rgba(34,209,107,.9)); }
+}
+@keyframes page-slide-in {
+  from { opacity:0; transform:translateY(12px); }
+  to   { opacity:1; transform:translateY(0);    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.shimmer-gold {
+  background: linear-gradient(110deg,#C99812 0%,#F4C542 40%,#FFE680 50%,#F4C542 60%,#C99812 100%);
+  background-size: 200% 100%;
+  animation: shimmer 3s linear infinite;
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.glass {
+  backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
 }
 
 * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
@@ -178,6 +250,139 @@ body {
 }
 .header-name { font-size: 13px; font-weight: 600; color: var(--text); }
 .header-rank { font-size: 10px; color: var(--gold); font-weight: 600; letter-spacing: .03em; }
+
+/* ── APP HEADER V2 ── */
+.app-header-v2 {
+  position: sticky; top: 0; z-index: 200;
+  background: linear-gradient(180deg, rgba(6,8,15,.98) 0%, rgba(11,16,32,.94) 100%);
+  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1px solid rgba(244,197,66,.15);
+  padding: 10px 16px 12px;
+  padding-top: calc(10px + env(safe-area-inset-top));
+}
+.ahv2-top {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 10px;
+}
+.ahv2-logo { display: flex; align-items: center; gap: 8px; }
+.ahv2-logo-icon { width: 26px; height: 26px; border-radius: 7px; display: block; }
+.ahv2-logo-text {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px; letter-spacing: 2.5px;
+}
+.ahv2-actions { display: flex; align-items: center; gap: 4px; }
+
+.ahv2-identity { display: flex; align-items: center; gap: 10px; }
+
+.ahv2-avatar-wrap { position: relative; width: 42px; height: 42px; flex-shrink: 0; }
+.ahv2-avatar {
+  width: 42px; height: 42px; border-radius: 50%;
+  border: 2px solid #F4C542;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; background: rgba(20,25,38,.8);
+  animation: pulse-gold 3s ease-in-out infinite;
+}
+.ahv2-level {
+  position: absolute; bottom: -3px; right: -3px;
+  background: #F4C542; color: #050816;
+  font-size: 9px; font-weight: 900;
+  width: 17px; height: 17px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid #06080f;
+}
+
+.ahv2-info { flex: 1; min-width: 0; }
+.ahv2-name-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+.ahv2-name { font-size: 13px; font-weight: 700; color: #fff; }
+.ahv2-rank {
+  font-size: 9px; font-weight: 800; color: #F4C542;
+  background: rgba(244,197,66,.12); border-radius: 4px;
+  padding: 2px 5px; white-space: nowrap;
+}
+.ahv2-xp-row { display: flex; align-items: center; gap: 6px; }
+.ahv2-xp-bar {
+  flex: 1; height: 4px; background: rgba(255,255,255,.07);
+  border-radius: 2px; overflow: hidden;
+}
+.ahv2-xp-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, #C99812, #F4C542, #FFE680);
+  border-radius: 2px;
+  transition: width .6s cubic-bezier(.4,0,.2,1);
+}
+.ahv2-xp-text { font-size: 9px; color: #8B9DC3; white-space: nowrap; }
+
+.ahv2-currencies { display: flex; flex-direction: column; gap: 3px; flex-shrink: 0; }
+.ahv2-curr {
+  display: flex; align-items: center; gap: 4px;
+  border-radius: 7px; padding: 3px 7px;
+  font-size: 11px; font-weight: 700; min-width: 48px;
+}
+.ahv2-curr--coins { background: rgba(244,197,66,.1); border: 1px solid rgba(244,197,66,.25); color: #FFCC33; }
+.ahv2-curr--gems  { background: rgba(168,85,247,.1); border: 1px solid rgba(168,85,247,.25); color: #A855F7; }
+
+/* ── DAILY REWARD CARD ── */
+.card-daily-reward {
+  display: flex; align-items: center; gap: 12px;
+  background: linear-gradient(135deg, rgba(244,197,66,.12) 0%, rgba(255,138,61,.08) 100%);
+  border: 1px solid rgba(244,197,66,.35);
+  border-radius: 16px; padding: 14px 16px;
+  margin: 12px 16px 0; position: relative; overflow: hidden;
+  animation: pulse-gold 3s ease-in-out infinite;
+}
+.card-daily-reward::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(244,197,66,.06) 50%, transparent 100%);
+  background-size: 200% 100%; animation: shimmer 2.5s linear infinite;
+}
+.daily-icon {
+  width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+  background: rgba(244,197,66,.15); border: 1px solid rgba(244,197,66,.4);
+  display: flex; align-items: center; justify-content: center;
+  color: #F4C542; position: relative;
+}
+.daily-pulse {
+  position: absolute; inset: -4px; border-radius: 14px;
+  border: 2px solid rgba(244,197,66,.4);
+  animation: pulse-gold 1.8s ease-in-out infinite;
+}
+.daily-info { flex: 1; min-width: 0; }
+.daily-title { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 2px; }
+.daily-sub { font-size: 11px; color: #F4C542; font-weight: 600; }
+.daily-claim-btn {
+  background: linear-gradient(135deg, #C99812, #F4C542);
+  color: #050816; font-family: 'Bebas Neue', sans-serif;
+  font-size: 14px; letter-spacing: 1px;
+  border: none; border-radius: 10px; padding: 8px 14px;
+  cursor: pointer; white-space: nowrap; flex-shrink: 0;
+  transition: transform .15s, box-shadow .15s;
+  box-shadow: 0 4px 16px rgba(244,197,66,.4);
+}
+.daily-claim-btn:active { transform: scale(.94); }
+
+/* ── MISSION CARD ── */
+.card-mission {
+  background: rgba(168,85,247,.08);
+  border: 1px solid rgba(168,85,247,.25);
+  border-radius: 14px; padding: 12px 16px;
+  margin: 10px 16px 0;
+}
+.mission-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.mission-label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 10px; font-weight: 800; letter-spacing: .1em;
+  color: #A855F7; text-transform: uppercase;
+}
+.mission-count { font-size: 12px; font-weight: 800; color: #A855F7; }
+.mission-text { font-size: 13px; color: var(--text2); margin-bottom: 8px; }
+.mission-text strong { color: #fff; }
+.mission-text .gold { color: #F4C542; font-weight: 700; }
+.mission-bar { height: 6px; background: rgba(255,255,255,.07); border-radius: 3px; overflow: hidden; }
+.mission-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, #7C3AED, #A855F7, #C084FC);
+  border-radius: 3px; transition: width .8s cubic-bezier(.4,0,.2,1);
+}
 
 /* ══════════════════════════════════
    NAV
@@ -2007,15 +2212,48 @@ body {
 
 <!-- ══ APP JOUEUR ══ -->
 <div id="app-screen" class="hidden">
-  <div class="header">
-    <div class="logo">
-      <div class="logo-flags"><img src="icon-192.png" alt="" style="width:32px;height:32px;border-radius:9px;display:block" onerror="this.outerHTML='🏆'"></div>
-      <div>
-        <div class="logo-text">UNITED 2026</div>
-        <div class="logo-sub"><span class="sync-dot"></span><span id="header-pseudo"></span></div>
+  <div class="app-header-v2">
+    <!-- Ligne 1 : Logo + actions -->
+    <div class="ahv2-top">
+      <div class="ahv2-logo">
+        <img src="icon-192.png" alt="" class="ahv2-logo-icon" onerror="this.outerHTML='⚽'">
+        <div class="ahv2-logo-text shimmer-gold">UNITED 2026</div>
+      </div>
+      <div class="ahv2-actions">
+        <span class="sync-dot" style="margin-right:2px"></span>
+        <span id="header-pseudo" style="font-size:10px;color:var(--text3);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+        <button class="btn-sm" onclick="logout()" aria-label="Déconnexion" style="margin-left:8px">⇲</button>
       </div>
     </div>
-    <button class="btn-sm" onclick="logout()">Déconnexion</button>
+    <!-- Ligne 2 : Identité joueur -->
+    <div class="ahv2-identity">
+      <div class="ahv2-avatar-wrap" onclick="openAvatarModal()" style="cursor:pointer">
+        <div class="ahv2-avatar" id="h2-avatar">⚽</div>
+        <div class="ahv2-level" id="h2-level">1</div>
+      </div>
+      <div class="ahv2-info">
+        <div class="ahv2-name-row">
+          <span class="ahv2-name" id="h2-pseudo">Joueur</span>
+          <span class="ahv2-rank" id="h2-rank-text">#1 BRONZE</span>
+        </div>
+        <div class="ahv2-xp-row">
+          <div class="ahv2-xp-bar">
+            <div class="ahv2-xp-fill" id="h2-xp-fill"></div>
+          </div>
+          <span class="ahv2-xp-text" id="h2-xp-text">0/1000</span>
+        </div>
+      </div>
+      <div class="ahv2-currencies">
+        <div class="ahv2-curr ahv2-curr--coins">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="#F4C542"><polygon points="12,2 15,9 22,9 17,14 19,21 12,17 5,21 7,14 2,9 9,9"/></svg>
+          <span id="h2-coins">0</span>
+        </div>
+        <div class="ahv2-curr ahv2-curr--gems">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="#A855F7"><path d="M6 2L2 8l10 13L22 8l-4-6z"/></svg>
+          <span id="h2-gems">—</span>
+        </div>
+      </div>
+    </div>
   </div>
   <div class="main">
     <div id="page-home" class="page active">
@@ -2055,6 +2293,10 @@ body {
           </button>
         </div>
       </div>
+
+      <!-- 1b. DAILY REWARD + MISSION (V2 dopamine) -->
+      <div id="daily-reward-home"></div>
+      <div id="mission-home"></div>
 
       <!-- 2. HERO CARD MATCH DU JOUR -->
       <div class="hero-card" id="home-hero-card">
@@ -3097,6 +3339,88 @@ const NEWS_FEED_DATA = [
 
 let heroCountdownInterval = null;
 
+// ══ V2 HELPERS DOPAMINE ══
+
+// Drapeaux premium flagcdn — utiliser PARTOUT à la place des emojis
+function flagImg(country, size) {
+  size = size || 'md';
+  const codes = {
+    'Mexique':'mx','Afrique du Sud':'za','Canada':'ca','États-Unis':'us','USA':'us',
+    'Paraguay':'py','Australie':'au','Turquie':'tr','Brésil':'br','Maroc':'ma',
+    'Écosse':'gb-sct','Haïti':'ht','Allemagne':'de','Côte d\'Ivoire':'ci',
+    'Équateur':'ec','Curaçao':'cw','Pays-Bas':'nl','Japon':'jp',
+    'Bosnie-Herzégovine':'ba','Bosnie':'ba','Sénégal':'sn','Suède':'se',
+    'Tunisie':'tn','Corée du Sud':'kr','Tchéquie':'cz','Belgique':'be',
+    'Égypte':'eg','Iran':'ir','Nouvelle-Zélande':'nz','Espagne':'es','Cap-Vert':'cv',
+    'Qatar':'qa','Suisse':'ch','France':'fr','Norvège':'no','Irak':'iq',
+    'Argentine':'ar','Algérie':'dz','Autriche':'at','Jordanie':'jo','Portugal':'pt',
+    'Colombie':'co','Ouzbékistan':'uz','DR Congo':'cd','Angleterre':'gb-eng',
+    'Ghana':'gh','Panama':'pa','Croatie':'hr','Arabie saoudite':'sa','Uruguay':'uy',
+    'Afrique du Sud':'za','Corée du Sud':'kr',
+  };
+  const code = codes[country] || 'un';
+  const dims = {sm:'32px',md:'48px',lg:'64px',xl:'88px'};
+  const w = dims[size] || dims.md;
+  return `<div class="flag-wrap" style="width:${w};height:${w};border-radius:50%;overflow:hidden;border:2px solid rgba(244,197,66,.3);box-shadow:0 4px 16px rgba(0,0,0,.4);flex-shrink:0"><img src="https://flagcdn.com/w160/${code}.png" srcset="https://flagcdn.com/w320/${code}.png 2x" alt="${country}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block"></div>`;
+}
+
+// Reward animation après action récompensée
+function showRewardPop(pts, xp) {
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduced) { showToast('+' + pts + ' pts · +' + xp + ' XP'); return; }
+  if (navigator.vibrate) navigator.vibrate([20, 10, 20, 10, 40]);
+  const c = document.createElement('div');
+  c.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:9999';
+  for (let i = 0; i < 40; i++) {
+    const piece = document.createElement('div');
+    const colors = ['#F4C542','#FF8A3D','#22D16B','#58C8FA','#FFE680'];
+    piece.style.cssText = `position:absolute;width:8px;height:12px;border-radius:2px;left:${5+Math.random()*90}%;top:40%;background:${colors[i%5]};transform:rotate(${Math.random()*360}deg);animation:confetti-fall ${1.2+Math.random()*1.5}s ease-out forwards;animation-delay:${Math.random()*0.3}s`;
+    c.appendChild(piece);
+  }
+  document.body.appendChild(c);
+  const pop = document.createElement('div');
+  pop.style.cssText = 'position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:10000;pointer-events:none;text-align:center';
+  pop.innerHTML = `<div style="font-family:'Bebas Neue',sans-serif;font-size:64px;letter-spacing:3px;color:#FFE680;text-shadow:0 0 30px rgba(244,197,66,.9),0 4px 0 rgba(0,0,0,.5);animation:bounce-in .6s cubic-bezier(.34,1.56,.64,1)">+${pts} PTS</div><div style="color:#22D16B;font-weight:800;font-size:20px;margin-top:8px;animation:float-up-pts 2.5s ease-out forwards;animation-delay:.3s">+${xp} XP</div>`;
+  document.body.appendChild(pop);
+  setTimeout(() => { c.remove(); pop.remove(); }, 2800);
+}
+
+// Countdown J/H/M/S
+function formatCountdown(targetTimestamp) {
+  const diff = targetTimestamp - Date.now();
+  if (diff <= 0) return {d:0,h:0,m:0,s:0,past:true};
+  return {
+    d: Math.floor(diff/86400000),
+    h: Math.floor((diff%86400000)/3600000),
+    m: Math.floor((diff%3600000)/60000),
+    s: Math.floor((diff%60000)/1000),
+    past: false
+  };
+}
+
+// Niveau depuis XP (palier 1000)
+function calcLevel(xp) { return Math.floor((xp||0)/1000)+1; }
+
+// Ligue depuis pts
+function calcLigueFromPts(pts) {
+  if (pts >= 3000) return 'LÉGENDE';
+  if (pts >= 2000) return 'DIAMANT';
+  if (pts >= 1200) return 'OR';
+  if (pts >= 500)  return 'ARGENT';
+  return 'BRONZE';
+}
+
+// RAF nettoyé en arrière-plan
+let _rafIds = [];
+function safeRaf(callback) {
+  const id = requestAnimationFrame(callback);
+  _rafIds.push(id);
+  return id;
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) { _rafIds.forEach(id => cancelAnimationFrame(id)); _rafIds = []; }
+});
+
 const MATCHS = [
   // ── 11 JUIN ──
   {id: 1, phase:'Groupes',groupe:'A',date:'11 juin · 21h00',ts:20260611,venue:'Azteca, Mexico',team1:'🇲🇽',name1:'Mexique',team2:'🇿🇦',name2:'Afrique du Sud',c1:1.65,cN:3.90,c2:5.50},
@@ -3725,19 +4049,49 @@ function updateHeaderUser(){
   const joueur=allJoueurs.find(j=>j.id===currentUser);
   if(!joueur) return;
   const pseudo=joueur.pseudo||currentUser;
+
+  // ── Ancien header (compat) ──
   const el=document.getElementById('header-pseudo');
-  const av=document.getElementById('header-avatar');
-  const rk=document.getElementById('header-rank');
   if(el) el.textContent=pseudo;
-  if(av){
-    const avatarData=getAvatar(joueur);
-    if(avatarData.emoji){av.textContent=avatarData.emoji;av.style.background='transparent';av.style.border='1px solid var(--border2)';}
-    else{av.textContent=avatarData.initials;av.style.background=avatarData.color;}
-  }
-  // Rang dans le classement
+
+  // ── Header V2 ──
+  const pts=calcPoints(joueur);
+  const xp=pts*10;
+  const level=Math.floor(xp/1000)+1;
+  const xpInLevel=xp%1000;
+  const xpPct=(xpInLevel/1000*100).toFixed(1);
   const board=getLeaderboard();
   const pos=board.findIndex(p=>p.id===currentUser);
-  if(rk && pos>=0) rk.textContent='#'+(pos+1)+' · '+board[pos].pts+' pts';
+  const rank=pos>=0?pos+1:null;
+  const ligue=calcLigueFromPts(pts);
+
+  const h2pseudo=document.getElementById('h2-pseudo');
+  if(h2pseudo) h2pseudo.textContent=pseudo;
+
+  const h2av=document.getElementById('h2-avatar');
+  if(h2av){
+    const avatarData=getAvatar(joueur);
+    if(avatarData.emoji){h2av.textContent=avatarData.emoji;h2av.style.background='transparent';}
+    else{h2av.textContent=avatarData.initials;h2av.style.background=avatarData.color;h2av.style.fontSize='14px';h2av.style.fontFamily="'Bebas Neue',sans-serif";}
+  }
+
+  const h2lvl=document.getElementById('h2-level');
+  if(h2lvl) h2lvl.textContent=level;
+
+  const h2rank=document.getElementById('h2-rank-text');
+  if(h2rank) h2rank.textContent=rank?'#'+rank+' '+ligue:ligue;
+
+  const h2xpf=document.getElementById('h2-xp-fill');
+  if(h2xpf) h2xpf.style.width=xpPct+'%';
+
+  const h2xpt=document.getElementById('h2-xp-text');
+  if(h2xpt) h2xpt.textContent=xpInLevel+'/1000';
+
+  const h2coins=document.getElementById('h2-coins');
+  if(h2coins) h2coins.textContent=pts.toLocaleString('fr-FR');
+
+  const h2gems=document.getElementById('h2-gems');
+  if(h2gems) h2gems.textContent=rank?'#'+rank:'—';
 }
 function openAdminApp(){
   ['login-screen','admin-login-screen','app-screen'].forEach(hide);show('admin-app-screen');
@@ -4055,8 +4409,84 @@ function renderNewsFeed() {
   }).join('');
 }
 
+// ── DAILY REWARD (localStorage fallback, compatible sans colonnes DB) ──
+function renderDailyRewardCard() {
+  const container = document.getElementById('daily-reward-home');
+  if (!container) return;
+  const today = new Date().toISOString().split('T')[0];
+  const lastClaim = localStorage.getItem('cdm2026_last_claim');
+  if (lastClaim === today) { container.innerHTML = ''; return; }
+  const streak = parseInt(localStorage.getItem('cdm2026_dr_streak') || '0');
+  const day = Math.min(streak + 1, 7);
+  const rewards = [
+    {coins:25,xp:50},{coins:50,xp:75},{coins:75,xp:100},
+    {coins:100,xp:150},{coins:150,xp:200},{coins:200,xp:300},{coins:500,xp:500}
+  ];
+  const r = rewards[day - 1];
+  container.innerHTML = `
+    <div class="card-daily-reward" id="dr-card">
+      <div class="daily-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+        <span class="daily-pulse"></span>
+      </div>
+      <div class="daily-info">
+        <div class="daily-title">🎁 Récompense J${day}${day===7?' — JACKPOT 🎰':''}</div>
+        <div class="daily-sub">+${r.xp} XP · 🪙 ${r.coins} pts bonus</div>
+      </div>
+      <button class="daily-claim-btn" onclick="claimDailyReward(${day})">RÉCLAMER</button>
+    </div>`;
+}
+
+function claimDailyReward(day) {
+  const today = new Date().toISOString().split('T')[0];
+  const rewards = [
+    {coins:25,xp:50},{coins:50,xp:75},{coins:75,xp:100},
+    {coins:100,xp:150},{coins:150,xp:200},{coins:200,xp:300},{coins:500,xp:500}
+  ];
+  const r = rewards[day - 1];
+  localStorage.setItem('cdm2026_last_claim', today);
+  localStorage.setItem('cdm2026_dr_streak', day === 7 ? '0' : String(day));
+  const card = document.getElementById('dr-card');
+  if (card) { card.style.opacity = '0'; card.style.transform = 'scale(.95)'; card.style.transition = '.3s'; }
+  showRewardPop(r.coins, r.xp);
+  setTimeout(() => renderDailyRewardCard(), 1000);
+}
+
+// ── MISSION DU JOUR ──
+function renderMissionCard() {
+  const container = document.getElementById('mission-home');
+  if (!container) return;
+  const joueur = allJoueurs.find(j => j.id === currentUser);
+  if (!joueur) return;
+  const today = new Date().toISOString().split('T')[0];
+  const mp = joueur.missions_progress || {};
+  const todayProg = mp[today] || { pronosFaits: 0 };
+  const target = 3;
+  const current = Math.min(todayProg.pronosFaits || 0, target);
+  const pct = (current / target) * 100;
+  const done = current >= target;
+  container.innerHTML = `
+    <div class="card-mission">
+      <div class="mission-head">
+        <div class="mission-label">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#A855F7" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+          </svg>
+          MISSION DU JOUR
+        </div>
+        <span class="mission-count">${current}/${target}${done?' ✓':''}</span>
+      </div>
+      <div class="mission-text">Pronostique <strong>${target} matchs</strong> → <span class="gold">+50 XP bonus</span>${done?' — <span style="color:#22D16B;font-weight:700">Accomplie !</span>':''}</div>
+      <div class="mission-bar"><div class="mission-fill" style="width:${pct}%"></div></div>
+    </div>`;
+}
+
 function initHomePage() {
   initHomeHeader();
+  renderDailyRewardCard();
+  renderMissionCard();
   renderHeroCard();
   renderQuickMatches();
   renderStreakCard();
@@ -4675,15 +5105,33 @@ async function savePronostic(id){
   const pronosticEntry={...existing,s1,s2,cote:coteSnapshot};
 
   const newProg={...(joueur?.pronostics||{}),[id]:pronosticEntry};
-  const{error}=await sb.from('joueurs').update({pronostics:newProg}).eq('id',currentUser);
-  if(error){showToast('Erreur');btn.disabled=false;btn.textContent='Enregistrer ce pronostic';return;}
+  // Mise à jour mission progress (localStorage)
+  const today=new Date().toISOString().split('T')[0];
+  const joueurLocal=allJoueurs.find(j=>j.id===currentUser);
+  const isFirstProno=!(joueurLocal?.pronostics||{})[id];
+  let missionUpdated=false;
+  if(isFirstProno && joueurLocal){
+    const mp=joueurLocal.missions_progress||{};
+    mp[today]=mp[today]||{pronosFaits:0};
+    mp[today].pronosFaits+=1;
+    const missionComplete=mp[today].pronosFaits===3;
+    await sb.from('joueurs').update({pronostics:newProg,missions_progress:mp}).eq('id',currentUser);
+    if(!joueurLocal.missions_progress) joueurLocal.missions_progress={};
+    joueurLocal.missions_progress=mp;
+    missionUpdated=true;
+    if(missionComplete) setTimeout(()=>showRewardPop(0,50),1800);
+  } else {
+    const{error}=await sb.from('joueurs').update({pronostics:newProg}).eq('id',currentUser);
+    if(error){showToast('Erreur');btn.disabled=false;btn.textContent='Enregistrer ce pronostic';return;}
+  }
   await loadData();
   btn.classList.add('saved');
   const labelCote=coteSnapshot>1.01?` (×${coteSnapshot.toFixed(2)})`:'';
   btn.textContent=`✓ Enregistré${labelCote}`;
   showToast(`Pronostic sauvegardé${labelCote} !`);
   try{
-    if(navigator.vibrate) navigator.vibrate([50,30,50]);
+    showRewardPop(5, isFirstProno?25:10);
+    setTimeout(()=>{ updateHeaderUser(); if(missionUpdated) renderMissionCard(); },1600);
     btn.classList.add('flash');
     setTimeout(()=>btn.classList.remove('flash'),400);
     spawnParticles(btn,8);
@@ -4833,8 +5281,8 @@ function calcGroupeStandings(groupe){
   const matchsGroupe=MATCHS.filter(m=>m.groupe===groupe);
   // Initialiser les équipes
   matchsGroupe.forEach(m=>{
-    if(!teams[m.name1]) teams[m.name1]={name:m.name1,flag:m.team1,pts:0,j:0,g:0,n:0,p:0,bp:0,bc:0,diff:0};
-    if(!teams[m.name2]) teams[m.name2]={name:m.name2,flag:m.team2,pts:0,j:0,g:0,n:0,p:0,bp:0,bc:0,diff:0};
+    if(!teams[m.name1]) teams[m.name1]={name:m.name1,flag:flagHTML(m.name1,'sm'),pts:0,j:0,g:0,n:0,p:0,bp:0,bc:0,diff:0};
+    if(!teams[m.name2]) teams[m.name2]={name:m.name2,flag:flagHTML(m.name2,'sm'),pts:0,j:0,g:0,n:0,p:0,bp:0,bc:0,diff:0};
   });
   // Calculer avec les scores réels
   matchsGroupe.forEach(m=>{
@@ -4863,7 +5311,7 @@ function renderGroupes(){
     // Classement
     const tableRows=standings.map((t,i)=>`
       <tr class="${i<2?'qualified':''}">
-        <td><span>${t.flag}</span> ${t.name}</td>
+        <td><div style="display:flex;align-items:center;gap:6px">${t.flag}<span>${t.name}</span></div></td>
         <td>${t.j}</td><td>${t.g}</td><td>${t.n}</td><td>${t.p}</td>
         <td>${t.bp}:${t.bc}</td>
         <td style="color:${t.diff>0?'#22c55e':t.diff<0?'#f87171':'var(--text2)'};">${t.diff>0?'+':''}${t.diff}</td>
@@ -4873,17 +5321,17 @@ function renderGroupes(){
     const matchsJouesHtml=joues.length?joues.map(m=>{
       const r=allScores[m.id];
       return `<div class="group-match-row">
-        <span>${m.team1} ${m.name1}</span>
+        <div style="display:flex;align-items:center;gap:4px">${flagHTML(m.name1,'sm')}<span>${m.name1}</span></div>
         <span class="group-score">${r.s1} - ${r.s2}</span>
-        <span>${m.name2} ${m.team2}</span>
+        <div style="display:flex;align-items:center;gap:4px"><span>${m.name2}</span>${flagHTML(m.name2,'sm')}</div>
       </div>`;
     }).join(''):'<div style="font-size:12px;color:var(--text3);padding:6px 0">Aucun match joué</div>';
     // Prochains matchs
     const prochainHtml=restants.slice(0,3).map(m=>`
       <div class="group-match-row">
-        <span>${m.team1} ${m.name1}</span>
+        <div style="display:flex;align-items:center;gap:4px">${flagHTML(m.name1,'sm')}<span>${m.name1}</span></div>
         <span style="font-size:10px;color:var(--text3)">${m.date}</span>
-        <span>${m.name2} ${m.team2}</span>
+        <div style="display:flex;align-items:center;gap:4px"><span>${m.name2}</span>${flagHTML(m.name2,'sm')}</div>
       </div>`).join('');
     html+=`<div class="group-card">
       <div class="group-title">
@@ -5003,8 +5451,8 @@ function renderBracket(){
       +'<div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;font-weight:700">Meilleurs 3es qualifiés ('+best8.length+'/8)</div>'
       +'<div style="display:flex;flex-wrap:wrap;gap:6px">'
       +best8.map(function(t){
-        return '<div style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:5px 10px;font-size:12px">'
-          +t.flag+' '+t.name+' <span style="color:var(--gold);font-weight:700">Gr.'+t.groupe+'</span>'
+        return '<div style="background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:5px 10px;font-size:12px;display:flex;align-items:center;gap:6px">'
+          +flagHTML(t.name,'sm')+' '+t.name+' <span style="color:var(--gold);font-weight:700">Gr.'+t.groupe+'</span>'
           +' <span style="color:var(--text3);font-size:10px">'+t.pts+'pts</span>'
           +'</div>';
       }).join('')
@@ -5021,9 +5469,9 @@ function renderBracket(){
     const t2=resolveTeam(m.t2);
     html+='<div style="background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:10px">'
       +'<div style="font-size:9px;color:var(--text3);margin-bottom:6px;font-weight:700;letter-spacing:.06em">MATCH '+m.id+'</div>'
-      +'<div style="font-size:12px;color:var(--text);margin-bottom:4px">'+t1.flag+' '+t1.name+'</div>'
+      +'<div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text);margin-bottom:4px">'+flagHTML(t1.name,'sm')+'<span>'+t1.name+'</span></div>'
       +'<div style="font-size:9px;color:var(--text3);margin:3px 0">vs</div>'
-      +'<div style="font-size:12px;color:var(--text)">'+t2.flag+' '+t2.name+'</div>'
+      +'<div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text)">'+flagHTML(t2.name,'sm')+'<span>'+t2.name+'</span></div>'
       +(real?'<div style="font-family:Bebas Neue,sans-serif;font-size:16px;color:var(--green);margin-top:6px;letter-spacing:2px">'+real.s1+' - '+real.s2+'</div>':'')
     +'</div>';
   });
