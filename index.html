@@ -2170,6 +2170,142 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .level-up-glow { animation: none; }
 }
+
+/* ── SPRINT 2 : DAILY REWARD MODAL ── */
+.dr-modal-bg {
+  position: fixed; inset: 0; z-index: 10001;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(5,8,22,.92); backdrop-filter: blur(12px);
+  opacity: 0; transition: opacity 300ms;
+}
+.dr-modal-bg.show { opacity: 1; }
+.dr-card {
+  background: linear-gradient(180deg, var(--bg-elevated), var(--bg-card));
+  border: 2px solid rgba(244,197,66,.4); border-radius: 24px;
+  padding: 24px 20px; max-width: 360px; width: 90%; text-align: center;
+  box-shadow: 0 0 50px rgba(244,197,66,.2);
+}
+.dr-title {
+  font-family: 'Bebas Neue', sans-serif; font-size: 22px;
+  letter-spacing: 3px; color: var(--gold-primary); margin-bottom: 4px;
+}
+.dr-streak { font-size: 12px; color: var(--text2); margin-bottom: 16px; }
+.dr-days-grid {
+  display: grid; grid-template-columns: repeat(7,1fr); gap: 4px;
+  margin-bottom: 20px;
+}
+.dr-day {
+  border-radius: 10px; padding: 6px 2px; position: relative;
+  border: 1px solid transparent; display: flex; flex-direction: column;
+  align-items: center; gap: 2px;
+}
+.dr-day.dr-past { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.08); opacity: .7; }
+.dr-day.dr-current {
+  background: rgba(244,197,66,.15); border-color: var(--gold-primary);
+  box-shadow: 0 0 12px rgba(244,197,66,.3);
+}
+.dr-day.dr-future { background: rgba(255,255,255,.02); border-color: rgba(255,255,255,.05); opacity: .4; }
+.dr-day-num { font-size: 8px; font-weight: 700; color: var(--text2); letter-spacing: .5px; }
+.dr-day-icon { font-size: 16px; line-height: 1; }
+.dr-day-amount { font-size: 7px; color: var(--text2); font-weight: 600; }
+.dr-check {
+  position: absolute; inset: 0; display: flex; align-items: center;
+  justify-content: center; font-size: 14px;
+  background: rgba(34,209,107,.12); border-radius: 9px;
+}
+.dr-reward-preview {
+  display: flex; align-items: center; gap: 14px;
+  background: rgba(244,197,66,.08); border: 1px solid rgba(244,197,66,.2);
+  border-radius: 16px; padding: 14px 18px; margin-bottom: 18px; text-align: left;
+}
+.dr-reward-icon { font-size: 36px; flex-shrink: 0; }
+.dr-reward-amount { font-family: 'Bebas Neue',sans-serif; font-size: 22px; color: var(--gold-primary); letter-spacing: 1px; }
+.dr-reward-sub { font-size: 11px; color: var(--text2); }
+.dr-claim-btn {
+  width: 100%;
+  background: linear-gradient(180deg, var(--gold-light), var(--gold-dark));
+  color: var(--bg-primary); border: none; border-radius: 14px;
+  padding: 16px; font-family: 'Bebas Neue',sans-serif;
+  font-size: 20px; letter-spacing: 3px; cursor: pointer;
+  box-shadow: 0 6px 20px rgba(244,197,66,.4);
+  transition: transform 150ms;
+}
+.dr-claim-btn:active { transform: scale(.96); }
+
+/* ── COFFRES HOME CARD ── */
+.coffres-home-card {
+  margin: 0 16px 12px; border-radius: 16px;
+  background: linear-gradient(135deg, rgba(168,85,247,.12), rgba(88,200,250,.08));
+  border: 1px solid rgba(168,85,247,.3); padding: 14px 16px;
+  display: flex; align-items: center; gap: 12px; cursor: pointer;
+  transition: transform 150ms, box-shadow 150ms;
+  animation: pulse-orange 3s ease-in-out infinite;
+}
+.coffres-home-card:active { transform: scale(.98); }
+.coffres-home-icon { font-size: 28px; flex-shrink: 0; }
+.coffres-home-info { flex: 1; }
+.coffres-home-title { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 2px; }
+.coffres-home-sub { font-size: 11px; color: var(--text2); }
+.coffres-home-badge {
+  background: var(--royal-purple); color: #fff;
+  font-family: 'Bebas Neue',sans-serif; font-size: 18px;
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── CHEST OPEN ANIMATION ── */
+.chest-anim-bg {
+  position: fixed; inset: 0; z-index: 10002;
+  background: rgba(5,8,22,.96); backdrop-filter: blur(16px);
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 20px;
+}
+.chest-emoji {
+  font-size: 80px; line-height: 1;
+  will-change: transform;
+}
+.chest-shake { animation: chest-tremble .8s ease-in-out; }
+@keyframes chest-tremble {
+  0%,100% { transform: rotate(0deg) scale(1); }
+  20%  { transform: rotate(-4deg) scale(1.05); }
+  40%  { transform: rotate(4deg) scale(1.1); }
+  60%  { transform: rotate(-3deg) scale(1.08); }
+  80%  { transform: rotate(3deg) scale(1.05); }
+}
+.chest-glow-ring {
+  position: absolute; width: 200px; height: 200px;
+  border-radius: 50%; pointer-events: none;
+  animation: chest-glow-pulse 1s ease-in-out infinite;
+}
+@keyframes chest-glow-pulse {
+  0%,100% { transform: scale(.9); opacity: .4; }
+  50%     { transform: scale(1.1); opacity: .8; }
+}
+.chest-loot-row {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
+  max-width: 340px; padding: 0 16px;
+}
+.chest-loot-item {
+  background: var(--bg-elevated); border-radius: 14px;
+  padding: 12px 16px; text-align: center; min-width: 80px;
+  border: 1px solid rgba(255,255,255,.1);
+  opacity: 0; transform: scale(.5) translateY(20px);
+  transition: opacity 300ms, transform 300ms cubic-bezier(.34,1.56,.64,1);
+}
+.chest-loot-item.reveal { opacity: 1; transform: scale(1) translateY(0); }
+.chest-loot-icon { font-size: 28px; margin-bottom: 4px; }
+.chest-loot-label { font-size: 11px; color: var(--text2); font-weight: 600; }
+.chest-loot-amount { font-family: 'Bebas Neue',sans-serif; font-size: 20px; color: var(--gold-primary); }
+.chest-take-btn {
+  background: linear-gradient(180deg, var(--gold-light), var(--gold-dark));
+  color: var(--bg-primary); border: none; border-radius: 14px;
+  padding: 16px 40px; font-family: 'Bebas Neue',sans-serif;
+  font-size: 20px; letter-spacing: 3px; cursor: pointer;
+  opacity: 0; transition: opacity 400ms;
+  box-shadow: 0 6px 20px rgba(244,197,66,.4);
+}
+.chest-take-btn.show { opacity: 1; }
 </style>
 </head>
 <body>
@@ -2481,6 +2617,7 @@ body {
       <!-- 1b. DAILY REWARD + MISSION (V2 dopamine) -->
       <div id="daily-reward-home"></div>
       <div id="mission-home"></div>
+      <div id="coffres-home"></div>
 
       <!-- 2. HERO CARD MATCH DU JOUR -->
       <div class="hero-card" id="home-hero-card">
@@ -4173,6 +4310,7 @@ const GLOBAUX_DEF = [
 let currentUser=null,isAdmin=false,allJoueurs=[],allScores={},allGlobaux={},allCotes={};
 let EQUIPES_PTS = {}; // { 'France': 5, 'Maroc': 17, ... } — chargé depuis Supabase equipes_pts
 let _pendingScrollMatchId=null;
+let allCoffres = []; // coffres du joueur courant
 
 // ══ COTES RÉELLES (depuis cotes_raw via The Odds API) ══
 let allOdds = {}; // { [match_id]: { home, draw, away } } — peuplé depuis cotes_raw
@@ -4453,6 +4591,15 @@ async function loadData(){
   EQUIPES_PTS={};
   (e.data||[]).forEach(x=>{ EQUIPES_PTS[x.equipe]=x.pts; });
 
+  // Charger coffres du joueur courant
+  if (currentUser) {
+    try {
+      const { data: coffresData } = await sb.from('coffres_inventaire')
+        .select('*').eq('joueur_id', currentUser).eq('ouvert', false).order('obtenu_at', { ascending: false });
+      allCoffres = coffresData || [];
+    } catch(e) { allCoffres = []; }
+  }
+
   // Badge nav mis à jour après chaque reload
   if (currentUser) { updateHeaderUser(); updateNavBadges(); }
 }
@@ -4548,6 +4695,7 @@ function openApp(){
   updateHeaderUser();
   updateNavBadges();
   switchTab('home',document.getElementById('tab-home'));
+  setTimeout(() => checkDailyReward(), 900);
 }
 
 function updateHeaderUser(){
@@ -4917,49 +5065,309 @@ function renderNewsFeed() {
   }).join('');
 }
 
-// ── DAILY REWARD (localStorage fallback, compatible sans colonnes DB) ──
+// ══ SPRINT 2 : DAILY REWARD & COFFRES ══
+
+const DAILY_REWARDS = [
+  { day: 1, type: 'coins',  amount: 50,  icon: '🪙' },
+  { day: 2, type: 'xp',    amount: 100, icon: '⭐' },
+  { day: 3, type: 'coins',  amount: 100, icon: '🪙' },
+  { day: 4, type: 'coffre', amount: 1, rarete: 'bronze', icon: '📦' },
+  { day: 5, type: 'gems',   amount: 10,  icon: '💎' },
+  { day: 6, type: 'coins',  amount: 250, icon: '🪙' },
+  { day: 7, type: 'coffre', amount: 1, rarete: 'or',     icon: '🎁' },
+];
+
+const CHEST_LOOT_TABLES = {
+  bronze: { rolls: 2, pool: [
+    { weight: 60, type: 'coins', amount: [30, 80] },
+    { weight: 30, type: 'xp',   amount: [25, 60] },
+    { weight: 10, type: 'gems', amount: [1, 3] },
+  ]},
+  argent: { rolls: 3, pool: [
+    { weight: 55, type: 'coins', amount: [100, 250] },
+    { weight: 25, type: 'xp',   amount: [50, 120] },
+    { weight: 20, type: 'gems', amount: [3, 8] },
+  ]},
+  or: { rolls: 4, pool: [
+    { weight: 45, type: 'coins', amount: [300, 700] },
+    { weight: 30, type: 'xp',   amount: [100, 250] },
+    { weight: 25, type: 'gems', amount: [10, 25] },
+  ]},
+  legende: { rolls: 5, pool: [
+    { weight: 35, type: 'coins', amount: [1000, 2500] },
+    { weight: 30, type: 'xp',   amount: [250, 600] },
+    { weight: 35, type: 'gems', amount: [30, 75] },
+  ]},
+};
+
+async function addCoins(amount) {
+  const joueur = allJoueurs.find(j => j.id === currentUser);
+  if (!joueur) return;
+  await sb.from('joueurs').update({ coins: (joueur.coins || 0) + amount }).eq('id', currentUser);
+}
+
+async function addGems(amount) {
+  const joueur = allJoueurs.find(j => j.id === currentUser);
+  if (!joueur) return;
+  await sb.from('joueurs').update({ gems: (joueur.gems || 0) + amount }).eq('id', currentUser);
+}
+
+// Vérifie et déclenche la récompense quotidienne (appelé au login)
+async function checkDailyReward() {
+  const joueur = allJoueurs.find(j => j.id === currentUser);
+  if (!joueur) return;
+  const today = new Date().toISOString().slice(0, 10);
+  if (joueur.last_daily === today) return;
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  const streakContinues = joueur.last_daily === yesterday;
+  const newStreak = streakContinues ? (joueur.daily_streak || 0) + 1 : 1;
+  const dayInCycle = ((newStreak - 1) % 7) + 1;
+  const reward = DAILY_REWARDS.find(r => r.day === dayInCycle);
+  showDailyRewardModal(reward, newStreak);
+  await sb.from('joueurs').update({ last_daily: today, daily_streak: newStreak }).eq('id', currentUser);
+  await grantReward(reward);
+  await loadData();
+  renderDailyRewardCard();
+}
+
+function showDailyRewardModal(reward, streak) {
+  const dayInCycle = ((streak - 1) % 7) + 1;
+  const modal = document.createElement('div');
+  modal.className = 'dr-modal-bg';
+  modal.id = 'daily-reward-modal';
+
+  const daysHtml = DAILY_REWARDS.map(r => {
+    const d = r.day;
+    const isPast    = d < dayInCycle;
+    const isCurrent = d === dayInCycle;
+    const cls = isPast ? 'dr-past' : isCurrent ? 'dr-current' : 'dr-future';
+    const amountLabel = r.type === 'coffre' ? r.rarete : r.amount;
+    return `<div class="dr-day ${cls}">
+      <div class="dr-day-num">J${d}</div>
+      <div class="dr-day-icon">${r.icon}</div>
+      <div class="dr-day-amount">${amountLabel}</div>
+      ${isPast ? '<div class="dr-check">✓</div>' : ''}
+    </div>`;
+  }).join('');
+
+  const rewardLabel = reward.type === 'coffre'
+    ? 'Coffre ' + reward.rarete.charAt(0).toUpperCase() + reward.rarete.slice(1)
+    : '+' + reward.amount + ' ' + reward.type.charAt(0).toUpperCase() + reward.type.slice(1);
+
+  modal.innerHTML = `
+    <div class="dr-card">
+      <div class="dr-title">RÉCOMPENSE QUOTIDIENNE</div>
+      <div class="dr-streak">🔥 Série de ${streak} jour${streak > 1 ? 's' : ''} · Jour ${dayInCycle}/7</div>
+      <div class="dr-days-grid">${daysHtml}</div>
+      <div class="dr-reward-preview">
+        <div class="dr-reward-icon">${reward.icon}</div>
+        <div>
+          <div class="dr-reward-amount">${rewardLabel}</div>
+          <div class="dr-reward-sub">Récompense du jour ${dayInCycle}</div>
+        </div>
+      </div>
+      <button class="dr-claim-btn" onclick="closeDailyRewardModal()">RÉCUPÉRÉ !</button>
+    </div>`;
+
+  document.body.appendChild(modal);
+  requestAnimationFrame(() => modal.classList.add('show'));
+  if (navigator.vibrate) navigator.vibrate([30, 20, 60]);
+}
+
+function closeDailyRewardModal() {
+  const modal = document.getElementById('daily-reward-modal');
+  if (!modal) return;
+  modal.style.opacity = '0';
+  setTimeout(() => modal.remove(), 300);
+}
+
+async function grantReward(reward) {
+  const joueur = allJoueurs.find(j => j.id === currentUser);
+  if (!joueur) return;
+  if (reward.type === 'coins') await addCoins(reward.amount);
+  else if (reward.type === 'gems') await addGems(reward.amount);
+  else if (reward.type === 'xp') await gainXP(reward.amount, 'daily_reward');
+  else if (reward.type === 'coffre') {
+    await sb.from('coffres_inventaire').insert({
+      joueur_id: currentUser, type: reward.rarete, source: 'daily_reward'
+    });
+  }
+}
+
+// Carte streak affichée sur la Home après claim
 function renderDailyRewardCard() {
   const container = document.getElementById('daily-reward-home');
   if (!container) return;
-  const today = new Date().toISOString().split('T')[0];
-  const lastClaim = localStorage.getItem('cdm2026_last_claim');
-  if (lastClaim === today) { container.innerHTML = ''; return; }
-  const streak = parseInt(localStorage.getItem('cdm2026_dr_streak') || '0');
-  const day = Math.min(streak + 1, 7);
-  const rewards = [
-    {coins:25,xp:50},{coins:50,xp:75},{coins:75,xp:100},
-    {coins:100,xp:150},{coins:150,xp:200},{coins:200,xp:300},{coins:500,xp:500}
-  ];
-  const r = rewards[day - 1];
+  const joueur = allJoueurs.find(j => j.id === currentUser);
+  if (!joueur) { container.innerHTML = ''; return; }
+  const today = new Date().toISOString().slice(0, 10);
+  const claimed = joueur.last_daily === today;
+  const streak = joueur.daily_streak || 0;
+  if (!claimed) { container.innerHTML = ''; return; }
   container.innerHTML = `
-    <div class="card-daily-reward" id="dr-card">
-      <div class="daily-icon">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-        </svg>
-        <span class="daily-pulse"></span>
-      </div>
+    <div class="card-daily-reward" style="opacity:.75;pointer-events:none">
+      <div class="daily-icon">✅<span class="daily-pulse"></span></div>
       <div class="daily-info">
-        <div class="daily-title">🎁 Récompense J${day}${day===7?' — JACKPOT 🎰':''}</div>
-        <div class="daily-sub">+${r.xp} XP · 🪙 ${r.coins} pts bonus</div>
+        <div class="daily-title">Récompense réclamée !</div>
+        <div class="daily-sub">🔥 Série de ${streak} jour${streak > 1 ? 's' : ''} · Reviens demain</div>
       </div>
-      <button class="daily-claim-btn" onclick="claimDailyReward(${day})">RÉCLAMER</button>
     </div>`;
 }
 
-function claimDailyReward(day) {
-  const today = new Date().toISOString().split('T')[0];
-  const rewards = [
-    {coins:25,xp:50},{coins:50,xp:75},{coins:75,xp:100},
-    {coins:100,xp:150},{coins:150,xp:200},{coins:200,xp:300},{coins:500,xp:500}
-  ];
-  const r = rewards[day - 1];
-  localStorage.setItem('cdm2026_last_claim', today);
-  localStorage.setItem('cdm2026_dr_streak', day === 7 ? '0' : String(day));
-  const card = document.getElementById('dr-card');
-  if (card) { card.style.opacity = '0'; card.style.transform = 'scale(.95)'; card.style.transition = '.3s'; }
-  showRewardPop(r.coins, r.xp);
-  setTimeout(() => renderDailyRewardCard(), 1000);
+// ── SYSTÈME DE COFFRES ──
+
+function rollLoot(rarete) {
+  const table = CHEST_LOOT_TABLES[rarete] || CHEST_LOOT_TABLES.bronze;
+  const results = [];
+  for (let i = 0; i < table.rolls; i++) {
+    const total = table.pool.reduce((s, p) => s + p.weight, 0);
+    let roll = Math.random() * total;
+    for (const item of table.pool) {
+      roll -= item.weight;
+      if (roll <= 0) {
+        const result = { ...item };
+        if (Array.isArray(item.amount)) {
+          result.amount = Math.floor(item.amount[0] + Math.random() * (item.amount[1] - item.amount[0] + 1));
+        }
+        results.push(result);
+        break;
+      }
+    }
+  }
+  return results;
+}
+
+async function openChest(coffreId) {
+  const coffre = allCoffres.find(c => c.id === coffreId);
+  if (!coffre || coffre.ouvert) return;
+  const loot = rollLoot(coffre.type);
+  await sb.from('coffres_inventaire').update({
+    ouvert: true, ouvert_at: new Date().toISOString(), contenu: loot
+  }).eq('id', coffreId);
+  for (const item of loot) {
+    if (item.type === 'coins') await addCoins(item.amount);
+    else if (item.type === 'gems') await addGems(item.amount);
+    else if (item.type === 'xp') await gainXP(item.amount, 'coffre_' + coffre.type);
+  }
+  await loadData();
+  showChestOpenAnimation(coffre.type, loot);
+}
+
+function showChestOpenAnimation(type, loot) {
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const CHEST_EMOJIS = { bronze: '📦', argent: '🥈', or: '🎁', legende: '👑' };
+  const CHEST_COLORS = { bronze: '#CD7F32', argent: '#C0C0C0', or: '#F4C542', legende: '#A855F7' };
+  const color = CHEST_COLORS[type] || '#F4C542';
+  const emoji = CHEST_EMOJIS[type] || '📦';
+
+  const bg = document.createElement('div');
+  bg.className = 'chest-anim-bg';
+  bg.innerHTML = `
+    <div style="position:relative;display:flex;align-items:center;justify-content:center">
+      <div class="chest-glow-ring" style="background:radial-gradient(circle,${color}44,transparent 70%)"></div>
+      <div class="chest-emoji" id="chest-main-emoji">${emoji}</div>
+    </div>
+    <div class="chest-loot-row" id="chest-loot-row"></div>
+    <button class="chest-take-btn" id="chest-take-btn" onclick="closeChestAnimation()">TOUT PRENDRE !</button>
+  `;
+  document.body.appendChild(bg);
+
+  const LOOT_ICONS = { coins: '🪙', xp: '⭐', gems: '💎' };
+  const LOOT_LABELS = { coins: 'Coins', xp: 'XP', gems: 'Gemmes' };
+  const lootRow = bg.querySelector('#chest-loot-row');
+  const takeBtn = bg.querySelector('#chest-take-btn');
+
+  if (reduced) {
+    loot.forEach(item => {
+      const el = document.createElement('div');
+      el.className = 'chest-loot-item reveal';
+      el.innerHTML = `<div class="chest-loot-icon">${LOOT_ICONS[item.type] || '🎁'}</div><div class="chest-loot-amount">+${item.amount}</div><div class="chest-loot-label">${LOOT_LABELS[item.type] || item.type}</div>`;
+      lootRow.appendChild(el);
+    });
+    takeBtn.classList.add('show');
+    return;
+  }
+
+  const chestEl = bg.querySelector('#chest-main-emoji');
+  setTimeout(() => {
+    chestEl.classList.add('chest-shake');
+    if (navigator.vibrate) navigator.vibrate([40, 30, 80, 30, 120]);
+  }, 300);
+
+  setTimeout(() => {
+    loot.forEach((item, i) => {
+      const el = document.createElement('div');
+      el.className = 'chest-loot-item';
+      el.innerHTML = `<div class="chest-loot-icon">${LOOT_ICONS[item.type] || '🎁'}</div><div class="chest-loot-amount">+${item.amount}</div><div class="chest-loot-label">${LOOT_LABELS[item.type] || item.type}</div>`;
+      lootRow.appendChild(el);
+      setTimeout(() => el.classList.add('reveal'), i * 220);
+    });
+    const delay = loot.length * 220 + 400;
+    setTimeout(() => takeBtn.classList.add('show'), delay);
+  }, 1300);
+}
+
+function closeChestAnimation() {
+  const bg = document.querySelector('.chest-anim-bg');
+  if (!bg) return;
+  bg.style.opacity = '0';
+  bg.style.transition = 'opacity 300ms';
+  setTimeout(() => { bg.remove(); renderCoffresCard(); }, 300);
+}
+
+function renderCoffresCard() {
+  const container = document.getElementById('coffres-home');
+  if (!container) return;
+  const pending = allCoffres.filter(c => !c.ouvert);
+  if (pending.length === 0) { container.innerHTML = ''; return; }
+  const typeLabels = { bronze: 'Bronze', argent: 'Argent', or: 'Or', legende: 'Légende' };
+  const preview = pending.slice(0, 3).map(c => {
+    const CHEST_EMOJIS = { bronze: '📦', argent: '🥈', or: '🎁', legende: '👑' };
+    return CHEST_EMOJIS[c.type] || '📦';
+  }).join(' ');
+  container.innerHTML = `
+    <div class="coffres-home-card" onclick="showCoffresModal()">
+      <div class="coffres-home-icon">🎁</div>
+      <div class="coffres-home-info">
+        <div class="coffres-home-title">Mes Coffres</div>
+        <div class="coffres-home-sub">${preview} — Appuie pour ouvrir</div>
+      </div>
+      <div class="coffres-home-badge">${pending.length}</div>
+    </div>`;
+}
+
+function showCoffresModal() {
+  const pending = allCoffres.filter(c => !c.ouvert);
+  if (pending.length === 0) { showToast('Aucun coffre à ouvrir'); return; }
+  const CHEST_EMOJIS = { bronze: '📦', argent: '🥈', or: '🎁', legende: '👑' };
+  const CHEST_NAMES  = { bronze: 'Bronze', argent: 'Argent', or: 'Or', legende: 'Légende' };
+  const CHEST_COLORS = { bronze: '#CD7F32', argent: '#C0C0C0', or: '#F4C542', legende: '#A855F7' };
+
+  const modal = document.createElement('div');
+  modal.id = 'coffres-modal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:10001;background:rgba(5,8,22,.94);backdrop-filter:blur(12px);display:flex;flex-direction:column;align-items:center;padding:40px 16px 20px;gap:12px;overflow-y:auto;opacity:0;transition:opacity 300ms';
+  modal.innerHTML = `
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;color:var(--gold-primary);margin-bottom:4px">MES COFFRES</div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:12px">${pending.length} coffre${pending.length > 1 ? 's' : ''} à ouvrir</div>
+    ${pending.map(c => `
+      <div style="width:100%;max-width:360px;background:var(--bg-elevated);border:2px solid ${CHEST_COLORS[c.type]}44;border-radius:18px;padding:18px;display:flex;align-items:center;gap:14px;cursor:pointer" onclick="openChest(${c.id})">
+        <div style="font-size:40px">${CHEST_EMOJIS[c.type]}</div>
+        <div style="flex:1">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:${CHEST_COLORS[c.type]};letter-spacing:1px">Coffre ${CHEST_NAMES[c.type]}</div>
+          <div style="font-size:11px;color:var(--text2)">${c.source || 'Récompense'} · Tap pour ouvrir</div>
+        </div>
+        <div style="font-size:24px">▶</div>
+      </div>`).join('')}
+    <button onclick="closeCoffresModal()" style="margin-top:8px;background:transparent;border:1px solid var(--border2);color:var(--text2);border-radius:12px;padding:12px 28px;font-size:13px;cursor:pointer">Fermer</button>`;
+  document.body.appendChild(modal);
+  requestAnimationFrame(() => { modal.style.opacity = '1'; });
+}
+
+function closeCoffresModal() {
+  const modal = document.getElementById('coffres-modal');
+  if (!modal) return;
+  modal.style.opacity = '0';
+  setTimeout(() => modal.remove(), 300);
 }
 
 // ── MISSION DU JOUR ──
@@ -4995,6 +5403,7 @@ function initHomePage() {
   initHomeHeader();
   renderDailyRewardCard();
   renderMissionCard();
+  renderCoffresCard();
   renderHeroCard();
   renderQuickMatches();
   renderStreakCard();
