@@ -5149,26 +5149,26 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) stopC
 console.log('[CDM2026] Rewards system v1 loaded');
 
 async function init(){
+  const u=localStorage.getItem('cdm2026_user');
+  const a=localStorage.getItem('cdm2026_admin');
   try{
     await loadData();
     // Retry si Supabase répond vide (transitoire réseau)
     if(!allJoueurs.length) await loadData();
     hide('loading');
-    const u=localStorage.getItem('cdm2026_user');
-    const a=localStorage.getItem('cdm2026_admin');
     if(a==='true'){
       isAdmin=true;openAdminApp();
     } else if(u){
       const joueurExiste=allJoueurs.find(j=>j.id===u);
       if(joueurExiste){
+        // Cas normal
         currentUser=u;openApp();
       } else if(!allJoueurs.length){
-        // Données toujours vides après retry → réseau indisponible
-        // On garde le localStorage pour ne pas déconnecter l'utilisateur
-        showLoginScreen();
-        showToast('Connexion lente — réessaie dans un instant');
+        // Données vides malgré retry → réseau lent, on ouvre quand même
+        currentUser=u;openApp();
+        showToast('Connexion lente…');
       } else {
-        // Données chargées mais joueur absent → compte supprimé
+        // Données OK mais joueur introuvable → compte supprimé
         localStorage.removeItem('cdm2026_user');
         showLoginScreen();
         showToast('Session expirée, reconnecte-toi');
@@ -5179,10 +5179,10 @@ async function init(){
     startRealtime();
   }catch(e){
     hide('loading');
-    // Ne pas déconnecter l'utilisateur en cas d'erreur réseau
-    const u=localStorage.getItem('cdm2026_user');
-    if(u){ showLoginScreen(); showToast('Connexion lente — réessaie'); }
-    else  { showLoginScreen(); showToast('Erreur de connexion'); }
+    // En cas d'erreur réseau : ne JAMAIS déconnecter un utilisateur connu
+    if(a==='true'){ isAdmin=true;openAdminApp();showToast('Connexion lente…'); }
+    else if(u){ currentUser=u;openApp();showToast('Connexion lente…'); }
+    else { showLoginScreen(); }
   }
 }
 
