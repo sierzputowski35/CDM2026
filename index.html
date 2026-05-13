@@ -4698,10 +4698,10 @@ const BUTEURS_PAR_MATCH = {
 
 // Paris bonus : 4 options standard générées automatiquement sur tous les matchs
 const STANDARD_PARIS_BONUS = [
-  {id:'plus2buts',   label:'Plus de 2 buts au total',           cote:B6},
-  {id:'btts',        label:'Les deux équipes marquent',          cote:B6},
-  {id:'nul_mi',      label:'Score nul à la mi-temps',            cote:B6},
-  {id:'clean_sheet', label:'Une équipe gardée clean sheet',      cote:B6},
+  {id:'plus2buts',   label:'Plus de 2 buts au total',           cote:5},
+  {id:'btts',        label:'Les deux équipes marquent',          cote:6},
+  {id:'clean_sheet', label:'Une équipe gardée clean sheet',      cote:8},
+  {id:'nul_mi',      label:'Score nul à la mi-temps',            cote:10},
 ];
 const PARIS_BONUS_PAR_MATCH = {};
 MATCHS.forEach(m => { PARIS_BONUS_PAR_MATCH[m.id] = STANDARD_PARIS_BONUS; });
@@ -5571,8 +5571,25 @@ function renderQuickMatches() {
   const todayMatches = MATCHS.filter(m => m.ts === todayTs).slice(0, 6);
 
   if (!todayMatches.length) {
-    const next = MATCHS.find(m => !allScores[m.id]);
-    container.innerHTML = '<div style="padding:12px 4px;font-size:12px;color:#718096">Aucun match aujourd\'hui — prochain match : ' + (next ? next.date : '—') + '</div>';
+    const upcoming = MATCHS.filter(m => !allScores[m.id]).slice(0, 3);
+    if (!upcoming.length) {
+      container.innerHTML = '<div style="padding:12px 4px;font-size:12px;color:#718096">Tournoi terminé</div>';
+      return;
+    }
+    const nextDate = upcoming[0].date.split('·')[0].trim();
+    container.innerHTML = '<div style="padding:4px 0 8px;font-size:11px;color:var(--text3);font-family:Oswald,sans-serif;letter-spacing:.5px">PROCHAINS MATCHS · ' + nextDate.toUpperCase() + '</div>'
+      + upcoming.map(function(m) {
+        const code1 = FLAG_CODES[m.name1] ?? 'un';
+        const code2 = FLAG_CODES[m.name2] ?? 'un';
+        const multi = PHASES[m.phase] ?? 1;
+        const heure = (m.date.split('·')[1] || '').trim();
+        return '<div class="quick-match-card" onclick="goToMatch(' + m.id + ')">'
+          + '<div class="qmc-time">' + heure + '</div>'
+          + '<div class="qmc-teams">'
+          + '<div class="qmc-team"><div class="qmc-flag"><img src="https://flagcdn.com/w40/' + code1 + '.png" alt="' + m.name1 + '" loading="lazy" onerror="this.style.display=\'none\'"/></div><span>' + m.name1 + '</span></div>'
+          + '<div class="qmc-team"><div class="qmc-flag"><img src="https://flagcdn.com/w40/' + code2 + '.png" alt="' + m.name2 + '" loading="lazy" onerror="this.style.display=\'none\'"/></div><span>' + m.name2 + '</span></div>'
+          + '</div><div class="qmc-badge qmc-badge--xp"><span>x' + multi + ' XP</span></div></div>';
+      }).join('');
     return;
   }
 
@@ -6750,6 +6767,7 @@ async function savePronostic(id){
   const btn=document.getElementById('sbtn-'+id);
   btn.disabled=true;btn.textContent='Sauvegarde...';
   const joueur=allJoueurs.find(j=>j.id===currentUser);
+  if(!joueur){showToast('Erreur : reconnecte-toi');btn.disabled=false;btn.textContent='Enregistrer ce pronostic';return;}
   const match=MATCHS.find(m=>m.id===id);
 
   // 🎲 Snapshot de la cote V3 au moment du pronostic
@@ -6805,7 +6823,8 @@ async function savePronostic(id){
 function selectButeur(matchId, nom) {
   const joueur = allJoueurs.find(j => j.id === currentUser);
   if (!joueur) return;
-  const prog = joueur.pronostics || {};
+  if (!joueur.pronostics) joueur.pronostics = {};
+  const prog = joueur.pronostics;
   if (!prog[matchId]) prog[matchId] = {};
   prog[matchId].buteur = prog[matchId].buteur === nom ? null : nom;
   saveBonusPick(matchId);
@@ -6815,7 +6834,8 @@ function selectButeur(matchId, nom) {
 function selectPariBonus(matchId, bonusId) {
   const joueur = allJoueurs.find(j => j.id === currentUser);
   if (!joueur) return;
-  const prog = joueur.pronostics || {};
+  if (!joueur.pronostics) joueur.pronostics = {};
+  const prog = joueur.pronostics;
   if (!prog[matchId]) prog[matchId] = {};
   prog[matchId].pari_bonus = prog[matchId].pari_bonus === bonusId ? null : bonusId;
   saveBonusPick(matchId);
