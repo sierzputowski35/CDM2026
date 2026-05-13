@@ -3788,13 +3788,22 @@ const FLAG_CODES = {
   'Suède':'se','Tchéquie':'cz','Tunisie':'tn','Turquie':'tr',
 };
 
+function getTeamEmoji(name) {
+  const m = MATCHS.find(m => m.name1 === name);
+  if (m) return m.team1;
+  const m2 = MATCHS.find(m => m.name2 === name);
+  if (m2) return m2.team2;
+  return '🏳';
+}
 function flagHTML(country, size) {
   size = size || 'md';
   const code = FLAG_CODES[country] || 'un';
+  const emoji = getTeamEmoji(country);
   const dims = { sm: '40px', md: '52px', lg: '72px' };
   const w = dims[size] || dims.md;
   const h = size === 'lg' ? '48px' : size === 'sm' ? '28px' : '36px';
-  return `<div class="flag-wrap flag-${size}" style="width:${w};height:${h}"><img src="https://flagcdn.com/w80/${code}.png" srcset="https://flagcdn.com/w160/${code}.png 2x" alt="${country}" class="flag-img" loading="lazy"><div class="flag-shine"></div><div class="flag-gloss"></div></div>`;
+  const fs = size === 'lg' ? '28px' : size === 'sm' ? '16px' : '20px';
+  return `<div class="flag-wrap flag-${size}" style="width:${w};height:${h}"><img src="https://flagcdn.com/w80/${code}.png" srcset="https://flagcdn.com/w160/${code}.png 2x" alt="${country}" class="flag-img" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;align-items:center;justify-content:center;width:100%;height:100%;font-size:${fs}">${emoji}</div><div class="flag-shine"></div><div class="flag-gloss"></div></div>`;
 }
 
 // ══════════════════════════════════════════
@@ -4695,6 +4704,10 @@ const BUTEURS_PAR_MATCH = {
   72: [{nom:'Inaki Williams',       cote:B6},{nom:'Jordan Ayew',        cote:B6},{nom:'Andrej Kramarić',    cote:B6},{nom:'Bruno Petković',      cote:B6}],
   // Phases finales : buteurs ajoutés par l'admin au fur et à mesure
 };
+// Cotes différenciées : favoris (pos 0-1) = 5 pts, outsiders (pos 2-3) = 8 pts
+Object.values(BUTEURS_PAR_MATCH).forEach(buteurs => {
+  buteurs.forEach((b, i) => { b.cote = i < 2 ? 5 : 8; });
+});
 
 // Paris bonus : 4 options standard générées automatiquement sur tous les matchs
 const STANDARD_PARIS_BONUS = [
@@ -5188,7 +5201,7 @@ async function loadData(){
     sb.from('joueurs').select('*'),
     sb.from('scores_reels').select('*'),
     sb.from('globaux_reels').select('*'),
-    sb.from('cotes_raw').select('*'),
+    sb.from('cotes_matchs').select('*'),
     sb.from('equipes_pts').select('*'),
   ]);
   allJoueurs=j.data||[];
@@ -7600,7 +7613,7 @@ async function saveCoteManuelle(matchId){
   const c2=document.getElementById('c2-'+matchId).value;
   const m=MATCHS.find(x=>x.id===matchId);
   if(!m)return;
-  const{error}=await sb.from('cotes_raw').upsert({
+  const{error}=await sb.from('cotes_matchs').upsert({
     home_team:m.name1,away_team:m.name2,
     cote1:parseFloat(c1)||2.0,coteN:parseFloat(cN)||3.2,cote2:parseFloat(c2)||2.0,
     source:'manual',updated_at:new Date().toISOString(),
