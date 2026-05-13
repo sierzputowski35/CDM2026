@@ -2103,6 +2103,73 @@ body {
 }
 .admin-pts-save-btn:hover { background: rgba(34,209,107,.25); }
 .admin-equipe-last-update { font-size: 10px; color: var(--text3); margin-top: 2px; font-style: italic; }
+
+/* ── SPRINT 1 : LEVEL UP MODAL ── */
+.level-up-modal {
+  position: fixed; inset: 0; z-index: 10000;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity 300ms ease;
+}
+.level-up-modal.show { opacity: 1; pointer-events: all; }
+.level-up-modal.hide { opacity: 0; pointer-events: none; }
+.level-up-overlay {
+  position: absolute; inset: 0;
+  background: radial-gradient(circle, rgba(244,197,66,0.15), rgba(5,8,22,0.94));
+  backdrop-filter: blur(8px);
+}
+.level-up-card {
+  position: relative;
+  background: linear-gradient(180deg, var(--bg-elevated), var(--bg-card));
+  border: 2px solid var(--gold-primary);
+  border-radius: 24px; padding: 32px 40px;
+  text-align: center;
+  box-shadow: 0 0 60px rgba(244,197,66,0.45);
+  transform: scale(0.7);
+  transition: transform 500ms cubic-bezier(.34,1.56,.64,1);
+}
+.level-up-modal.show .level-up-card { transform: scale(1); }
+.level-up-glow {
+  position: absolute; inset: -20px; pointer-events: none;
+  background: radial-gradient(circle, rgba(244,197,66,0.35), transparent 60%);
+  animation: lu-pulse 2s ease-in-out infinite;
+}
+@keyframes lu-pulse {
+  0%,100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+.level-up-label {
+  font-family: 'Bebas Neue', sans-serif; font-size: 18px;
+  letter-spacing: 4px; color: var(--text2);
+}
+.level-up-number {
+  font-family: 'Bebas Neue', sans-serif; font-size: 88px; line-height: 1;
+  background: linear-gradient(180deg, var(--gold-light), var(--gold-dark));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  margin: 8px 0 16px;
+}
+.level-up-rewards {
+  display: flex; justify-content: center; gap: 12px; margin-bottom: 24px;
+}
+.level-up-reward {
+  background: rgba(244,197,66,0.1); border: 1px solid rgba(244,197,66,0.3);
+  border-radius: 12px; padding: 8px 16px; font-size: 15px; color: var(--text);
+}
+.level-up-btn {
+  background: linear-gradient(180deg, var(--gold-light), var(--gold-dark));
+  color: var(--bg-primary); border: none; border-radius: 14px;
+  padding: 14px 32px; font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px; letter-spacing: 3px; cursor: pointer;
+  box-shadow: 0 6px 20px rgba(244,197,66,0.4);
+  transition: transform 150ms, box-shadow 150ms;
+}
+.level-up-btn:active { transform: scale(0.95); }
+.level-up-particles {
+  position: absolute; inset: 0; pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .level-up-glow { animation: none; }
+}
 </style>
 </head>
 <body>
@@ -4110,6 +4177,224 @@ let _pendingScrollMatchId=null;
 // ══ COTES RÉELLES (depuis cotes_raw via The Odds API) ══
 let allOdds = {}; // { [match_id]: { home, draw, away } } — peuplé depuis cotes_raw
 
+// ══ SPRINT 1 : SYSTÈME XP ══
+const XP_CURVE = level => Math.floor(100 * Math.pow(level, 1.5));
+// Niv 1→2: 100xp | 2→3: 282xp | 5→6: 1118xp | 10→11: 3162xp
+
+const XP_REWARDS = {
+  prono_submit: 10,
+  prono_correct_winner: 25,
+  prono_correct_diff: 50,
+  prono_score_exact: 100,
+  daily_login: 30,
+  badge_unlock: 75,
+  league_promotion: 200,
+};
+
+const COIN_REWARDS = {
+  level_up_base: 50,
+  prono_correct: 5,
+  prono_score_exact: 30,
+};
+
+// Gain XP pour le joueur courant (avec animations visuelles)
+async function gainXP(amount, source = 'autre') {
+  const joueur = allJoueurs.find(j => j.id === currentUser);
+  if (!joueur) return;
+  const oldXP = joueur.xp || 0;
+  const oldLevel = joueur.level || 1;
+  let newXP = oldXP + amount;
+  let newLevel = oldLevel;
+  while (newXP >= XP_CURVE(newLevel)) {
+    newXP -= XP_CURVE(newLevel);
+    newLevel++;
+  }
+  const leveledUp = newLevel > oldLevel;
+  const coinReward = leveledUp ? (newLevel - oldLevel) * COIN_REWARDS.level_up_base : 0;
+  const { error } = await sb.from('joueurs').update({
+    xp: newXP, level: newLevel,
+    coins: (joueur.coins || 0) + coinReward
+  }).eq('id', currentUser);
+  if (error) { console.error('[XP] update failed', error); return; }
+  sb.from('xp_history').insert({ joueur_id: currentUser, amount, source }).then(() => {});
+  showFloatingXP(amount);
+  animateXPBar(oldXP, amount, !leveledUp);
+  if (leveledUp) {
+    setTimeout(() => showLevelUpModal(newLevel, coinReward), 400);
+    if (navigator.vibrate) navigator.vibrate([50, 30, 100, 30, 150]);
+  }
+  await loadData();
+}
+
+// Gain XP silencieux pour un joueur quelconque (côté admin)
+async function gainXPFor(joueurId, amount, source) {
+  const joueur = allJoueurs.find(j => j.id === joueurId);
+  if (!joueur) return;
+  const oldXP = joueur.xp || 0;
+  const oldLevel = joueur.level || 1;
+  let newXP = oldXP + amount;
+  let newLevel = oldLevel;
+  while (newXP >= XP_CURVE(newLevel)) {
+    newXP -= XP_CURVE(newLevel);
+    newLevel++;
+  }
+  const coinReward = newLevel > oldLevel ? (newLevel - oldLevel) * COIN_REWARDS.level_up_base : 0;
+  await sb.from('joueurs').update({
+    xp: newXP, level: newLevel,
+    coins: (joueur.coins || 0) + coinReward
+  }).eq('id', joueurId);
+  if (source) sb.from('xp_history').insert({ joueur_id: joueurId, amount, source }).then(() => {});
+}
+
+// Distribution XP après validation d'un score admin
+async function distributeMatchXP(matchId, r1, r2) {
+  const rRes = r1 > r2 ? 1 : r1 < r2 ? 2 : 0;
+  const tasks = [];
+  for (const joueur of allJoueurs) {
+    const p = (joueur.pronostics || {})[matchId];
+    if (!p) continue;
+    const p1 = parseInt(p.s1), p2 = parseInt(p.s2);
+    if (isNaN(p1) || isNaN(p2)) continue;
+    const pRes = p1 > p2 ? 1 : p1 < p2 ? 2 : 0;
+    if (rRes !== pRes) continue;
+    let xpAmount;
+    if (p1 === r1 && p2 === r2) xpAmount = XP_REWARDS.prono_score_exact;
+    else if (p1 - p2 === r1 - r2) xpAmount = XP_REWARDS.prono_correct_diff;
+    else xpAmount = XP_REWARDS.prono_correct_winner;
+    tasks.push(gainXPFor(joueur.id, xpAmount, 'match_result'));
+  }
+  await Promise.all(tasks);
+}
+
+// Animations XP bar
+function showFloatingXP(amount) {
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const anchor = document.getElementById('h2-xp-fill') || document.querySelector('.ahv2-xp-bar');
+  const rect = anchor ? anchor.getBoundingClientRect() : { left: window.innerWidth / 2 - 30, top: 60, width: 60 };
+  const el = document.createElement('div');
+  el.textContent = '+' + amount + ' XP';
+  el.style.cssText = `
+    position:fixed;left:${rect.left + rect.width / 2}px;top:${rect.top + 10}px;
+    transform:translate(-50%,0);color:var(--gold-primary);
+    font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;
+    text-shadow:0 0 12px rgba(244,197,66,.8);pointer-events:none;
+    z-index:9999;will-change:transform,opacity;
+  `;
+  document.body.appendChild(el);
+  if (reduced) { setTimeout(() => el.remove(), 800); return; }
+  el.animate([
+    { transform: 'translate(-50%,0) scale(.8)', opacity: 0 },
+    { transform: 'translate(-50%,-20px) scale(1.2)', opacity: 1, offset: 0.2 },
+    { transform: 'translate(-50%,-50px) scale(1)', opacity: 1, offset: 0.7 },
+    { transform: 'translate(-50%,-80px) scale(.9)', opacity: 0 }
+  ], { duration: 1400, easing: 'cubic-bezier(.25,.46,.45,.94)' }).onfinish = () => el.remove();
+}
+
+function updateXPBar() {
+  const joueur = allJoueurs.find(j => j.id === currentUser);
+  if (!joueur) return;
+  const xp = joueur.xp || 0;
+  const level = joueur.level || 1;
+  const required = XP_CURVE(level);
+  const pct = Math.min(100, (xp / required) * 100);
+  const fill = document.getElementById('h2-xp-fill');
+  const badge = document.getElementById('h2-level');
+  const text = document.getElementById('h2-xp-text');
+  if (fill) fill.style.width = pct + '%';
+  if (badge) badge.textContent = level;
+  if (text) text.textContent = xp + '/' + required;
+}
+
+function animateXPBar(oldXP, gain, sameLevel) {
+  if (sameLevel) { setTimeout(updateXPBar, 200); return; }
+  const fill = document.getElementById('h2-xp-fill');
+  if (!fill) { setTimeout(updateXPBar, 200); return; }
+  fill.style.width = '100%';
+  setTimeout(() => {
+    fill.style.transition = 'none';
+    fill.style.width = '0%';
+    requestAnimationFrame(() => {
+      fill.style.transition = '';
+      setTimeout(updateXPBar, 100);
+    });
+  }, 800);
+}
+
+// Modal Level Up
+let _coinRainRAF = null;
+let _coinRainCoins = [];
+
+function showLevelUpModal(level, coins) {
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const modal = document.createElement('div');
+  modal.className = 'level-up-modal';
+  modal.innerHTML = `
+    <div class="level-up-overlay"></div>
+    <canvas class="level-up-particles" id="lu-particles"></canvas>
+    <div class="level-up-card">
+      <div class="level-up-glow"></div>
+      <div class="level-up-label">NIVEAU</div>
+      <div class="level-up-number">${level}</div>
+      <div class="level-up-rewards">
+        <div class="level-up-reward">🪙 +${coins} Coins</div>
+      </div>
+      <button class="level-up-btn" onclick="closeLevelUpModal()">RÉCUPÉRER</button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  requestAnimationFrame(() => {
+    modal.classList.add('show');
+    if (!reduced) startCoinRain('lu-particles');
+  });
+}
+
+function closeLevelUpModal() {
+  const modal = document.querySelector('.level-up-modal');
+  if (!modal) return;
+  modal.classList.add('hide');
+  stopCoinRain();
+  setTimeout(() => modal.remove(), 400);
+}
+
+function startCoinRain(canvasId) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  _coinRainCoins = Array.from({ length: 30 }, () => ({
+    x: Math.random() * canvas.width,
+    y: -50 - Math.random() * 200,
+    r: 6 + Math.random() * 8,
+    vy: 2 + Math.random() * 3,
+    rot: 0, vr: -0.05 + Math.random() * 0.1
+  }));
+  function loop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    _coinRainCoins.forEach(c => {
+      c.y += c.vy; c.rot += c.vr;
+      ctx.save(); ctx.translate(c.x, c.y); ctx.rotate(c.rot);
+      const g = ctx.createRadialGradient(0, 0, 0, 0, 0, c.r);
+      g.addColorStop(0, '#FFE680'); g.addColorStop(1, '#C99812');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(0, 0, c.r, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    });
+    _coinRainCoins = _coinRainCoins.filter(c => c.y < canvas.height + 50);
+    if (_coinRainCoins.length > 0) _coinRainRAF = requestAnimationFrame(loop);
+  }
+  loop();
+}
+
+function stopCoinRain() {
+  if (_coinRainRAF) cancelAnimationFrame(_coinRainRAF);
+  _coinRainRAF = null; _coinRainCoins = [];
+}
+
+document.addEventListener('visibilitychange', () => { if (document.hidden) stopCoinRain(); });
+
+console.log('[CDM2026] Rewards system v1 loaded');
+
 async function init(){
   try{
     await loadData();
@@ -4276,10 +4561,10 @@ function updateHeaderUser(){
 
   // ── Header V2 ──
   const pts=calcPoints(joueur);
-  const xp=pts*10;
-  const level=Math.floor(xp/1000)+1;
-  const xpInLevel=xp%1000;
-  const xpPct=(xpInLevel/1000*100).toFixed(1);
+  const xp=joueur.xp||0;
+  const level=joueur.level||1;
+  const required=XP_CURVE(level);
+  const xpPct=Math.min(100,(xp/required*100)).toFixed(1);
   const board=getLeaderboard();
   const pos=board.findIndex(p=>p.id===currentUser);
   const rank=pos>=0?pos+1:null;
@@ -4305,10 +4590,10 @@ function updateHeaderUser(){
   if(h2xpf) h2xpf.style.width=xpPct+'%';
 
   const h2xpt=document.getElementById('h2-xp-text');
-  if(h2xpt) h2xpt.textContent=xpInLevel+'/1000';
+  if(h2xpt) h2xpt.textContent=xp+'/'+required;
 
   const h2coins=document.getElementById('h2-coins');
-  if(h2coins) h2coins.textContent=pts.toLocaleString('fr-FR');
+  if(h2coins) h2coins.textContent=(joueur.coins??pts).toLocaleString('fr-FR');
 
   const h2gems=document.getElementById('h2-gems');
   if(h2gems) h2gems.textContent=rank?'#'+rank:'—';
@@ -4413,14 +4698,14 @@ function initHomeHeader() {
   if (avEl) avEl.innerHTML = renderAvatarEl(joueur, 38, 11);
 
   const pts = calcPoints(joueur);
-  const xp = pts * 10;
-  const level = Math.floor(xp / 1000) + 1;
-  const xpInLevel = xp % 1000;
-  const pct = (xpInLevel / 1000) * 100;
+  const xp = joueur.xp || 0;
+  const level = joueur.level || 1;
+  const required = XP_CURVE(level);
+  const pct = Math.min(100, (xp / required) * 100);
   const fillEl = document.getElementById('home-xp-fill');
   const labelEl = document.getElementById('home-xp-label');
   if (fillEl) fillEl.style.width = pct + '%';
-  if (labelEl) labelEl.textContent = 'Niv.' + level + ' · ' + xpInLevel + '/1000 XP';
+  if (labelEl) labelEl.textContent = 'Niv.' + level + ' · ' + xp + '/' + required + ' XP';
 
   const coinsEl = document.getElementById('home-coins');
   if (coinsEl) coinsEl.textContent = pts.toLocaleString('fr-FR');
@@ -5383,8 +5668,8 @@ async function savePronostic(id){
   btn.textContent=`✓ Enregistré${labelCote}`;
   showToast(`Pronostic sauvegardé${labelCote} !`);
   try{
-    showRewardPop(5, isFirstProno?25:10);
-    setTimeout(()=>{ updateHeaderUser(); if(missionUpdated) renderMissionCard(); },1600);
+    gainXP(XP_REWARDS.prono_submit, 'prono_submit');
+    setTimeout(()=>{ if(missionUpdated) renderMissionCard(); },1600);
     setTimeout(()=>{ const j=allJoueurs.find(x=>x.id===currentUser); checkBadges(j); },2000);
     btn.classList.add('flash');
     setTimeout(()=>btn.classList.remove('flash'),400);
@@ -6121,7 +6406,11 @@ async function validateMatch(id){
     ?await sb.from('scores_reels').update({s1,s2}).eq('match_id',id)
     :await sb.from('scores_reels').insert({match_id:id,s1,s2});
   if(error){showToast('Erreur');return;}
-  await loadData();showToast('Score validé !');renderAdminMatchs();
+  await loadData();
+  // Distribuer XP aux joueurs ayant bien pronostiqué
+  await distributeMatchXP(id, parseInt(s1), parseInt(s2));
+  await loadData();
+  showToast('Score validé ! XP distribués ✓');renderAdminMatchs();
 }
 
 async function resetMatch(id){
