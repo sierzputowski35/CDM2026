@@ -1744,6 +1744,55 @@ body {
   border-radius: 6px; padding: 2px 7px;
 }
 .pts-legend-mult-chip span { color: var(--gold); font-weight: 700; }
+
+/* ══════════════════════════════════════════
+   🎲 WIDGET COTES V3
+   ══════════════════════════════════════════ */
+.odds-widget {
+  display: flex; gap: 6px; margin: 10px 0;
+  padding: 8px;
+  background: linear-gradient(135deg, rgba(255,215,0,.05) 0%, rgba(255,215,0,.02) 100%);
+  border: 1px solid rgba(255,215,0,.15); border-radius: 12px;
+}
+.odds-cell {
+  flex: 1; text-align: center; padding: 6px 4px; border-radius: 8px;
+  background: rgba(0,0,0,.2); border: 1px solid rgba(255,255,255,.04);
+  transition: transform .2s ease, border-color .2s ease;
+}
+.odds-cell.highlighted {
+  border-color: rgba(255,215,0,.45); background: rgba(255,215,0,.08);
+  transform: translateY(-2px);
+}
+.odds-label { font-size: 9px; text-transform: uppercase; letter-spacing: .06em; color: var(--text3); margin-bottom: 2px; }
+.odds-value { font-family: 'Bebas Neue', sans-serif; font-size: 18px; font-weight: 700; color: var(--gold); letter-spacing: 1px; line-height: 1; }
+.prono-cote-badge {
+  display: inline-block; background: rgba(255,215,0,.12);
+  border: 1px solid rgba(255,215,0,.3); color: var(--gold);
+  font-family: 'Bebas Neue', sans-serif; font-size: 11px; letter-spacing: 1px;
+  padding: 2px 8px; border-radius: 10px; margin-left: 6px;
+}
+
+/* ══ ADMIN COTES ══ */
+.admin-equipe-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 10px; margin-bottom: 6px;
+}
+.admin-equipe-name { flex: 1; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: var(--text); }
+.admin-equipe-tier { font-size: 11px; color: var(--text3); margin-left: 6px; }
+.admin-pts-input {
+  width: 70px; text-align: center; background: var(--surface2);
+  border: 1px solid var(--border2); color: var(--text);
+  font-family: 'Bebas Neue', sans-serif; font-size: 18px;
+  padding: 6px 10px; border-radius: 8px;
+}
+.admin-pts-save-btn {
+  background: rgba(34,209,107,.15); border: 1px solid rgba(34,209,107,.4);
+  color: #22D16B; padding: 6px 12px; border-radius: 8px;
+  font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer;
+}
+.admin-pts-save-btn:hover { background: rgba(34,209,107,.25); }
+.admin-equipe-last-update { font-size: 10px; color: var(--text3); margin-top: 2px; font-style: italic; }
 </style>
 </head>
 <body>
@@ -2315,6 +2364,7 @@ body {
     <button class="nav-btn" onclick="showAdminPage('admin-globaux',this)">Résultats globaux</button>
     <button class="nav-btn" onclick="showAdminPage('admin-cagnotte',this)">Cagnotte</button>
     <button class="nav-btn" onclick="showAdminPage('admin-joueurs',this)">Joueurs</button>
+    <button class="nav-btn" onclick="showAdminPage('admin-cotes',this)">🎲 Cotes</button>
 
   </div>
   <div class="main">
@@ -2354,6 +2404,26 @@ body {
         <button class="validate-btn" style="flex:0 0 auto;margin:0;padding:10px 20px" onclick="genererCode()">+ Générer un code</button>
       </div>
       <div id="admin-codes-list"></div>
+    </div>
+
+    <div id="page-admin-cotes" class="page">
+      <div class="stripe"></div>
+      <div class="section-title">🎲 Gestion des cotes</div>
+      <div class="section-sub">Modifier les pts d'une équipe → recalcul automatique de toutes ses cotes match</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin:14px 0;font-size:11px">
+        <span style="background:rgba(244,197,66,.15);padding:4px 8px;border-radius:6px">🏆 5 = favori absolu</span>
+        <span style="background:rgba(168,85,247,.15);padding:4px 8px;border-radius:6px">⭐ 6-8 = challenger</span>
+        <span style="background:rgba(88,200,250,.15);padding:4px 8px;border-radius:6px">💪 10-15 = outsider crédible</span>
+        <span style="background:rgba(34,209,107,.15);padding:4px 8px;border-radius:6px">📊 17-22 = outsider confirmé</span>
+        <span style="background:rgba(255,138,61,.15);padding:4px 8px;border-radius:6px">🎯 25-28 = petit outsider</span>
+        <span style="background:rgba(255,77,90,.15);padding:4px 8px;border-radius:6px">🌱 33+ = longshot</span>
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:14px">
+        <button class="filter-btn active" id="ec-pts" onclick="setEquipesSort('pts',this)">Par force</button>
+        <button class="filter-btn" id="ec-alpha" onclick="setEquipesSort('alpha',this)">Par nom A-Z</button>
+        <button class="filter-btn" id="ec-recent" onclick="setEquipesSort('recent',this)">Dernières modifs</button>
+      </div>
+      <div id="admin-equipes-list"></div>
     </div>
   </div>
 </div>
@@ -2972,6 +3042,45 @@ function flagHTML(country, size) {
 // ══════════════════════════════════════════
 const PHASES = {'Groupes':1,'16es de finale':1.5,'8es de finale':2,'Quarts de finale':2,'Demi-finales':3,'Finale':4};
 
+// ══════════════════════════════════════════
+// 🎲 SYSTÈME DE COTES V3 — EXPERT BOOKMAKER
+// ══════════════════════════════════════════
+function calculerCotesMatch(team1, team2) {
+  const pts1 = EQUIPES_PTS[team1];
+  const pts2 = EQUIPES_PTS[team2];
+  if (!pts1 || !pts2) return null;
+
+  const force1 = 1 / pts1;
+  const force2 = 1 / pts2;
+  const ecart = Math.abs(pts1 - pts2);
+
+  const ecart_norm = Math.min(ecart / 30, 1.0);
+  const prob_nul = Math.max(0.08, Math.min(0.32, 0.32 - 0.22 * Math.pow(ecart_norm, 1.5)));
+
+  const prob_restante = 1 - prob_nul;
+  const total_force = force1 + force2;
+  const prob1 = (force1 / total_force) * prob_restante;
+  const prob2 = (force2 / total_force) * prob_restante;
+
+  const marge = ecart >= 25 ? 1.10 : ecart >= 15 ? 1.08 : ecart >= 8 ? 1.06 : 1.04;
+
+  const cote1 = Math.max(1.08, Math.min(20.00, (1/prob1)/marge));
+  const cote2 = Math.max(1.08, Math.min(20.00, (1/prob2)/marge));
+  const cote_nul = Math.max(3.10, Math.min(11.00, (1/prob_nul)/marge));
+
+  return {
+    cote1: Math.round(cote1*100)/100,
+    cote_nul: Math.round(cote_nul*100)/100,
+    cote2: Math.round(cote2*100)/100,
+  };
+}
+
+function getTypePronostic(s1, s2) {
+  if (s1 > s2) return 'cote1';
+  if (s1 < s2) return 'cote2';
+  return 'cote_nul';
+}
+
 const LEAGUES_HOME = [
   { name:'Bronze',  color:'#CD7F32', minPts:0,    maxPts:500  },
   { name:'Argent',  color:'#C0C0C0', minPts:500,  maxPts:1200 },
@@ -3467,6 +3576,7 @@ const GLOBAUX_DEF = [
 
 // ══ STATE ══
 let currentUser=null,isAdmin=false,allJoueurs=[],allScores={},allGlobaux={},allCotes={};
+let EQUIPES_PTS = {}; // { 'France': 5, 'Maroc': 17, ... } — chargé depuis Supabase equipes_pts
 let _pendingScrollMatchId=null;
 
 // ══ COTES RÉELLES (depuis cotes_raw via The Odds API) ══
@@ -3500,11 +3610,12 @@ async function init(){
 
 let allMessages=[];
 async function loadData(){
-  const [j,s,g,c]=await Promise.all([
+  const [j,s,g,c,e]=await Promise.all([
     sb.from('joueurs').select('*'),
     sb.from('scores_reels').select('*'),
     sb.from('globaux_reels').select('*'),
     sb.from('cotes_raw').select('*'),
+    sb.from('equipes_pts').select('*'),
   ]);
   allJoueurs=j.data||[];
   allScores={};(s.data||[]).forEach(x=>allScores[x.match_id]=x);
@@ -3524,6 +3635,10 @@ async function loadData(){
       allCotes[m.id]={cote1:2.00,coteN:3.20,cote2:2.00};
     }
   }
+
+  // 🆕 Charger les pts dynamiques des équipes depuis equipes_pts
+  EQUIPES_PTS={};
+  (e.data||[]).forEach(x=>{ EQUIPES_PTS[x.equipe]=x.pts; });
 }
 
 async function loadMessages(){
@@ -3536,6 +3651,7 @@ function startRealtime(){
   sb.channel('cdm').on('postgres_changes',{event:'*',schema:'public',table:'joueurs'},async()=>{await loadData();refreshPage();})
     .on('postgres_changes',{event:'*',schema:'public',table:'scores_reels'},async()=>{await loadData();refreshPage();})
     .on('postgres_changes',{event:'*',schema:'public',table:'globaux_reels'},async()=>{await loadData();refreshPage();})
+    .on('postgres_changes',{event:'*',schema:'public',table:'equipes_pts'},async()=>{await loadData();refreshPage();showToast('🎲 Cotes mises à jour');})
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages'},()=>{loadMessages();})
     .subscribe();
 }
@@ -3544,7 +3660,7 @@ function refreshPage(){
   const sel=isAdmin?'#admin-app-screen .page.active':'#app-screen .page.active';
   const id=document.querySelector(sel)?.id?.replace('page-','');
   if(!id)return;
-  const fns={home:renderHomePage,classement:renderClassement,matchs:function(){document.getElementById('pronos-globaux')?.style.display==='none'?renderMatchs():renderGlobaux();},groupes:function(){renderGroupes();renderBracket();},cagnotte:renderCagnotte,profil:renderProfilPage,'admin-matchs':renderAdminMatchs,'admin-globaux':renderAdminGlobaux,'admin-cagnotte':renderAdminCagnotte,'admin-joueurs':renderAdminJoueurs};
+  const fns={home:renderHomePage,classement:renderClassement,matchs:function(){document.getElementById('pronos-globaux')?.style.display==='none'?renderMatchs():renderGlobaux();},groupes:function(){renderGroupes();renderBracket();},cagnotte:renderCagnotte,profil:renderProfilPage,'admin-matchs':renderAdminMatchs,'admin-globaux':renderAdminGlobaux,'admin-cagnotte':renderAdminCagnotte,'admin-joueurs':renderAdminJoueurs,'admin-cotes':renderAdminCotes};
   fns[id]?.();
 }
 
@@ -3982,7 +4098,7 @@ function showAdminPage(id,btn){
   document.querySelectorAll('#admin-app-screen .nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
   btn?.classList.add('active');
-  ({'admin-matchs':renderAdminMatchs,'admin-globaux':renderAdminGlobaux,'admin-cagnotte':renderAdminCagnotte,'admin-joueurs':renderAdminJoueurs,'admin-codes':renderAdminCodes})[id]?.();
+  ({'admin-matchs':renderAdminMatchs,'admin-globaux':renderAdminGlobaux,'admin-cagnotte':renderAdminCagnotte,'admin-joueurs':renderAdminJoueurs,'admin-codes':renderAdminCodes,'admin-cotes':renderAdminCotes})[id]?.();
 }
 
 // ══ BONUS CÔTE ══
@@ -3993,7 +4109,7 @@ function coteToBonus(cote){
 }
 
 // ══ POINTS PAR MATCH ══
-// Formule : base (5/3/1) × cote du résultat réel × multiplicateur de phase
+// Formule : base (5/3/1) × cote snapshotée × multiplicateur de phase
 function computeMatchPts(m, p, real) {
   if (!p || p.s1 === undefined) return null;
   const p1 = parseInt(p.s1), p2 = parseInt(p.s2);
@@ -4004,7 +4120,8 @@ function computeMatchPts(m, p, real) {
   const rRes = r1 > r2 ? 1 : r1 < r2 ? 2 : 0;
   const pRes = p1 > p2 ? 1 : p1 < p2 ? 2 : 0;
   if (rRes === pRes) {
-    const cote = (rRes === 1 ? m.c1 : rRes === 2 ? m.c2 : m.cN) || 1;
+    // Cote snapshotée au moment du pronostic (rétrocompat : ×1.0 si absente)
+    const cote = (typeof p.cote === 'number' && p.cote >= 1) ? p.cote : 1.0;
     if (p1 === r1 && p2 === r2) total += Math.round(5 * cote * mult);
     else if (r1 - r2 === p1 - p2) total += Math.round(3 * cote * mult);
     else total += Math.round(1 * cote * mult);
@@ -4428,38 +4545,38 @@ function renderMatchs(){
     const real=allScores[m.id],isLocked=!!real,p=prog[m.id]||{};
     // Label groupe : "Groupe A" au lieu de "A"
     const groupeLabel=m.groupe?'Groupe '+m.groupe:m.phase;
-    let footer='';
+    let footer='', oddsWidget='';
     if(real){
       const pts=computeMatchPts(m,p.s1!==undefined?p:null,real);
+      const coteBadge=(p&&typeof p.cote==='number'&&p.cote>1.01)?`<span class="prono-cote-badge">×${p.cote.toFixed(2)}</span>`:'';
       footer=`<div class="match-footer" style="cursor:pointer" onclick="openMatchModal(${m.id})" title="Voir les pronos de tous">
         <span class="badge badge-locked">✔ Score réel : ${real.s1}–${real.s2}</span>
-        ${pts!==null?`<span class="badge badge-pts">+${pts} pts</span>`:''}
+        ${pts!==null?`<span class="badge badge-pts">+${pts} pts</span>${coteBadge}`:''}
         <span style="font-size:10px;color:var(--text3);margin-left:6px">👥 Qui a pris quoi ? →</span>
       </div>`;
     }else{
       const hasSaved = p.s1 !== undefined && p.s2 !== undefined;
-      const mult = PHASES[m.phase] || 1;
-      const maxPts = (cote) => Math.round(5 * (cote || 1) * mult);
-      const cotesHtml=`
-        <div class="match-odds-row">
-          <div class="match-odd-item">
-            <span class="odd-label">${m.name1}</span>
-            <span class="odd-cote">${m.c1?'×'+m.c1.toFixed(2):'—'}</span>
-            <span class="odd-pts">max +${maxPts(m.c1)} pts</span>
-          </div>
-          <div class="match-odd-item odd-nul">
-            <span class="odd-label">Nul</span>
-            <span class="odd-cote">${m.cN?'×'+m.cN.toFixed(2):'—'}</span>
-            <span class="odd-pts">max +${maxPts(m.cN)} pts</span>
-          </div>
-          <div class="match-odd-item">
-            <span class="odd-label">${m.name2}</span>
-            <span class="odd-cote">${m.c2?'×'+m.c2.toFixed(2):'—'}</span>
-            <span class="odd-pts">max +${maxPts(m.c2)} pts</span>
-          </div>
-        </div>`;
+      const userType = hasSaved ? getTypePronostic(parseInt(p.s1), parseInt(p.s2)) : null;
+      // 🎲 Widget V3 (affiché pour les matchs non joués avec équipes connues)
+      const v3Cotes = calculerCotesMatch(m.name1, m.name2);
+      if(v3Cotes){
+        oddsWidget=`
+          <div class="odds-widget">
+            <div class="odds-cell ${userType==='cote1'?'highlighted':''}">
+              <div class="odds-label">${m.name1}</div>
+              <div class="odds-value">${v3Cotes.cote1.toFixed(2)}</div>
+            </div>
+            <div class="odds-cell ${userType==='cote_nul'?'highlighted':''}">
+              <div class="odds-label">Nul</div>
+              <div class="odds-value">${v3Cotes.cote_nul.toFixed(2)}</div>
+            </div>
+            <div class="odds-cell ${userType==='cote2'?'highlighted':''}">
+              <div class="odds-label">${m.name2}</div>
+              <div class="odds-value">${v3Cotes.cote2.toFixed(2)}</div>
+            </div>
+          </div>`;
+      }
       footer=`<div class="match-footer"><span class="badge badge-open">Ouvert</span>${hasSaved?`<span class="badge badge-diff" style="margin-left:6px">✓ ${p.s1}–${p.s2} sauvegardé</span>`:''}</div>
-      ${cotesHtml}
       <button class="save-btn${hasSaved?' saved':''}" id="sbtn-${m.id}" onclick="savePronostic(${m.id})">${hasSaved?'✎ Modifier mon pronostic':'Enregistrer ce pronostic'}</button>`;
     }
     html+=`<div class="match-card" id="match-card-${m.id}">
@@ -4468,29 +4585,12 @@ function renderMatchs(){
         <span class="match-venue">${m.venue}</span>
       </div>
       <div class="match-meta" style="margin-bottom:0"><span class="match-date">${m.date}</span></div>
-      ${(!isLocked && allOdds[m.id]) ? `
-      <div style="display:flex;gap:6px;margin:10px 0 4px;justify-content:center">
-        <div style="flex:1;text-align:center;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);padding:6px 4px">
-          <div style="font-size:9px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px">1</div>
-          <div style="font-family:'Oswald',sans-serif;font-size:15px;font-weight:700;color:var(--gold);letter-spacing:.5px">${allOdds[m.id].home.toFixed(2)}</div>
-        </div>
-        <div style="flex:1;text-align:center;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);padding:6px 4px">
-          <div style="font-size:9px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px">X</div>
-          <div style="font-family:'Oswald',sans-serif;font-size:15px;font-weight:700;color:var(--text2);letter-spacing:.5px">${allOdds[m.id].draw.toFixed(2)}</div>
-        </div>
-        <div style="flex:1;text-align:center;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);padding:6px 4px">
-          <div style="font-size:9px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px">2</div>
-          <div style="font-family:'Oswald',sans-serif;font-size:15px;font-weight:700;color:var(--gold);letter-spacing:.5px">${allOdds[m.id].away.toFixed(2)}</div>
-        </div>
-      </div>
-      <div style="text-align:center;margin-bottom:2px">
-        <span style="font-size:8px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase"><span class="live-dot"></span>LIVE ODDS</span>
-      </div>` : ''}
       <div class="teams-row" style="margin-top:14px">
         <div class="team-block">${flagHTML(m.name1,'md')}<span class="team-name">${m.name1}</span></div>
         <div class="vs-block"><span class="vs-text">VS</span></div>
         <div class="team-block right">${flagHTML(m.name2,'md')}<span class="team-name">${m.name2}</span></div>
       </div>
+      ${oddsWidget}
       <div class="score-row">
         <input class="score-inp" type="number" min="0" max="20" id="s1-${m.id}" value="${p.s1!==undefined?p.s1:''}" placeholder="—" ${isLocked?'disabled':''}>
         <span class="score-sep">:</span>
@@ -4560,15 +4660,29 @@ async function savePronostic(id){
   const btn=document.getElementById('sbtn-'+id);
   btn.disabled=true;btn.textContent='Sauvegarde...';
   const joueur=allJoueurs.find(j=>j.id===currentUser);
+  const match=MATCHS.find(m=>m.id===id);
+
+  // 🎲 Snapshot de la cote V3 au moment du pronostic
+  let coteSnapshot=1.0;
+  if(match){
+    const cotes=calculerCotesMatch(match.name1,match.name2);
+    if(cotes){
+      const type=getTypePronostic(parseInt(s1),parseInt(s2));
+      coteSnapshot=cotes[type];
+    }
+  }
 
   const existing=(joueur?.pronostics||{})[id]||{};
-  const pronosticEntry={...existing,s1,s2};
+  const pronosticEntry={...existing,s1,s2,cote:coteSnapshot};
 
   const newProg={...(joueur?.pronostics||{}),[id]:pronosticEntry};
   const{error}=await sb.from('joueurs').update({pronostics:newProg}).eq('id',currentUser);
   if(error){showToast('Erreur');btn.disabled=false;btn.textContent='Enregistrer ce pronostic';return;}
   await loadData();
-  btn.classList.add('saved');btn.textContent='✓ Enregistré';showToast('Pronostic sauvegardé !');
+  btn.classList.add('saved');
+  const labelCote=coteSnapshot>1.01?` (×${coteSnapshot.toFixed(2)})`:'';
+  btn.textContent=`✓ Enregistré${labelCote}`;
+  showToast(`Pronostic sauvegardé${labelCote} !`);
   try{
     if(navigator.vibrate) navigator.vibrate([50,30,50]);
     btn.classList.add('flash');
@@ -5535,6 +5649,78 @@ function renderAdminCodes(){
       <span style="text-align:right;font-size:12px;color:${j.code?'#22c55e':'var(--text3)'}">${j.code?'✓ Code attribué':'Sans code'}</span>
     </div>`).join('')}
   `;
+}
+
+// ══ ADMIN COTES ══
+let equipesSort = 'pts';
+
+function setEquipesSort(sort, btn) {
+  equipesSort = sort;
+  document.querySelectorAll('#page-admin-cotes .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAdminCotes();
+}
+
+function getTierLabel(pts) {
+  if (pts <= 5) return { label: '🏆 Favori absolu', color: '#F4C542' };
+  if (pts <= 8) return { label: '⭐ Challenger', color: '#A855F7' };
+  if (pts <= 15) return { label: '💪 Outsider crédible', color: '#58C8FA' };
+  if (pts <= 22) return { label: '📊 Outsider confirmé', color: '#22D16B' };
+  if (pts <= 28) return { label: '🎯 Petit outsider', color: '#FF8A3D' };
+  return { label: '🌱 Longshot', color: '#FF4D5A' };
+}
+
+function renderAdminCotes() {
+  const container = document.getElementById('admin-equipes-list');
+  if (!container) return;
+  sb.from('equipes_pts').select('*').then(({ data, error }) => {
+    if (error || !data) {
+      container.innerHTML = '<div style="text-align:center;color:var(--text3);padding:40px">Erreur — table equipes_pts introuvable</div>';
+      return;
+    }
+    if (!data.length) {
+      container.innerHTML = '<div style="text-align:center;color:var(--text3);padding:40px">Aucune équipe — importe les 48 équipes dans Supabase (voir plan Phase 1)</div>';
+      return;
+    }
+    if (equipesSort === 'pts') data.sort((a, b) => a.pts - b.pts || a.equipe.localeCompare(b.equipe));
+    else if (equipesSort === 'alpha') data.sort((a, b) => a.equipe.localeCompare(b.equipe));
+    else if (equipesSort === 'recent') data.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+
+    container.innerHTML = data.map(e => {
+      const tier = getTierLabel(e.pts);
+      const lastUpdate = e.updated_at ? new Date(e.updated_at).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : 'jamais';
+      const safeId = e.equipe.replace(/[^a-zA-Z0-9]/g, '_');
+      return `
+        <div class="admin-equipe-row">
+          <div style="flex:1">
+            <div class="admin-equipe-name">${e.equipe}<span class="admin-equipe-tier" style="color:${tier.color}">${tier.label}</span></div>
+            <div class="admin-equipe-last-update">Modifié le ${lastUpdate} par ${e.updated_by||'admin'}</div>
+          </div>
+          <input type="number" class="admin-pts-input" id="pts-${safeId}" value="${e.pts}" min="1" max="50">
+          <button class="admin-pts-save-btn" onclick="saveEquipePts('${e.equipe.replace(/'/g,"\\'")}')">💾 Save</button>
+        </div>`;
+    }).join('');
+  });
+}
+
+async function saveEquipePts(equipe) {
+  const safeId = 'pts-' + equipe.replace(/[^a-zA-Z0-9]/g, '_');
+  const input = document.getElementById(safeId);
+  if (!input) return;
+  const nouveauPts = parseInt(input.value);
+  if (isNaN(nouveauPts) || nouveauPts < 1 || nouveauPts > 50) { showToast('Pts doit être entre 1 et 50'); return; }
+  const adminName = prompt('Ton nom (pour l\'historique) :', 'admin');
+  if (!adminName) return;
+  const { error } = await sb.from('equipes_pts').update({
+    pts: nouveauPts,
+    updated_by: adminName,
+    updated_at: new Date().toISOString()
+  }).eq('equipe', equipe);
+  if (error) { showToast('❌ Erreur : ' + error.message); return; }
+  showToast(`✅ ${equipe} → pts = ${nouveauPts}`);
+  await loadData();
+  renderAdminCotes();
+  refreshPage();
 }
 
 // ══ PROFIL JOUEUR ══
