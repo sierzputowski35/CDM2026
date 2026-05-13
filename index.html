@@ -2262,7 +2262,7 @@ body {
               <span style="font-size:20px">🔥</span>
               <span class="pts-legend-name" style="margin-top:4px">Gros outsider</span>
               <span class="pts-legend-val" style="color:#FF8A3D">+30 pts</span>
-              <span class="pts-legend-note">Ex : Bolivie, Haïti</span>
+              <span class="pts-legend-note">Ex : DR Congo, Haïti</span>
             </div>
           </div>
           <div style="margin-top:10px;font-size:10px;color:var(--text3);line-height:1.6;background:var(--surface2);border-radius:8px;padding:8px 10px">
@@ -2597,7 +2597,7 @@ const AVATAR_FLAG_BGS = [
   { id: 'flag_ca', label: 'Canada',    code: 'ca',     locked: false },
   { id: 'flag_us', label: 'USA',       code: 'us',     locked: false },
   { id: 'flag_mx', label: 'Mexique',   code: 'mx',     locked: false },
-  { id: 'flag_it', label: 'Italie',    code: 'it',     locked: false },
+  { id: 'flag_ba', label: 'Bosnie',     code: 'ba',     locked: false },
   { id: 'flag_de', label: 'Allemagne', code: 'de',     locked: false },
   { id: 'flag_jp', label: 'Japon',     code: 'jp',     locked: false },
   { id: 'flag_nl', label: 'Pays-Bas',  code: 'nl',     locked: false },
@@ -3015,12 +3015,12 @@ async function saveAvatarConfig() {
 // ══════════════════════════════════════════
 const FLAG_CODES = {
   'France':'fr','Brésil':'br','Allemagne':'de','Espagne':'es','Portugal':'pt',
-  'Argentine':'ar','Angleterre':'gb-eng','Italie':'it','Maroc':'ma','Sénégal':'sn',
+  'Argentine':'ar','Angleterre':'gb-eng','Bosnie-Herzégovine':'ba','Maroc':'ma','Sénégal':'sn',
   'Japon':'jp','États-Unis':'us','Mexique':'mx','Canada':'ca','Australie':'au',
   'Croatie':'hr','Pays-Bas':'nl','Belgique':'be','Uruguay':'uy','Colombie':'co',
   'Ghana':'gh','Cameroun':'cm','Corée du Sud':'kr','Suisse':'ch','Pologne':'pl',
   'Danemark':'dk','Serbie':'rs','Écosse':'gb-sct','Norvège':'no','Haïti':'ht',
-  'Bolivie':'bo','Panama':'pa','Équateur':'ec','Paraguay':'py','Afrique du Sud':'za',
+  'DR Congo':'cd','Panama':'pa','Équateur':'ec','Paraguay':'py','Afrique du Sud':'za',
   'Algérie':'dz','Arabie saoudite':'sa','Autriche':'at','Cap-Vert':'cv',
   'Côte d\'Ivoire':'ci','Curaçao':'cw','Égypte':'eg','Iran':'ir','Irak':'iq',
   'Jordanie':'jo','Nouvelle-Zélande':'nz','Ouzbékistan':'uz','Qatar':'qa',
@@ -3101,7 +3101,7 @@ const MATCHS = [
   // ── 11 JUIN ──
   {id: 1, phase:'Groupes',groupe:'A',date:'11 juin · 21h00',ts:20260611,venue:'Azteca, Mexico',team1:'🇲🇽',name1:'Mexique',team2:'🇿🇦',name2:'Afrique du Sud',c1:1.65,cN:3.90,c2:5.50},
   // ── 12 JUIN ──
-  {id: 7, phase:'Groupes',groupe:'B',date:'12 juin · 18h00',ts:20260612,venue:'Toronto',team1:'🇨🇦',name1:'Canada',team2:'🇮🇹',name2:'Italie',c1:3.20,cN:3.30,c2:2.30},
+  {id: 7, phase:'Groupes',groupe:'B',date:'12 juin · 18h00',ts:20260612,venue:'Toronto',team1:'🇨🇦',name1:'Canada',team2:'🇧🇦',name2:'Bosnie-Herzégovine',c1:2.20,cN:3.30,c2:3.50},
   {id:19, phase:'Groupes',groupe:'D',date:'12 juin · 21h00',ts:20260612,venue:'MetLife, New York',team1:'🇺🇸',name1:'États-Unis',team2:'🇵🇾',name2:'Paraguay',c1:1.55,cN:4.00,c2:6.50},
   // ── 13 JUIN ──
   {id:20, phase:'Groupes',groupe:'D',date:'13 juin · 03h00',ts:20260612,venue:'Philadelphia',team1:'🇦🇺',name1:'Australie',team2:'🇹🇷',name2:'Turquie',c1:2.60,cN:3.20,c2:2.80},
@@ -3127,7 +3127,7 @@ const MATCHS = [
   // ── 16 JUIN ──
   {id: 8, phase:'Groupes',groupe:'B',date:'16 juin · 21h00',ts:20260616,venue:'Kansas City',team1:'🇨🇦',name1:'Canada',team2:'🇶🇦',name2:'Qatar',c1:1.45,cN:4.50,c2:8.00},
   // ── 17 JUIN ──
-  {id: 9, phase:'Groupes',groupe:'B',date:'17 juin · 02h00',ts:20260616,venue:'Vancouver',team1:'🇮🇹',name1:'Italie',team2:'🇨🇭',name2:'Suisse',c1:2.20,cN:3.20,c2:3.40},
+  {id: 9, phase:'Groupes',groupe:'B',date:'17 juin · 02h00',ts:20260616,venue:'Vancouver',team1:'🇧🇦',name1:'Bosnie-Herzégovine',team2:'🇨🇭',name2:'Suisse',c1:3.20,cN:3.20,c2:2.40},
   // ── 16 JUIN ──
   {id:21, phase:'Groupes',groupe:'D',date:'16 juin · 21h00',ts:20260616,venue:'Dallas',team1:'🇺🇸',name1:'États-Unis',team2:'🇦🇺',name2:'Australie',c1:1.70,cN:3.80,c2:5.00},
   // ── 17 JUIN ──
@@ -3136,7 +3136,7 @@ const MATCHS = [
   {id:44, phase:'Groupes',groupe:'H',date:'16 juin · 18h00',ts:20260616,venue:'Los Angeles',team1:'🇸🇦',name1:'Arabie saoudite',team2:'🇺🇾',name2:'Uruguay',c1:3.20,cN:3.30,c2:2.30},
   {id:49, phase:'Groupes',groupe:'I',date:'16 juin · 21h00',ts:20260616,venue:'Los Angeles',team1:'🇫🇷',name1:'France',team2:'🇸🇳',name2:'Sénégal',c1:1.55,cN:4.10,c2:6.50},
   // ── 17 JUIN ──
-  {id:50, phase:'Groupes',groupe:'I',date:'17 juin · 03h00',ts:20260616,venue:'Boston',team1:'🇳🇴',name1:'Norvège',team2:'🇧🇴',name2:'Bolivie',c1:1.35,cN:5.20,c2:10.0},
+  {id:50, phase:'Groupes',groupe:'I',date:'17 juin · 03h00',ts:20260616,venue:'Boston',team1:'🇳🇴',name1:'Norvège',team2:'🇮🇶',name2:'Irak',c1:1.35,cN:5.20,c2:10.0},
   // ── 16 JUIN ──
   {id:55, phase:'Groupes',groupe:'J',date:'16 juin · 18h00',ts:20260616,venue:'MetLife, New York',team1:'🇦🇷',name1:'Argentine',team2:'🇩🇿',name2:'Algérie',c1:1.35,cN:5.20,c2:10.0},
   // ── 17 JUIN ──
@@ -3147,7 +3147,7 @@ const MATCHS = [
   // ── 17 JUIN ──
   {id:61, phase:'Groupes',groupe:'K',date:'17 juin · 18h00',ts:20260617,venue:'Philadelphia',team1:'🇵🇹',name1:'Portugal',team2:'🇨🇴',name2:'Colombie',c1:1.75,cN:3.80,c2:4.80},
   // ── 18 JUIN ──
-  {id:62, phase:'Groupes',groupe:'K',date:'18 juin · 02h00',ts:20260617,venue:'Atlanta',team1:'🇺🇿',name1:'Ouzbékistan',team2:'🇮🇶',name2:'Irak',c1:2.20,cN:3.30,c2:3.40},
+  {id:62, phase:'Groupes',groupe:'K',date:'18 juin · 02h00',ts:20260617,venue:'Atlanta',team1:'🇺🇿',name1:'Ouzbékistan',team2:'🇨🇩',name2:'DR Congo',c1:2.00,cN:3.30,c2:4.00},
   // ── 17 JUIN ──
   {id:67, phase:'Groupes',groupe:'L',date:'17 juin · 21h00',ts:20260617,venue:'San Francisco',team1:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',name1:'Angleterre',team2:'🇭🇷',name2:'Croatie',c1:1.75,cN:3.80,c2:4.80},
   // ── 18 JUIN ──
@@ -3177,7 +3177,7 @@ const MATCHS = [
   // ── 20 JUIN ──
   {id:51, phase:'Groupes',groupe:'I',date:'20 juin · 21h00',ts:20260620,venue:'Boston',team1:'🇫🇷',name1:'France',team2:'🇳🇴',name2:'Norvège',c1:1.60,cN:4.00,c2:5.80},
   // ── 21 JUIN ──
-  {id:52, phase:'Groupes',groupe:'I',date:'21 juin · 03h00',ts:20260620,venue:'San Francisco',team1:'🇸🇳',name1:'Sénégal',team2:'🇧🇴',name2:'Bolivie',c1:1.45,cN:4.50,c2:8.00},
+  {id:52, phase:'Groupes',groupe:'I',date:'21 juin · 03h00',ts:20260620,venue:'San Francisco',team1:'🇸🇳',name1:'Sénégal',team2:'🇮🇶',name2:'Irak',c1:1.45,cN:4.50,c2:8.00},
   // ── 20 JUIN ──
   {id:57, phase:'Groupes',groupe:'J',date:'20 juin · 18h00',ts:20260620,venue:'Miami',team1:'🇦🇷',name1:'Argentine',team2:'🇦🇹',name2:'Autriche',c1:1.55,cN:4.20,c2:6.00},
   // ── 21 JUIN ──
@@ -3189,7 +3189,7 @@ const MATCHS = [
   // ── 21 JUIN ──
   {id:63, phase:'Groupes',groupe:'K',date:'21 juin · 18h00',ts:20260621,venue:'Atlanta',team1:'🇵🇹',name1:'Portugal',team2:'🇺🇿',name2:'Ouzbékistan',c1:1.25,cN:6.20,c2:14.0},
   // ── 22 JUIN ──
-  {id:64, phase:'Groupes',groupe:'K',date:'22 juin · 02h00',ts:20260621,venue:'Philadelphia',team1:'🇨🇴',name1:'Colombie',team2:'🇮🇶',name2:'Irak',c1:1.55,cN:4.00,c2:6.50},
+  {id:64, phase:'Groupes',groupe:'K',date:'22 juin · 02h00',ts:20260621,venue:'Philadelphia',team1:'🇨🇴',name1:'Colombie',team2:'🇨🇩',name2:'DR Congo',c1:1.55,cN:4.00,c2:6.50},
   // ── 21 JUIN ──
   {id:69, phase:'Groupes',groupe:'L',date:'21 juin · 21h00',ts:20260621,venue:'Toronto',team1:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',name1:'Angleterre',team2:'🇬🇭',name2:'Ghana',c1:1.50,cN:4.20,c2:7.00},
   // ── 22 JUIN ──
@@ -3208,7 +3208,7 @@ const MATCHS = [
   // ── 25 JUIN ──
   {id:48, phase:'Groupes',groupe:'H',date:'25 juin · 03h00',ts:20260624,venue:'Los Angeles',team1:'🇸🇦',name1:'Arabie saoudite',team2:'🇨🇻',name2:'Cap-Vert',c1:1.80,cN:3.60,c2:4.80},
   // ── 24 JUIN ──
-  {id:53, phase:'Groupes',groupe:'I',date:'24 juin · 21h00',ts:20260624,venue:'Los Angeles',team1:'🇫🇷',name1:'France',team2:'🇧🇴',name2:'Bolivie',c1:1.15,cN:7.50,c2:20.0},
+  {id:53, phase:'Groupes',groupe:'I',date:'24 juin · 21h00',ts:20260624,venue:'Los Angeles',team1:'🇫🇷',name1:'France',team2:'🇮🇶',name2:'Irak',c1:1.15,cN:7.50,c2:20.0},
   // ── 25 JUIN ──
   {id:54, phase:'Groupes',groupe:'I',date:'25 juin · 03h00',ts:20260624,venue:'Boston',team1:'🇳🇴',name1:'Norvège',team2:'🇸🇳',name2:'Sénégal',c1:1.75,cN:3.80,c2:4.80},
   // ── 24 JUIN ──
@@ -3217,9 +3217,9 @@ const MATCHS = [
   {id:60, phase:'Groupes',groupe:'J',date:'25 juin · 02h00',ts:20260624,venue:'Miami',team1:'🇦🇹',name1:'Autriche',team2:'🇩🇿',name2:'Algérie',c1:2.00,cN:3.40,c2:4.00},
   {id:11, phase:'Groupes',groupe:'B',date:'25 juin · 21h00',ts:20260625,venue:'Kansas City',team1:'🇨🇦',name1:'Canada',team2:'🇨🇭',name2:'Suisse',c1:2.40,cN:3.20,c2:3.10},
   // ── 26 JUIN ──
-  {id:12, phase:'Groupes',groupe:'B',date:'26 juin · 00h00',ts:20260625,venue:'Vancouver',team1:'🇮🇹',name1:'Italie',team2:'🇶🇦',name2:'Qatar',c1:1.35,cN:5.00,c2:10.0},
+  {id:12, phase:'Groupes',groupe:'B',date:'26 juin · 00h00',ts:20260625,venue:'Vancouver',team1:'🇧🇦',name1:'Bosnie-Herzégovine',team2:'🇶🇦',name2:'Qatar',c1:1.55,cN:4.20,c2:7.00},
   // ── 25 JUIN ──
-  {id:65, phase:'Groupes',groupe:'K',date:'25 juin · 18h00',ts:20260625,venue:'Kansas City',team1:'🇵🇹',name1:'Portugal',team2:'🇮🇶',name2:'Irak',c1:1.20,cN:6.80,c2:16.0},
+  {id:65, phase:'Groupes',groupe:'K',date:'25 juin · 18h00',ts:20260625,venue:'Kansas City',team1:'🇵🇹',name1:'Portugal',team2:'🇨🇩',name2:'DR Congo',c1:1.20,cN:6.80,c2:16.0},
   // ── 26 JUIN ──
   {id:66, phase:'Groupes',groupe:'K',date:'26 juin · 02h00',ts:20260625,venue:'Atlanta',team1:'🇨🇴',name1:'Colombie',team2:'🇺🇿',name2:'Ouzbékistan',c1:1.65,cN:3.90,c2:5.50},
   // ── 25 JUIN ──
@@ -3269,12 +3269,12 @@ const BUTEURS_PAR_MATCH = {
   5:  [{nom:'Raúl Jiménez',        cote:B6},{nom:'Henry Martín',        cote:B6},{nom:'Patrik Schick',        cote:B6},{nom:'Ondřej Lingr',        cote:B6}],
   6:  [{nom:'Percy Tau',            cote:B6},{nom:'Lyle Foster',         cote:B6},{nom:'Son Heung-min',       cote:B6},{nom:'Cho Gue-sung',        cote:B6}],
   // ── Groupe B ──
-  7:  [{nom:'Jonathan David',      cote:B6},{nom:'Alphonso Davies',     cote:B6},{nom:'Ciro Immobile',       cote:B6},{nom:'Federico Chiesa',     cote:B6}],
+  7:  [{nom:'Jonathan David',      cote:B6},{nom:'Alphonso Davies',     cote:B6},{nom:'Ermedin Demirović',   cote:B6},{nom:'Smail Prevljak',      cote:B6}],
   8:  [{nom:'Jonathan David',      cote:B6},{nom:'Cyle Larin',          cote:B6},{nom:'Almoez Ali',          cote:B6},{nom:'Akram Afif',          cote:B6}],
-  9:  [{nom:'Ciro Immobile',       cote:B6},{nom:'Giacomo Raspadori',   cote:B6},{nom:'Breel Embolo',        cote:B6},{nom:'Xherdan Shaqiri',     cote:B6}],
+  9:  [{nom:'Ermedin Demirović',   cote:B6},{nom:'Smail Prevljak',      cote:B6},{nom:'Breel Embolo',        cote:B6},{nom:'Xherdan Shaqiri',     cote:B6}],
   10: [{nom:'Breel Embolo',        cote:B6},{nom:'Ruben Vargas',        cote:B6},{nom:'Almoez Ali',          cote:B6},{nom:'Akram Afif',          cote:B6}],
   11: [{nom:'Jonathan David',      cote:B6},{nom:'Cyle Larin',          cote:B6},{nom:'Breel Embolo',        cote:B6},{nom:'Granit Xhaka',        cote:B6}],
-  12: [{nom:'Ciro Immobile',       cote:B6},{nom:'Federico Chiesa',     cote:B6},{nom:'Almoez Ali',          cote:B6},{nom:'Akram Afif',          cote:B6}],
+  12: [{nom:'Ermedin Demirović',   cote:B6},{nom:'Smail Prevljak',      cote:B6},{nom:'Almoez Ali',          cote:B6},{nom:'Akram Afif',          cote:B6}],
   // ── Groupe C ──
   13: [{nom:'Vinícius Jr.',         cote:B6},{nom:'Rodrygo',             cote:B6},{nom:'Youssef En-Nesyri',  cote:B6},{nom:'Hakim Ziyech',        cote:B6}],
   14: [{nom:'Lyndon Dykes',         cote:B6},{nom:'Scott McTominay',    cote:B6},{nom:'Frantzdy Pierrot',   cote:B6},{nom:'Duckens Nazon',       cote:B6}],
@@ -3319,10 +3319,10 @@ const BUTEURS_PAR_MATCH = {
   48: [{nom:'Firas Al-Buraikan',   cote:B6},{nom:'Salem Al-Dawsari',    cote:B6},{nom:'Ryan Johansson',     cote:B6},{nom:'Garry Rodrigues',     cote:B6}],
   // ── Groupe I ──
   49: [{nom:'Kylian Mbappé',       cote:B6},{nom:'Antoine Griezmann',   cote:B6},{nom:'Sadio Mané',          cote:B6},{nom:'Ismaïla Sarr',        cote:B6}],
-  50: [{nom:'Erling Haaland',      cote:B6},{nom:'Martin Ødegaard',     cote:B6},{nom:'Marcelo Martins',    cote:B6},{nom:'Rodrigo Ramallo',     cote:B6}],
+  50: [{nom:'Erling Haaland',      cote:B6},{nom:'Martin Ødegaard',     cote:B6},{nom:'Aymen Hussein',      cote:B6},{nom:'Ahmed Yasin',         cote:B6}],
   51: [{nom:'Kylian Mbappé',       cote:B6},{nom:'Ousmane Dembélé',     cote:B6},{nom:'Erling Haaland',     cote:B6},{nom:'Alexander Sørloth',   cote:B6}],
-  52: [{nom:'Sadio Mané',           cote:B6},{nom:'Nicolas Jackson',     cote:B6},{nom:'Marcelo Martins',    cote:B6},{nom:'Rodrigo Ramallo',     cote:B6}],
-  53: [{nom:'Kylian Mbappé',       cote:B6},{nom:'Marcus Thuram',       cote:B6},{nom:'Marcelo Martins',    cote:B6},{nom:'Rodrigo Ramallo',     cote:B6}],
+  52: [{nom:'Sadio Mané',           cote:B6},{nom:'Nicolas Jackson',     cote:B6},{nom:'Aymen Hussein',      cote:B6},{nom:'Ahmed Yasin',         cote:B6}],
+  53: [{nom:'Kylian Mbappé',       cote:B6},{nom:'Marcus Thuram',       cote:B6},{nom:'Aymen Hussein',      cote:B6},{nom:'Ahmed Yasin',         cote:B6}],
   54: [{nom:'Erling Haaland',      cote:B6},{nom:'Martin Ødegaard',     cote:B6},{nom:'Sadio Mané',          cote:B6},{nom:'Ismaïla Sarr',        cote:B6}],
   // ── Groupe J ──
   55: [{nom:'Lautaro Martínez',    cote:B6},{nom:'Lionel Messi',        cote:B6},{nom:'Riyad Mahrez',       cote:B6},{nom:'Islam Slimani',       cote:B6}],
@@ -3333,10 +3333,10 @@ const BUTEURS_PAR_MATCH = {
   60: [{nom:'Marcel Sabitzer',     cote:B6},{nom:'Marko Arnautovic',    cote:B6},{nom:'Riyad Mahrez',       cote:B6},{nom:'Sofiane Feghouli',    cote:B6}],
   // ── Groupe K ──
   61: [{nom:'Cristiano Ronaldo',   cote:B6},{nom:'Rafael Leão',         cote:B6},{nom:'Luis Díaz',          cote:B6},{nom:'James Rodríguez',     cote:B6}],
-  62: [{nom:'Eldor Shomurodov',    cote:B6},{nom:'Jaloliddin Masharipov',cote:B6},{nom:'Aymen Hussein',     cote:B6},{nom:'Ahmed Yasin',         cote:B6}],
+  62: [{nom:'Eldor Shomurodov',    cote:B6},{nom:'Jaloliddin Masharipov',cote:B6},{nom:'Yoane Wissa',        cote:B6},{nom:'Cédric Bakambu',      cote:B6}],
   63: [{nom:'Cristiano Ronaldo',   cote:B6},{nom:'Bruno Fernandes',     cote:B6},{nom:'Eldor Shomurodov',   cote:B6},{nom:'Jaloliddin Masharipov',cote:B6}],
-  64: [{nom:'Luis Díaz',            cote:B6},{nom:'Jhon Córdoba',        cote:B6},{nom:'Aymen Hussein',     cote:B6},{nom:'Ahmed Yasin',         cote:B6}],
-  65: [{nom:'Cristiano Ronaldo',   cote:B6},{nom:'João Félix',           cote:B6},{nom:'Aymen Hussein',     cote:B6},{nom:'Ahmed Yasin',         cote:B6}],
+  64: [{nom:'Luis Díaz',            cote:B6},{nom:'Jhon Córdoba',        cote:B6},{nom:'Yoane Wissa',        cote:B6},{nom:'Cédric Bakambu',      cote:B6}],
+  65: [{nom:'Cristiano Ronaldo',   cote:B6},{nom:'João Félix',           cote:B6},{nom:'Yoane Wissa',        cote:B6},{nom:'Cédric Bakambu',      cote:B6}],
   66: [{nom:'Luis Díaz',            cote:B6},{nom:'James Rodríguez',    cote:B6},{nom:'Eldor Shomurodov',   cote:B6},{nom:'Jaloliddin Masharipov',cote:B6}],
   // ── Groupe L ──
   67: [{nom:'Harry Kane',           cote:B6},{nom:'Jude Bellingham',    cote:B6},{nom:'Andrej Kramarić',    cote:B6},{nom:'Ivan Perišić',        cote:B6}],
@@ -3374,13 +3374,13 @@ const EQUIPES = [
   {nom:'Suède',flag:'🇸🇪',pts:24},{nom:'Corée du Sud',flag:'🇰🇷',pts:25},
   {nom:'Équateur',flag:'🇪🇨',pts:25},{nom:'Australie',flag:'🇦🇺',pts:27},
   {nom:'Écosse',flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿',pts:27},{nom:'Croatie',flag:'🇭🇷',pts:27},
-  {nom:'Algérie',flag:'🇩🇿',pts:28},{nom:'Italie',flag:'🇮🇹',pts:28},
+  {nom:'Algérie',flag:'🇩🇿',pts:28},{nom:'Bosnie-Herzégovine',flag:'🇧🇦',pts:22},
   {nom:'Côte d\'Ivoire',flag:'🇨🇮',pts:28},{nom:'Afrique du Sud',flag:'🇿🇦',pts:30},
   {nom:'Qatar',flag:'🇶🇦',pts:30},{nom:'Ghana',flag:'🇬🇭',pts:30},
   {nom:'Panama',flag:'🇵🇦',pts:30},{nom:'Arabie saoudite',flag:'🇸🇦',pts:30},
   {nom:'Iran',flag:'🇮🇷',pts:30},{nom:'Paraguay',flag:'🇵🇾',pts:30},
   {nom:'Jordanie',flag:'🇯🇴',pts:30},{nom:'Irak',flag:'🇮🇶',pts:30},
-  {nom:'Bolivie',flag:'🇧🇴',pts:30},{nom:'Haïti',flag:'🇭🇹',pts:30},
+  {nom:'DR Congo',flag:'🇨🇩',pts:28},{nom:'Haïti',flag:'🇭🇹',pts:30},
   {nom:'Ouzbékistan',flag:'🇺🇿',pts:30},{nom:'Cap-Vert',flag:'🇨🇻',pts:30},
   {nom:'Tunisie',flag:'🇹🇳',pts:30},{nom:'Nouvelle-Zélande',flag:'🇳🇿',pts:30},
   {nom:'Curaçao',flag:'🇨🇼',pts:30},{nom:'Égypte',flag:'🇪🇬',pts:30},
@@ -3425,7 +3425,7 @@ const JOUEURS_BUTEUR = [
   {nom:'Ademola Lookman',pays:'🇳🇬 Nigéria',pts:26},
   {nom:'Carlos Vela',pays:'🇲🇽 Mexique',pts:27},
   {nom:'Edinson Cavani',pays:'🇺🇾 Uruguay',pts:27},
-  {nom:'Ciro Immobile',pays:'🇮🇹 Italie',pts:28},
+  {nom:'Ermedin Demirović',pays:'🇧🇦 Bosnie-Herzégovine',pts:28},
   {nom:'Ricardo Adé Jr.',pays:'🇳🇱 Pays-Bas',pts:29},
   {nom:'Adam Idah',pays:'🇮🇪 Irlande',pts:30},
   {nom:'Yaw Yeboah',pays:'🇬🇭 Ghana',pts:30},
@@ -3512,7 +3512,7 @@ const JOUEURS_JOUEUR = [
   {nom:'Youssef En-Nesyri',pays:'🇲🇦 Maroc',pts:26},
   {nom:'Takumi Minamino',pays:'🇯🇵 Japon',pts:27},
   {nom:'Boulaye Dia',pays:'🇸🇳 Sénégal',pts:27},
-  {nom:'Ciro Immobile',pays:'🇮🇹 Italie',pts:28},
+  {nom:'Ermedin Demirović',pays:'🇧🇦 Bosnie-Herzégovine',pts:28},
   {nom:'Duván Zapata',pays:'🇨🇴 Colombie',pts:28},
   {nom:'Carlos Vela',pays:'🇲🇽 Mexique',pts:29},
   {nom:'Ferdi Kadioglu',pays:'🇹🇷 Turquie',pts:30},
