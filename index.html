@@ -763,6 +763,21 @@ body {
 .bonus-label { font-size: 12px; color: var(--text); flex: 1; }
 .bonus-cote { font-size: 11px; font-family: 'Oswald', sans-serif; color: var(--gold); margin-left: 8px; white-space: nowrap; }
 .bonus-result-badge { font-size: 10px; padding: 2px 7px; border-radius: 6px; margin-left: 6px; font-weight: 600; }
+
+/* ── LIVE ODDS BADGE ── */
+@keyframes livePulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+.live-dot {
+  display: inline-block;
+  width: 5px; height: 5px;
+  background: var(--green);
+  border-radius: 50%;
+  animation: livePulse 1.4s ease-in-out infinite;
+  vertical-align: middle;
+  margin-right: 3px;
+}
 .phase-header { display: flex; align-items: center; gap: 10px; margin: 18px 0 10px; }
 .phase-tag { font-family: 'Bebas Neue', sans-serif; font-size: 15px; color: var(--gold); letter-spacing: 2px; }
 .phase-mult { font-size: 10px; color: var(--text3); background: var(--surface); padding: 2px 8px; border-radius: 6px; border: 1px solid var(--border2); font-weight:600; }
@@ -3454,6 +3469,9 @@ const GLOBAUX_DEF = [
 let currentUser=null,isAdmin=false,allJoueurs=[],allScores={},allGlobaux={},allCotes={};
 let _pendingScrollMatchId=null;
 
+// ══ COTES RÉELLES (depuis cotes_raw via The Odds API) ══
+let allOdds = {}; // { [match_id]: { home, draw, away } } — peuplé depuis cotes_raw
+
 async function init(){
   try{
     await loadData();
@@ -3494,11 +3512,14 @@ async function loadData(){
 
   // Construire un index côtes par match_id CDM (matching par nom d'équipe)
   allCotes={};
+  allOdds={};
   const rawCotes=c.data||[];
   for(const m of MATCHS){
     const row=rawCotes.find(r=>r.home_team===m.name1&&r.away_team===m.name2);
     if(row){
       allCotes[m.id]={cote1:parseFloat(row.cote1),coteN:parseFloat(row.coteN),cote2:parseFloat(row.cote2)};
+      // LIVE ODDS : uniquement si des vraies cotes existent dans cotes_raw
+      allOdds[m.id]={home:parseFloat(row.cote1),draw:parseFloat(row.coteN),away:parseFloat(row.cote2)};
     }else{
       allCotes[m.id]={cote1:2.00,coteN:3.20,cote2:2.00};
     }
@@ -4447,6 +4468,24 @@ function renderMatchs(){
         <span class="match-venue">${m.venue}</span>
       </div>
       <div class="match-meta" style="margin-bottom:0"><span class="match-date">${m.date}</span></div>
+      ${(!isLocked && allOdds[m.id]) ? `
+      <div style="display:flex;gap:6px;margin:10px 0 4px;justify-content:center">
+        <div style="flex:1;text-align:center;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);padding:6px 4px">
+          <div style="font-size:9px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px">1</div>
+          <div style="font-family:'Oswald',sans-serif;font-size:15px;font-weight:700;color:var(--gold);letter-spacing:.5px">${allOdds[m.id].home.toFixed(2)}</div>
+        </div>
+        <div style="flex:1;text-align:center;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);padding:6px 4px">
+          <div style="font-size:9px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px">X</div>
+          <div style="font-family:'Oswald',sans-serif;font-size:15px;font-weight:700;color:var(--text2);letter-spacing:.5px">${allOdds[m.id].draw.toFixed(2)}</div>
+        </div>
+        <div style="flex:1;text-align:center;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);padding:6px 4px">
+          <div style="font-size:9px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px">2</div>
+          <div style="font-family:'Oswald',sans-serif;font-size:15px;font-weight:700;color:var(--gold);letter-spacing:.5px">${allOdds[m.id].away.toFixed(2)}</div>
+        </div>
+      </div>
+      <div style="text-align:center;margin-bottom:2px">
+        <span style="font-size:8px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase"><span class="live-dot"></span>LIVE ODDS</span>
+      </div>` : ''}
       <div class="teams-row" style="margin-top:14px">
         <div class="team-block">${flagHTML(m.name1,'md')}<span class="team-name">${m.name1}</span></div>
         <div class="vs-block"><span class="vs-text">VS</span></div>
