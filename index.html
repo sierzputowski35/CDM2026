@@ -2306,6 +2306,177 @@ body {
   box-shadow: 0 6px 20px rgba(244,197,66,.4);
 }
 .chest-take-btn.show { opacity: 1; }
+
+/* ── FUT PLAYER CARDS ── */
+.player-card {
+  width: 120px;
+  aspect-ratio: 0.7;
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+  padding: 9px 7px 7px;
+  font-family: 'Bebas Neue', sans-serif;
+  color: white;
+  transition: transform 200ms, box-shadow 200ms;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+.player-card:active { transform: scale(0.96); }
+.card-bg-glow {
+  position: absolute;
+  inset: 0;
+  opacity: 0.12;
+  background: radial-gradient(circle at 50% 25%, white, transparent 70%);
+  pointer-events: none;
+}
+.card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 3px; }
+.card-rating { font-size: 20px; font-weight: 700; line-height: 1; }
+.card-pos-flag { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.card-position { font-size: 9px; opacity: 0.85; }
+.card-flag { width: 18px; height: auto; border-radius: 2px; }
+.card-portrait {
+  width: 60px; height: 60px;
+  margin: 0 auto 3px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px;
+}
+.card-name {
+  font-size: 11px; text-align: center; letter-spacing: 0.5px;
+  margin-bottom: 5px; white-space: nowrap; overflow: hidden;
+  text-overflow: ellipsis;
+}
+.card-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 2px; margin-top: auto; }
+.card-stat { display: flex; flex-direction: column; align-items: center; }
+.card-stat span { font-size: 6px; opacity: 0.72; font-family: 'Inter', sans-serif; text-transform: uppercase; }
+.card-stat b { font-size: 11px; line-height: 1.2; }
+
+.rarete-bronze {
+  background: linear-gradient(160deg, #5D3A1A, #2E1A0A);
+  border: 1.5px solid #CD7F32;
+  box-shadow: 0 4px 18px rgba(205,127,50,0.3);
+}
+.rarete-argent {
+  background: linear-gradient(160deg, #4A4A5A, #1E1E28);
+  border: 1.5px solid #C0C0C0;
+  box-shadow: 0 4px 18px rgba(192,192,192,0.3);
+}
+.rarete-or {
+  background: linear-gradient(160deg, #5C4200, #2A1E00);
+  border: 1.5px solid #F4C542;
+  box-shadow: 0 4px 28px rgba(244,197,66,0.5);
+  color: #FFE080;
+}
+.rarete-diamant {
+  background: linear-gradient(160deg, #0E3D6B, #061B30);
+  border: 1.5px solid #58C8FA;
+  box-shadow: 0 4px 28px rgba(88,200,250,0.55);
+}
+.rarete-legende {
+  background: linear-gradient(160deg, #3B0E78, #180530);
+  border: 1.5px solid #A855F7;
+  box-shadow: 0 4px 36px rgba(168,85,247,0.65);
+  animation: legende-card-pulse 2s ease-in-out infinite;
+}
+@keyframes legende-card-pulse {
+  0%,100% { box-shadow: 0 4px 36px rgba(168,85,247,0.65); }
+  50%      { box-shadow: 0 4px 56px rgba(168,85,247,1), 0 0 16px rgba(168,85,247,0.4); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rarete-legende { animation: none; }
+}
+
+/* Cards collection grid */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 12px 0;
+  justify-items: center;
+}
+.cards-filter-bar {
+  display: flex;
+  gap: 6px;
+  padding: 0 0 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.cards-filter-bar::-webkit-scrollbar { display: none; }
+.card-filter-btn {
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border2);
+  background: var(--bg-card);
+  color: var(--text2);
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 150ms;
+  font-family: 'Oswald', sans-serif;
+  letter-spacing: 0.5px;
+}
+.card-filter-btn.active {
+  border-color: var(--gold-primary);
+  color: var(--gold-primary);
+  background: rgba(244,197,66,0.08);
+}
+
+/* Badge grid in profil */
+.badges-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  padding: 4px 0;
+}
+.badge-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+  border-radius: 12px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 150ms;
+  position: relative;
+}
+.badge-item.unlocked { border-color: rgba(244,197,66,0.25); }
+.badge-item.locked { opacity: 0.3; filter: grayscale(1); cursor: default; }
+.badge-icon { font-size: 22px; line-height: 1; }
+.badge-name { font-size: 9px; color: var(--text3); text-align: center; line-height: 1.2; }
+.badge-item.unlocked .badge-name { color: var(--text2); }
+.badge-rarete-legende.unlocked { border-color: rgba(244,197,66,0.5); background: rgba(244,197,66,0.04); }
+.badge-rarete-epique.unlocked  { border-color: rgba(168,85,247,0.35); background: rgba(168,85,247,0.04); }
+.badge-rarete-rare.unlocked    { border-color: rgba(88,200,250,0.35); background: rgba(88,200,250,0.04); }
+
+/* Profil tabs */
+.profil-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 14px;
+}
+.profil-tab {
+  flex: 1;
+  text-align: center;
+  padding: 10px 4px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 13px;
+  color: var(--text3);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: all 150ms;
+}
+.profil-tab.active { color: var(--gold-primary); border-bottom-color: var(--gold-primary); }
+
+/* Enhanced badge unlock overlay */
+.badge-unlock-reward { font-size: 14px; color: var(--gold-primary); font-family: 'Oswald', sans-serif; letter-spacing: 1px; }
+.badge-unlock-desc   { font-size: 12px; color: var(--text2); font-family: 'Inter', sans-serif; margin-top: -8px; }
 </style>
 </head>
 <body>
@@ -2325,12 +2496,18 @@ body {
   </div>
 </div>
 
-<!-- TÂCHE 8 — Badge Unlock Overlay -->
-<div id="badge-unlock-overlay" class="hidden" style="position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;" onclick="closeBadgeUnlock()">
-  <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;color:var(--text2);letter-spacing:3px;text-transform:uppercase;">Nouveau Badge Débloqué</div>
-  <div id="badge-unlock-icon" style="font-size:80px;filter:drop-shadow(0 0 30px rgba(255,215,0,0.8));"></div>
-  <div id="badge-unlock-name" style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--gold);letter-spacing:2px;"></div>
-  <button onclick="event.stopPropagation();closeBadgeUnlock()" style="margin-top:8px;background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.3);color:var(--gold);border-radius:12px;padding:10px 28px;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;cursor:pointer;">SUPER !</button>
+<!-- SPRINT 5 — Badge Unlock Overlay (enhanced) -->
+<div id="badge-unlock-overlay" class="hidden" style="position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.88);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;padding:24px;" onclick="closeBadgeUnlock()">
+  <div style="font-family:'Bebas Neue',sans-serif;font-size:12px;color:var(--text3);letter-spacing:4px;text-transform:uppercase;">Badge Débloqué</div>
+  <div id="badge-unlock-icon" style="font-size:88px;filter:drop-shadow(0 0 36px rgba(255,215,0,0.9));"></div>
+  <div id="badge-unlock-name" style="font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--gold);letter-spacing:2px;text-align:center;"></div>
+  <div id="badge-unlock-desc" class="badge-unlock-desc" style="display:none;text-align:center;"></div>
+  <div id="badge-unlock-reward" class="badge-unlock-reward" style="display:none;"></div>
+  <div id="badge-unlock-rarete" style="display:none;font-size:11px;font-family:'Oswald',sans-serif;letter-spacing:2px;text-transform:uppercase;"></div>
+  <div style="display:flex;gap:10px;margin-top:6px" onclick="event.stopPropagation()">
+    <button id="badge-equip-btn" style="display:none;background:rgba(168,85,247,0.2);border:1px solid rgba(168,85,247,0.5);color:#A855F7;border-radius:10px;padding:9px 20px;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;cursor:pointer;">ÉQUIPER COMME TITRE</button>
+    <button onclick="closeBadgeUnlock()" style="background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.3);color:var(--gold);border-radius:10px;padding:9px 28px;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;cursor:pointer;">SUPER !</button>
+  </div>
 </div>
 
 <div id="loading" style="position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:16px;">
@@ -3816,34 +3993,163 @@ function calcLigueFromPts(pts) {
   return 'BRONZE';
 }
 
-// ── SYSTÈME BADGES ──
-const BADGES = [
-  // Onboarding
-  { id:'rookie',       emoji:'🎯', name:'Rookie',         check:(s)=>s.totalPronos>=1 },
-  { id:'warm_up',      emoji:'🔥', name:'Échauffement',   check:(s)=>s.totalPronos>=5 },
-  { id:'committed',    emoji:'⚡', name:'Engagé',          check:(s)=>s.totalPronos>=10 },
-  { id:'fanatic',      emoji:'🏟️', name:'Fanatique',      check:(s)=>s.totalPronos>=25 },
-  { id:'all_in',       emoji:'💯', name:'All-In',          check:(s)=>s.totalPronos>=48 },
-  // Précision
-  { id:'sharp',        emoji:'✨', name:'Sharp',           check:(s)=>s.exact>=1 },
-  { id:'nostradamus',  emoji:'🔮', name:'Nostradamus',     check:(s)=>s.exact>=3 },
-  { id:'oracle',       emoji:'🌟', name:'Oracle',          check:(s)=>s.exact>=10 },
-  { id:'prophet',      emoji:'👁️', name:'Prophète',       check:(s)=>s.exact>=20 },
-  // Points
-  { id:'century',      emoji:'💯', name:'Centurion',       check:(s)=>s.pts>=100 },
-  { id:'elite',        emoji:'💎', name:'Élite',           check:(s)=>s.pts>=500 },
-  { id:'legend',       emoji:'👑', name:'Légende',         check:(s)=>s.pts>=2000 },
-  // Streaks
-  { id:'on_fire',      emoji:'🔥', name:'On Fire',         check:(s)=>s.bestStreak>=3 },
-  { id:'unstoppable',  emoji:'⚡', name:'Inarrêtable',     check:(s)=>s.bestStreak>=5 },
-  { id:'legendary',    emoji:'🏆', name:'Légendaire',      check:(s)=>s.bestStreak>=8 },
-  // Fidélité
-  { id:'daily_3',      emoji:'📅', name:'Journalier',      check:(s)=>s.loginStreak>=3 },
+// ── SPRINT 4 — PLAYERS CDM ──
+const TEAM_COUNTRY_MAP = {
+  'France':'fr','Espagne':'es','Portugal':'pt','Allemagne':'de',
+  'Brésil':'br','Argentine':'ar','Pays-Bas':'nl','Belgique':'be',
+  'Angleterre':'en','Écosse':'sc','Canada':'ca','Mexique':'mx',
+  'États-Unis':'us','Maroc':'ma','Sénégal':'sn','Corée du Sud':'kr',
+  'Japon':'jp','Suisse':'ch','Turquie':'tr','Australie':'au',
+  'Suède':'se','Équateur':'ec','Iran':'ir','Bosnie-Herzégovine':'ba',
+  'Côte d\'Ivoire':'ci','Curaçao':'cw','Afrique du Sud':'za','Qatar':'qa',
+  'Paraguay':'py','Haïti':'ht','Tunisie':'tn','Cap-Vert':'cv','Tchéquie':'cz',
+  'Égypte':'eg','Nouvelle-Zélande':'nz','Irak':'iq','Colombie':'co',
+};
+function getPlayerFlagUrl(code) {
+  const s = { en:'gb-eng', sc:'gb-sct', wa:'gb-wls' };
+  return `https://flagcdn.com/h40/${s[code]||code}.png`;
+}
+const CDM_PLAYERS = [
+  // FRANCE
+  { id:'mbappe',      name:'K. Mbappé',      country:'fr', pos:'ATT', base_rating:91, emoji:'⚡' },
+  { id:'griezmann',   name:'A. Griezmann',   country:'fr', pos:'ATT', base_rating:87, emoji:'🦊' },
+  { id:'tchouameni',  name:'A. Tchouaméni',  country:'fr', pos:'MIL', base_rating:85, emoji:'🛡️' },
+  { id:'camavinga',   name:'E. Camavinga',   country:'fr', pos:'MIL', base_rating:84, emoji:'⚙️' },
+  { id:'saliba',      name:'W. Saliba',      country:'fr', pos:'DEF', base_rating:86, emoji:'🧱' },
+  // ESPAGNE
+  { id:'yamal',       name:'L. Yamal',       country:'es', pos:'ATT', base_rating:90, emoji:'🌟' },
+  { id:'n_williams',  name:'N. Williams',    country:'es', pos:'ATT', base_rating:86, emoji:'💨' },
+  { id:'pedri',       name:'Pedri',          country:'es', pos:'MIL', base_rating:88, emoji:'🎭' },
+  { id:'morata',      name:'A. Morata',      country:'es', pos:'ATT', base_rating:84, emoji:'🎯' },
+  { id:'carvajal',    name:'D. Carvajal',    country:'es', pos:'DEF', base_rating:85, emoji:'🦅' },
+  // PORTUGAL
+  { id:'ronaldo',     name:'C. Ronaldo',     country:'pt', pos:'ATT', base_rating:88, emoji:'👑' },
+  { id:'b_silva',     name:'B. Silva',       country:'pt', pos:'MIL', base_rating:88, emoji:'🌟' },
+  { id:'ruben_dias',  name:'R. Dias',        country:'pt', pos:'DEF', base_rating:89, emoji:'🧱' },
+  { id:'vitinha',     name:'Vitinha',        country:'pt', pos:'MIL', base_rating:84, emoji:'⚡' },
+  { id:'felix',       name:'J. Félix',       country:'pt', pos:'ATT', base_rating:85, emoji:'🎭' },
+  // ALLEMAGNE
+  { id:'musiala',     name:'J. Musiala',     country:'de', pos:'MIL', base_rating:89, emoji:'💫' },
+  { id:'wirtz',       name:'F. Wirtz',       country:'de', pos:'MIL', base_rating:89, emoji:'⚡' },
+  { id:'havertz',     name:'K. Havertz',     country:'de', pos:'ATT', base_rating:86, emoji:'🎯' },
+  { id:'rudiger',     name:'A. Rüdiger',     country:'de', pos:'DEF', base_rating:86, emoji:'🛡️' },
+  { id:'gnabry',      name:'S. Gnabry',      country:'de', pos:'ATT', base_rating:84, emoji:'⚡' },
+  // BRÉSIL
+  { id:'vinicius',    name:'Vinicius Jr',    country:'br', pos:'ATT', base_rating:91, emoji:'🔥' },
+  { id:'rodrygo',     name:'Rodrygo',        country:'br', pos:'ATT', base_rating:86, emoji:'💫' },
+  { id:'casemiro',    name:'Casemiro',       country:'br', pos:'MIL', base_rating:85, emoji:'🛡️' },
+  { id:'endrick',     name:'Endrick',        country:'br', pos:'ATT', base_rating:83, emoji:'⚡' },
+  { id:'marquinhos',  name:'Marquinhos',     country:'br', pos:'DEF', base_rating:87, emoji:'🧱' },
+  // ARGENTINE
+  { id:'messi',       name:'L. Messi',       country:'ar', pos:'ATT', base_rating:93, emoji:'🐐' },
+  { id:'alvarez',     name:'J. Álvarez',     country:'ar', pos:'ATT', base_rating:86, emoji:'🦁' },
+  { id:'de_paul',     name:'R. De Paul',     country:'ar', pos:'MIL', base_rating:84, emoji:'⚙️' },
+  { id:'mac_all',     name:'A. Mac Allister',country:'ar', pos:'MIL', base_rating:85, emoji:'🎯' },
+  { id:'di_maria',    name:'A. Di María',    country:'ar', pos:'ATT', base_rating:85, emoji:'🦋' },
+  // ANGLETERRE
+  { id:'bellingham',  name:'J. Bellingham',  country:'en', pos:'MIL', base_rating:90, emoji:'👑' },
+  { id:'kane',        name:'H. Kane',        country:'en', pos:'ATT', base_rating:89, emoji:'🏹' },
+  { id:'saka',        name:'B. Saka',        country:'en', pos:'ATT', base_rating:87, emoji:'⚡' },
+  { id:'foden',       name:'P. Foden',       country:'en', pos:'MIL', base_rating:88, emoji:'🌀' },
+  { id:'walker',      name:'K. Walker',      country:'en', pos:'DEF', base_rating:83, emoji:'🚀' },
+  // PAYS-BAS
+  { id:'gakpo',       name:'C. Gakpo',       country:'nl', pos:'ATT', base_rating:85, emoji:'🌷' },
+  { id:'de_jong_f',   name:'F. de Jong',     country:'nl', pos:'MIL', base_rating:86, emoji:'🎭' },
+  { id:'reijnders',   name:'T. Reijnders',   country:'nl', pos:'MIL', base_rating:84, emoji:'⚙️' },
+  { id:'dumfries',    name:'D. Dumfries',    country:'nl', pos:'DEF', base_rating:83, emoji:'🚀' },
+  // BELGIQUE
+  { id:'de_bruyne',   name:'K. De Bruyne',   country:'be', pos:'MIL', base_rating:91, emoji:'🎩' },
+  { id:'lukaku',      name:'R. Lukaku',      country:'be', pos:'ATT', base_rating:85, emoji:'🦍' },
+  { id:'doku',        name:'J. Doku',        country:'be', pos:'ATT', base_rating:84, emoji:'💨' },
+  // MAROC
+  { id:'hakimi',      name:'A. Hakimi',      country:'ma', pos:'DEF', base_rating:87, emoji:'⚡' },
+  { id:'ziyech',      name:'H. Ziyech',      country:'ma', pos:'ATT', base_rating:84, emoji:'🌙' },
+  { id:'en_nesyri',   name:'Y. En-Nesyri',   country:'ma', pos:'ATT', base_rating:83, emoji:'🦅' },
+  // CANADA
+  { id:'davies',      name:'A. Davies',      country:'ca', pos:'DEF', base_rating:87, emoji:'🍁' },
+  { id:'david',       name:'J. David',       country:'ca', pos:'ATT', base_rating:85, emoji:'🎯' },
+  // MEXIQUE
+  { id:'lozano',      name:'H. Lozano',      country:'mx', pos:'ATT', base_rating:83, emoji:'🌵' },
+  { id:'jimenez',     name:'R. Jiménez',     country:'mx', pos:'ATT', base_rating:82, emoji:'🦅' },
+  // ÉTATS-UNIS
+  { id:'pulisic',     name:'C. Pulisic',     country:'us', pos:'ATT', base_rating:85, emoji:'⚡' },
+  { id:'reyna',       name:'G. Reyna',       country:'us', pos:'MIL', base_rating:83, emoji:'🎯' },
+  { id:'adams',       name:'T. Adams',       country:'us', pos:'MIL', base_rating:83, emoji:'🛡️' },
+  // CORÉE DU SUD
+  { id:'son',         name:'H. Son',         country:'kr', pos:'ATT', base_rating:88, emoji:'⚡' },
+  { id:'lee_jaesung', name:'J. Lee',         country:'kr', pos:'MIL', base_rating:82, emoji:'🎯' },
+  // JAPON
+  { id:'kubo',        name:'T. Kubo',        country:'jp', pos:'ATT', base_rating:84, emoji:'🗾' },
+  { id:'endo',        name:'W. Endo',        country:'jp', pos:'MIL', base_rating:83, emoji:'⚙️' },
+  { id:'minamino',    name:'T. Minamino',    country:'jp', pos:'ATT', base_rating:82, emoji:'🌸' },
+  // SUISSE
+  { id:'xhaka',       name:'G. Xhaka',       country:'ch', pos:'MIL', base_rating:84, emoji:'⚙️' },
+  { id:'seferovic',   name:'H. Seferovic',   country:'ch', pos:'ATT', base_rating:81, emoji:'🎯' },
+  // TURQUIE
+  { id:'calhanoglu',  name:'H. Çalhanoğlu',  country:'tr', pos:'MIL', base_rating:85, emoji:'🌙' },
+  { id:'guler',       name:'A. Güler',       country:'tr', pos:'MIL', base_rating:84, emoji:'⚡' },
+  // SUÈDE
+  { id:'gyokeres',    name:'V. Gyökeres',    country:'se', pos:'ATT', base_rating:87, emoji:'🦌' },
+  { id:'kulusevski',  name:'D. Kulusevski',  country:'se', pos:'MIL', base_rating:85, emoji:'⚡' },
+  // ÉQUATEUR
+  { id:'caicedo',     name:'M. Caicedo',     country:'ec', pos:'MIL', base_rating:85, emoji:'⚙️' },
+  { id:'estupinan',   name:'P. Estupiñán',   country:'ec', pos:'DEF', base_rating:84, emoji:'🌿' },
+  // IRAN
+  { id:'taremi',      name:'M. Taremi',      country:'ir', pos:'ATT', base_rating:83, emoji:'🦁' },
+  // ÉCOSSE
+  { id:'mcginn',      name:'J. McGinn',      country:'sc', pos:'MIL', base_rating:82, emoji:'🏴' },
+  { id:'tierney',     name:'K. Tierney',     country:'sc', pos:'DEF', base_rating:81, emoji:'🛡️' },
+  // AUSTRALIE
+  { id:'leckie',      name:'M. Leckie',      country:'au', pos:'ATT', base_rating:82, emoji:'🦘' },
+  { id:'irvine',      name:'J. Irvine',      country:'au', pos:'MIL', base_rating:81, emoji:'⚙️' },
 ];
 
-function getBadgeStats(joueur) {
+// ── SPRINT 5 — BADGES ──
+const BADGES = [
+  // PERFORMANCE
+  { id:'first_blood',   name:'Première Lame',   desc:'1er pronostic validé',             icon:'⚔️',  rarete:'commun',  xp:25  },
+  { id:'exact_1',       name:'Œil de Lynx',     desc:'Trouver 1 score exact',            icon:'🎯',  rarete:'commun',  xp:50  },
+  { id:'exact_5',       name:'Télépathe',        desc:'5 scores exacts',                  icon:'🔮',  rarete:'rare',    xp:100 },
+  { id:'exact_10',      name:'Predictor God',    desc:'10 scores exacts',                 icon:'👁️', rarete:'epique',  xp:250 },
+  { id:'hat_trick',     name:'Hat-Trick',        desc:'3 scores exacts d\'affilée',       icon:'🎩',  rarete:'epique',  xp:300 },
+  { id:'clutch_king',   name:'Clutch King',      desc:'Gagner sur le dernier match',      icon:'👑',  rarete:'rare',    xp:150 },
+  { id:'upset_master',  name:'Upset Master',     desc:'3 outsiders gagnants trouvés',     icon:'🦊',  rarete:'epique',  xp:200 },
+  // RÉGULARITÉ
+  { id:'daily_3',       name:'Habitué',          desc:'3 jours consécutifs',              icon:'📅',  rarete:'commun',  xp:50  },
+  { id:'daily_7',       name:'Fidèle',           desc:'7 jours consécutifs',              icon:'🗓️', rarete:'rare',    xp:150 },
+  { id:'daily_14',      name:'Inébranlable',     desc:'14 jours consécutifs',             icon:'🛡️', rarete:'epique',  xp:300 },
+  { id:'daily_30',      name:'Légende du Daily', desc:'30 jours consécutifs',             icon:'🌟',  rarete:'legende', xp:500 },
+  { id:'streak_5',      name:'En Feu',           desc:'5 pronos corrects d\'affilée',     icon:'🔥',  rarete:'rare',    xp:150 },
+  { id:'streak_10',     name:'Brasier',          desc:'10 pronos corrects d\'affilée',    icon:'☄️',  rarete:'legende', xp:400 },
+  // LIGUES
+  { id:'league_silver', name:'Promotion Argent', desc:'Atteindre la ligue Argent',        icon:'🥈',  rarete:'commun',  xp:75  },
+  { id:'league_gold',   name:'Promotion Or',     desc:'Atteindre la ligue Or',            icon:'🥇',  rarete:'rare',    xp:150 },
+  { id:'league_diamond',name:'Promotion Diamant',desc:'Atteindre la ligue Diamant',       icon:'💎',  rarete:'epique',  xp:300 },
+  { id:'league_legend', name:'Promotion Légende',desc:'Atteindre la ligue Légende',       icon:'👑',  rarete:'legende', xp:600 },
+  // SOCIAL
+  { id:'club_member',   name:'Membre d\'un Club',desc:'Rejoindre un club',                icon:'👥',  rarete:'commun',  xp:30  },
+  { id:'club_top',      name:'Roi du Club',      desc:'Être 1er de ton club',             icon:'🏆',  rarete:'rare',    xp:200 },
+  { id:'rival_5',       name:'Rival Tenace',     desc:'Dépasser un ami 5 fois',           icon:'⚔️',  rarete:'rare',    xp:100 },
+  // TOURNOI
+  { id:'group_complete',name:'Phase de Groupes', desc:'Pronostiquer tous les matchs de groupe', icon:'🎫', rarete:'rare',    xp:150 },
+  { id:'round_16',      name:'8èmes de Finale',  desc:'Pronos sur tous les 8èmes',        icon:'🎟️', rarete:'rare',    xp:150 },
+  { id:'quarters',      name:'Quarts',           desc:'Pronos sur tous les quarts',       icon:'🎟️', rarete:'epique',  xp:200 },
+  { id:'semis',         name:'Demies',           desc:'Pronos sur les demi-finales',      icon:'🎟️', rarete:'epique',  xp:250 },
+  { id:'final',         name:'Finaliste',        desc:'Pronostic sur la finale',          icon:'🏆',  rarete:'legende', xp:500 },
+  // COLLECTION
+  { id:'cards_10',      name:'Apprenti Coll.',   desc:'10 cartes obtenues',               icon:'🃏',  rarete:'commun',  xp:50  },
+  { id:'cards_50',      name:'Collectionneur',   desc:'50 cartes obtenues',               icon:'📚',  rarete:'rare',    xp:200 },
+  { id:'cards_100',     name:'Maître Coll.',     desc:'100 cartes obtenues',              icon:'🏛️', rarete:'epique',  xp:400 },
+  { id:'album_team',    name:'Maître National',  desc:'Compléter une équipe entière',     icon:'🛡️', rarete:'legende', xp:500 },
+  { id:'legendary_card',name:'Première Légende', desc:'Obtenir une carte légendaire',     icon:'⭐',  rarete:'epique',  xp:300 },
+];
+
+// ── SPRINT 5 — BADGE FUNCTIONS (Supabase-backed) ──
+
+function computePlayerStats(joueur) {
   const prog = joueur.pronostics || {};
-  let totalPronos = 0, exact = 0, pts = 0, streak = 0, bestStreak = 0;
+  let totalPronos = 0, scoresExacts = 0, pts = 0, streak = 0, maxStreak = 0;
+  let outsiderWins = 0;
   for (const m of MATCHS) {
     const p = prog[m.id]; if (!p) continue;
     totalPronos++;
@@ -3852,35 +4158,280 @@ function getBadgeStats(joueur) {
     if (isNaN(p1)||isNaN(p2)) continue;
     const ptsM = computeMatchPts(m, p, real);
     if (ptsM !== null) pts += ptsM;
-    if (p1===r1 && p2===r2) { exact++; streak++; bestStreak=Math.max(bestStreak,streak); }
+    if (p1===r1 && p2===r2) { scoresExacts++; streak++; maxStreak=Math.max(maxStreak,streak); }
     else { streak=0; }
-  }
-  const loginStreak = parseInt(localStorage.getItem('cdm2026_dr_streak')||'0');
-  return { totalPronos, exact, pts, bestStreak, loginStreak };
-}
-
-function checkBadges(joueur) {
-  if (!joueur) return;
-  const key = 'cdm2026_badges_' + joueur.id;
-  const earned = new Set(JSON.parse(localStorage.getItem(key)||'[]'));
-  const stats = getBadgeStats(joueur);
-  const newBadges = [];
-  for (const badge of BADGES) {
-    if (!earned.has(badge.id) && badge.check(stats)) {
-      earned.add(badge.id); newBadges.push(badge);
+    // Outsider win: pronostiquer le vainqueur côté >3.0
+    const rRes = r1>r2?1:r1<r2?2:0, pRes = p1>p2?1:p1<p2?2:0;
+    if (rRes===pRes && rRes!==0) {
+      const winCote = rRes===1 ? (m.c1||1) : (m.c2||1);
+      if (winCote >= 3.0) outsiderWins++;
     }
   }
-  if (newBadges.length > 0) {
-    localStorage.setItem(key, JSON.stringify([...earned]));
-    newBadges.forEach((badge, i) => setTimeout(()=>showBadgeUnlock(badge.emoji,badge.name), i*4500));
+  const loginStreak = joueur.daily_streak || parseInt(localStorage.getItem('cdm2026_dr_streak')||'0');
+  return { totalPronos, scoresExacts, pts, maxStreak, loginStreak, outsiderWins,
+           totalCartes:0, cartesLegende:0 }; // cartes chargées async si besoin
+}
+
+async function checkBadgeCondition(badgeId, joueur, stats) {
+  switch(badgeId) {
+    case 'first_blood':    return stats.totalPronos >= 1;
+    case 'exact_1':        return stats.scoresExacts >= 1;
+    case 'exact_5':        return stats.scoresExacts >= 5;
+    case 'exact_10':       return stats.scoresExacts >= 10;
+    case 'hat_trick':      return stats.maxStreak >= 3;
+    case 'clutch_king':    return (() => {
+      const lastM = [...MATCHS].reverse().find(m => allScores[m.id]);
+      if (!lastM) return false;
+      const p = (joueur.pronostics||{})[lastM.id]; if (!p) return false;
+      return computeMatchPts(lastM, p, allScores[lastM.id]) > 0;
+    })();
+    case 'upset_master':   return stats.outsiderWins >= 3;
+    case 'daily_3':        return stats.loginStreak >= 3;
+    case 'daily_7':        return stats.loginStreak >= 7;
+    case 'daily_14':       return stats.loginStreak >= 14;
+    case 'daily_30':       return stats.loginStreak >= 30;
+    case 'streak_5':       return stats.maxStreak >= 5;
+    case 'streak_10':      return stats.maxStreak >= 10;
+    case 'league_silver':  return ['argent','or','diamant','legende'].includes(joueur.league);
+    case 'league_gold':    return ['or','diamant','legende'].includes(joueur.league);
+    case 'league_diamond': return ['diamant','legende'].includes(joueur.league);
+    case 'league_legend':  return joueur.league === 'legende';
+    case 'group_complete': return MATCHS.filter(m=>m.phase==='Groupes').every(m=>(joueur.pronostics||{})[m.id]);
+    case 'round_16':       return MATCHS.filter(m=>m.phase==='Huitièmes').every(m=>(joueur.pronostics||{})[m.id]);
+    case 'quarters':       return MATCHS.filter(m=>m.phase==='Quarts').every(m=>(joueur.pronostics||{})[m.id]);
+    case 'semis':          return MATCHS.filter(m=>m.phase==='Demies').every(m=>(joueur.pronostics||{})[m.id]);
+    case 'final':          return MATCHS.filter(m=>m.phase==='Finale').some(m=>(joueur.pronostics||{})[m.id]);
+    case 'cards_10':       return stats.totalCartes >= 10;
+    case 'cards_50':       return stats.totalCartes >= 50;
+    case 'cards_100':      return stats.totalCartes >= 100;
+    case 'legendary_card': return stats.cartesLegende >= 1;
+    default: return false;
   }
 }
 
-// Retourne les badges débloqués d'un joueur (pour profil)
-function getEarnedBadges(joueurId) {
-  const key = 'cdm2026_badges_' + joueurId;
-  const ids = new Set(JSON.parse(localStorage.getItem(key)||'[]'));
-  return BADGES.filter(b => ids.has(b.id));
+async function checkBadges() {
+  const joueur = allJoueurs.find(j => j.id === currentUser);
+  if (!joueur || !sb) return;
+  try {
+    const { data: alreadyUnlocked } = await sb.from('badges_debloques')
+      .select('badge_id').eq('joueur_id', currentUser);
+    const unlockedIds = new Set((alreadyUnlocked || []).map(b => b.badge_id));
+
+    // Optionally fetch carte counts
+    let totalCartes = 0, cartesLegende = 0;
+    try {
+      const { data: cartes } = await sb.from('cartes_collection').select('rarete').eq('joueur_id', currentUser);
+      totalCartes = (cartes||[]).length;
+      cartesLegende = (cartes||[]).filter(c=>c.rarete==='legende').length;
+    } catch(_) {}
+
+    const stats = computePlayerStats(joueur);
+    stats.totalCartes = totalCartes;
+    stats.cartesLegende = cartesLegende;
+
+    for (const badge of BADGES) {
+      if (unlockedIds.has(badge.id)) continue;
+      if (await checkBadgeCondition(badge.id, joueur, stats)) {
+        await unlockBadge(badge);
+        unlockedIds.add(badge.id);
+      }
+    }
+  } catch(e) { console.warn('checkBadges error:', e); }
+}
+
+async function unlockBadge(badge) {
+  try {
+    await sb.from('badges_debloques').insert({ joueur_id: currentUser, badge_id: badge.id });
+  } catch(_) {}
+  await gainXP(badge.xp || 50, 'badge_' + badge.id);
+  if (typeof addCoins === 'function') await addCoins(COIN_REWARDS.badge_unlock || 100);
+  showBadgeUnlockModal(badge);
+  if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
+}
+
+// Retourne les badges débloqués depuis Supabase (async) ou localStorage (fallback)
+async function getEarnedBadgeIds(joueurId) {
+  try {
+    if (!sb) throw new Error('no sb');
+    const { data } = await sb.from('badges_debloques').select('badge_id').eq('joueur_id', joueurId);
+    return new Set((data || []).map(b => b.badge_id));
+  } catch(_) {
+    const key = 'cdm2026_badges_' + joueurId;
+    return new Set(JSON.parse(localStorage.getItem(key)||'[]'));
+  }
+}
+
+function showBadgeUnlockModal(badge) {
+  const overlay = document.getElementById('badge-unlock-overlay');
+  const icon    = document.getElementById('badge-unlock-icon');
+  const nameEl  = document.getElementById('badge-unlock-name');
+  const descEl  = document.getElementById('badge-unlock-desc');
+  const rewardEl= document.getElementById('badge-unlock-reward');
+  const rareteEl= document.getElementById('badge-unlock-rarete');
+  const equipBtn= document.getElementById('badge-equip-btn');
+
+  icon.textContent = badge.icon || badge.emoji || '🏅';
+  nameEl.textContent = badge.name;
+
+  if (descEl)  { descEl.textContent = badge.desc || ''; descEl.style.display = badge.desc ? '' : 'none'; }
+  if (rewardEl){ rewardEl.textContent = `+${badge.xp||50} XP  +${COIN_REWARDS?.badge_unlock||100} 🪙`; rewardEl.style.display = ''; }
+
+  const rareteLabels = { commun:'COMMUN', rare:'RARE', epique:'ÉPIQUE', legende:'LÉGENDAIRE' };
+  const rareteColors = { commun:'#9CA3AF', rare:'#58C8FA', epique:'#A855F7', legende:'#F4C542' };
+  if (rareteEl) {
+    rareteEl.textContent = rareteLabels[badge.rarete] || '';
+    rareteEl.style.color = rareteColors[badge.rarete] || '#fff';
+    rareteEl.style.display = '';
+  }
+
+  // Glow color selon rareté
+  const glowColors = { commun:'rgba(156,163,175,0.15)', rare:'rgba(88,200,250,0.15)', epique:'rgba(168,85,247,0.15)', legende:'rgba(244,197,66,0.18)' };
+  overlay.style.background = `radial-gradient(ellipse at center, ${glowColors[badge.rarete]||'rgba(0,0,0,0)'} 0%, rgba(0,0,0,0.88) 70%)`;
+
+  // Bouton équiper titre pour rare+
+  if (equipBtn) {
+    const canEquip = ['rare','epique','legende'].includes(badge.rarete);
+    equipBtn.style.display = canEquip ? '' : 'none';
+    equipBtn.onclick = () => { equipTitle(badge); closeBadgeUnlock(); };
+  }
+
+  // Replay animation
+  icon.style.animation = 'none'; icon.offsetHeight; icon.style.animation = '';
+  nameEl.style.animation = 'none'; nameEl.offsetHeight; nameEl.style.animation = '';
+
+  overlay.classList.remove('hidden');
+  setTimeout(closeBadgeUnlock, 5500);
+}
+
+async function equipTitle(badge) {
+  try {
+    await sb.from('joueurs').update({ title_equipped: badge.name }).eq('id', currentUser);
+    const j = allJoueurs.find(x=>x.id===currentUser);
+    if (j) j.title_equipped = badge.name;
+    showToast(`Titre "${badge.name}" équipé !`);
+  } catch(_) {}
+}
+
+// ── SPRINT 4 — CARTES JOUEURS CDM ──
+
+function generateStats(player, rarete) {
+  const boosts = { bronze:0, argent:3, or:6, diamant:10, legende:15 };
+  const boost = boosts[rarete] || 0;
+  const r = player.base_rating;
+  const rng = () => Math.floor(Math.random() * 8) - 4;
+  const pos = player.pos;
+  const isATT = pos==='ATT', isMIL = pos==='MIL', isDEF = pos==='DEF'||pos==='GAR';
+  return {
+    PAC: Math.min(99, Math.max(40, (isATT?r+4:isMIL?r:r-8) + boost + rng())),
+    SHO: Math.min(99, Math.max(30, (isATT?r+2:isMIL?r-4:r-18) + boost + rng())),
+    PAS: Math.min(99, Math.max(40, (isMIL?r+2:r-2) + boost + rng())),
+    DRI: Math.min(99, Math.max(35, (isATT?r+3:isMIL?r:r-10) + boost + rng())),
+    DEF: Math.min(99, Math.max(20, (isDEF?r+5:isMIL?r-8:r-22) + boost + rng())),
+    PHY: Math.min(99, Math.max(50, r - 5 + boost + rng())),
+  };
+}
+
+function upgradeRarete(rarete) {
+  const tiers = ['bronze','argent','or','diamant','legende'];
+  const idx = tiers.indexOf(rarete);
+  return idx < tiers.length-1 ? tiers[idx+1] : rarete;
+}
+
+function computeAccuracy(prono, real) {
+  if (!prono || !real) return { exact:false, diff:false, winner:false };
+  const p1=parseInt(prono.s1),p2=parseInt(prono.s2),r1=parseInt(real.s1),r2=parseInt(real.s2);
+  if (isNaN(p1)||isNaN(p2)) return { exact:false, diff:false, winner:false };
+  const exact = p1===r1 && p2===r2;
+  const rRes = r1>r2?1:r1<r2?2:0, pRes = p1>p2?1:p1<p2?2:0;
+  const winner = rRes===pRes;
+  const diff = winner && (r1-r2===p1-p2);
+  return { exact, diff, winner };
+}
+
+function pickCardsForMatch(players, adminInputs, accuracy) {
+  if (!players.length) return [];
+  const count = accuracy.exact ? 3 : (accuracy.diff ? 2 : 1);
+  const cards = [];
+  for (let i = 0; i < count; i++) {
+    const p = players[Math.floor(Math.random() * players.length)];
+    let rarete = 'bronze';
+    const butInfo = (adminInputs.buteurs||[]).find(b=>b.name===p.name||b.name===p.id);
+    if (butInfo) rarete = 'argent';
+    if (butInfo && (butInfo.count||0) >= 2) rarete = 'or';
+    if (adminInputs.motm && (adminInputs.motm===p.name||adminInputs.motm===p.id)) rarete = 'diamant';
+    if (butInfo && (butInfo.count||0) >= 3) rarete = 'legende';
+    if (accuracy.exact && Math.random() < 0.2) rarete = upgradeRarete(rarete);
+    cards.push({ ...p, rarete, stats: generateStats(p, rarete) });
+  }
+  return cards;
+}
+
+async function distributeCardsForMatch(matchId) {
+  const match = MATCHS.find(m => m.id === matchId);
+  if (!match) return;
+  const code1 = TEAM_COUNTRY_MAP[match.name1] || '';
+  const code2 = TEAM_COUNTRY_MAP[match.name2] || '';
+  const matchPlayers = CDM_PLAYERS.filter(p => p.country===code1 || p.country===code2);
+  if (!matchPlayers.length) return;
+
+  // Build adminInputs from existing buteurs_reels data
+  const real = allScores[matchId] || {};
+  const buteurs = (real.buteurs_reels||[]).map(name => ({ name, count:1 }));
+  const adminInputs = { buteurs, motm: buteurs[0]?.name || '' };
+
+  for (const joueur of allJoueurs) {
+    const prono = (joueur.pronostics||{})[matchId];
+    if (!prono) continue;
+    const accuracy = computeAccuracy(prono, real);
+    const cards = pickCardsForMatch(matchPlayers, adminInputs, accuracy);
+    for (const card of cards) {
+      try {
+        await sb.from('cartes_collection').insert({
+          joueur_id: joueur.id,
+          carte_id:  `${card.id}_${matchId}_${Date.now()}`,
+          player_name: card.name,
+          player_country_code: card.country,
+          player_position: card.pos,
+          rarete: card.rarete,
+          match_id: matchId,
+          stats: card.stats,
+        });
+      } catch(_) {}
+    }
+  }
+  showToast('🃏 Cartes distribuées !');
+}
+
+let _carteCache = [];
+function renderPlayerCard(carte, idx) {
+  const stats = carte.stats || {};
+  const flagUrl = getPlayerFlagUrl(carte.player_country_code || 'fr');
+  const initials = (carte.player_name||'??').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  const rating = Object.keys(stats).length ? Math.round(Object.values(stats).reduce((a,b)=>a+b,0)/Object.keys(stats).length) : 75;
+  const clickHandler = idx !== undefined ? `onclick="showCardDetail(${idx})"` : '';
+  return `
+  <div class="player-card rarete-${carte.rarete||'bronze'}" ${clickHandler}>
+    <div class="card-bg-glow"></div>
+    <div class="card-header">
+      <div class="card-rating">${rating}</div>
+      <div class="card-pos-flag">
+        <div class="card-position">${carte.player_position||'MIL'}</div>
+        <img class="card-flag" src="${flagUrl}" alt="${carte.player_country_code||''}" onerror="this.style.display='none'">
+      </div>
+    </div>
+    <div class="card-portrait">${carte.emoji||initials}</div>
+    <div class="card-name">${(carte.player_name||'Joueur').toUpperCase()}</div>
+    <div class="card-stats">
+      ${Object.entries(stats).slice(0,6).map(([k,v])=>`<div class="card-stat"><span>${k}</span><b>${v}</b></div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function showCardDetail(idx) {
+  const carte = _carteCache[idx];
+  if (!carte) return;
+  const rareteNames = { bronze:'Bronze', argent:'Argent', or:'Or', diamant:'Diamant', legende:'Légendaire' };
+  showToast(`${carte.player_name} · ${rareteNames[carte.rarete]||carte.rarete}`);
 }
 
 // RAF nettoyé en arrière-plan
@@ -5315,6 +5866,7 @@ async function openChest(coffreId) {
   }
   await loadData();
   showChestOpenAnimation(coffre.type, loot);
+  setTimeout(() => checkBadges(), 1500);
 }
 
 function showChestOpenAnimation(type, loot) {
@@ -5487,19 +6039,114 @@ function renderProfilPage() {
   const stats = calcPlayerStats(joueur);
   const streak = getStreak(joueur);
   const avatarHtml = renderAvatarEl(joueur, 64, 18);
+  const leagueBadge = renderLeagueBadge(joueur.league||'bronze','normal');
+  const title = joueur.title_equipped ? `<div style="font-size:11px;color:var(--royal-purple);font-family:'Oswald',sans-serif;letter-spacing:1px">${joueur.title_equipped}</div>` : '';
+
   container.innerHTML =
     '<div class="card" style="padding:20px;text-align:center">' +
-      '<div style="display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer" onclick="openAvatarModal()">' +
-        avatarHtml +
+      '<div style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer" onclick="openAvatarModal()">' +
+        '<div style="position:relative;display:inline-block">' + avatarHtml +
+          '<div style="position:absolute;bottom:-4px;right:-4px">' + leagueBadge + '</div>' +
+        '</div>' +
         '<div style="font-family:Oswald,sans-serif;font-size:22px;font-weight:700;color:var(--accent)">' + (joueur.pseudo || joueur.id) + '</div>' +
+        title +
         '<div style="font-size:13px;color:var(--text3)">' + (pos >= 0 ? '#' + (pos + 1) + ' au classement · ' : '') + (board[pos]?.pts || 0) + ' pts</div>' +
       '</div>' +
     '</div>' +
-    '<div class="stats-grid" style="margin-top:12px">' +
-      '<div class="stat-card"><div class="stat-val">' + (stats.exact || 0) + '</div><div class="stat-lbl">Scores exacts</div></div>' +
-      '<div class="stat-card"><div class="stat-val">' + (stats.bonDiff + stats.bonVainqueur || 0) + '</div><div class="stat-lbl">Bons résultats</div></div>' +
-      '<div class="stat-card"><div class="stat-val">' + (streak || 0) + '</div><div class="stat-lbl">Série en cours</div></div>' +
+    '<div class="card" style="margin-top:10px;padding:16px">' +
+      '<div class="profil-tabs">' +
+        '<div class="profil-tab active" id="ptab-stats" onclick="switchProfilTab(\'stats\')">📊 Stats</div>' +
+        '<div class="profil-tab" id="ptab-badges" onclick="switchProfilTab(\'badges\')">🏅 Badges</div>' +
+        '<div class="profil-tab" id="ptab-collection" onclick="switchProfilTab(\'collection\')">🃏 Cartes</div>' +
+      '</div>' +
+      '<div id="profil-tab-content"></div>' +
     '</div>';
+
+  switchProfilTab('stats', joueur, stats, streak);
+}
+
+function switchProfilTab(tab, joueurArg, statsArg, streakArg) {
+  document.querySelectorAll('.profil-tab').forEach(t => t.classList.remove('active'));
+  const tabEl = document.getElementById('ptab-' + tab);
+  if (tabEl) tabEl.classList.add('active');
+
+  const joueur = joueurArg || allJoueurs.find(j => j.id === currentUser);
+  const stats   = statsArg  || calcPlayerStats(joueur);
+  const streak  = streakArg !== undefined ? streakArg : getStreak(joueur);
+  const content = document.getElementById('profil-tab-content');
+  if (!content) return;
+
+  if (tab === 'stats') {
+    content.innerHTML =
+      '<div class="stats-grid" style="margin-top:4px">' +
+        '<div class="stat-card"><div class="stat-val">' + (stats.exact||0) + '</div><div class="stat-lbl">Scores exacts</div></div>' +
+        '<div class="stat-card"><div class="stat-val">' + ((stats.bonDiff||0)+(stats.bonVainqueur||0)) + '</div><div class="stat-lbl">Bons résultats</div></div>' +
+        '<div class="stat-card"><div class="stat-val">' + (streak||0) + '</div><div class="stat-lbl">Série en cours</div></div>' +
+        '<div class="stat-card"><div class="stat-val">' + (joueur.level||1) + '</div><div class="stat-lbl">Niveau</div></div>' +
+        '<div class="stat-card"><div class="stat-val">' + (joueur.xp||0) + '</div><div class="stat-lbl">XP total</div></div>' +
+        '<div class="stat-card"><div class="stat-val">' + (joueur.daily_streak||0) + '</div><div class="stat-lbl">Streak daily</div></div>' +
+      '</div>';
+  } else if (tab === 'badges') {
+    renderProfilBadges(content, joueur);
+  } else if (tab === 'collection') {
+    renderProfilCollection(content, joueur);
+  }
+}
+
+async function renderProfilBadges(container, joueur) {
+  container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);font-size:13px">Chargement des badges…</div>';
+  const earnedIds = await getEarnedBadgeIds(joueur.id);
+  const earnedCount = earnedIds.size;
+  const total = BADGES.length;
+  container.innerHTML =
+    `<div style="font-size:12px;color:var(--text2);margin-bottom:10px;font-family:'Oswald',sans-serif">
+       ${earnedCount}/${total} badges débloqués
+     </div>
+     <div class="badges-grid">
+       ${BADGES.map(b => {
+         const unlocked = earnedIds.has(b.id);
+         return `<div class="badge-item badge-rarete-${b.rarete} ${unlocked?'unlocked':'locked'}"
+                      title="${b.desc||b.name}">
+                   <div class="badge-icon">${b.icon||'🏅'}</div>
+                   <div class="badge-name">${b.name}</div>
+                 </div>`;
+       }).join('')}
+     </div>`;
+}
+
+async function renderProfilCollection(container, joueur) {
+  container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);font-size:13px">Chargement des cartes…</div>';
+  let cartes = [];
+  try {
+    const { data } = await sb.from('cartes_collection').select('*').eq('joueur_id', joueur.id).order('id', {ascending:false});
+    cartes = data || [];
+  } catch(_) {}
+
+  _carteCache = cartes;
+
+  if (!cartes.length) {
+    container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text3);font-size:13px">Aucune carte pour l\'instant.<br>Pronostique des matchs pour en gagner !</div>';
+    return;
+  }
+
+  const raretes = ['toutes','bronze','argent','or','diamant','legende'];
+  const rareteLabels = {toutes:'Toutes',bronze:'Bronze',argent:'Argent',or:'Or',diamant:'Diamant',legende:'Légende'};
+  let activeFilter = 'toutes';
+
+  function renderGrid(filter) {
+    const filtered = filter==='toutes'
+      ? cartes.map((c,i)=>({c,i}))
+      : cartes.map((c,i)=>({c,i})).filter(({c})=>c.rarete===filter);
+    container.innerHTML =
+      `<div style="font-size:12px;color:var(--text2);margin-bottom:8px;font-family:'Oswald',sans-serif">${cartes.length} carte${cartes.length>1?'s':''} dans ta collection</div>` +
+      `<div class="cards-filter-bar">` +
+        raretes.map(r=>`<button class="card-filter-btn${filter===r?' active':''}" onclick="window._carteFilter('${r}')">${rareteLabels[r]}</button>`).join('') +
+      `</div>` +
+      `<div class="cards-grid">${filtered.map(({c,i})=>renderPlayerCard(c,i)).join('')}</div>`;
+  }
+
+  window._carteFilter = (f) => { activeFilter = f; renderGrid(f); };
+  renderGrid(activeFilter);
 }
 
 function showPage(id, btn) { switchTab(id, btn); }
@@ -6138,7 +6785,7 @@ async function savePronostic(id){
   try{
     gainXP(XP_REWARDS.prono_submit, 'prono_submit');
     setTimeout(()=>{ if(missionUpdated) renderMissionCard(); },1600);
-    setTimeout(()=>{ const j=allJoueurs.find(x=>x.id===currentUser); checkBadges(j); },2000);
+    setTimeout(()=>checkBadges(), 2000);
     btn.classList.add('flash');
     setTimeout(()=>btn.classList.remove('flash'),400);
     spawnParticles(btn,8);
@@ -6878,7 +7525,9 @@ async function validateMatch(id){
   await distributeMatchXP(id, parseInt(s1), parseInt(s2));
   await loadData();
   await syncAllLeagues();
-  showToast('Score validé ! XP + Ligues mis à jour ✓');renderAdminMatchs();
+  await distributeCardsForMatch(id);
+  await checkBadges();
+  showToast('Score validé ! XP + Ligues + Cartes ✓');renderAdminMatchs();
 }
 
 async function resetMatch(id){
