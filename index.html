@@ -787,8 +787,180 @@ const LEAGUE_PROMOTION_REWARDS = {
   legende: { xp: 2000, coins: 5000,  gems: 200, chest: 'legende', frame: 'legend', title: 'Légende Vivante', avatar: 'unicorn' },
 };
 
+// ══ Étape 8 — Pack fin de tournoi (Bilan v3 §9) ══
+// Distribué par l'admin à la fin du tournoi, basé sur la ligue finale
+// du joueur. Cumulable avec les rewards de promotion déjà reçus.
+// Les badges/frames/avatar/titre cdm2026_* sont des items commémoratifs
+// exclusifs qui ne reviendront jamais après cette saison.
+const END_OF_SEASON_REWARDS = {
+  bronze:  { coins: 300,  gems: 0,   chest: 'bronze',  badge: 'cdm2026_bronze'  },
+  argent:  { coins: 800,  gems: 15,  chest: 'argent',  card: 'argent',  badge: 'cdm2026_argent'  },
+  or:      { coins: 1500, gems: 40,  chest: 'or',      card: 'or',      badge: 'cdm2026_or',      frame: 'cdm2026_or' },
+  diamant: { coins: 2500, gems: 75,  chest: 'diamant', card: 'diamant', badge: 'cdm2026_diamant', frame: 'cdm2026_diamant' },
+  legende: { coins: 5000, gems: 150, chest: 'legende', card: 'legende', badge: 'cdm2026_legende', frame: 'cdm2026_legende', avatar: 'cdm2026_champion', title: 'cdm2026_mondial' },
+};
+
 function getLeagueForPoints(pts) {
   return [...LEAGUES].reverse().find(l => pts >= l.min) || LEAGUES[0];
+}
+
+// ══ Étape 8 — Pack fin de tournoi : distribution + persistence ══
+
+// Helper : tire une carte aléatoire d'une rareté donnée (carte garantie).
+// Utilisé pour le pack fin de saison (argent+ → 1 carte de la rareté
+// matchant la ligue finale).
+function rollCardOfRarity(rarete) {
+  if (typeof ALL_PLAYERS === 'undefined' || !ALL_PLAYERS.length) return null;
+  const pool = ALL_PLAYERS.filter(p => getRarityFromRating(p.base_rating) === rarete);
+  if (!pool.length) return null;
+  return { ...pool[Math.floor(Math.random() * pool.length)], rarete };
+}
+
+// Distribue le pack à un joueur. Idempotent via joueurs.end_of_season_pack :
+// si déjà rempli, on no-op. Tous les rewards (coins/gems/coffre/carte/badge)
+// passent par les helpers existants pour rester cohérent avec l'économie.
+async function grantEndOfSeasonPack(joueur, leagueId) {
+  if (!joueur || !sb) return { skipped: true };
+  if (joueur.end_of_season_pack) return { skipped: true, reason: 'already_received' };
+  const pack = END_OF_SEASON_REWARDS[leagueId];
+  if (!pack) return { skipped: true, reason: 'unknown_league' };
+
+  const tasks = [];
+  if (pack.coins) tasks.push(addCoinsFor(joueur.id, pack.coins));
+  if (pack.gems)  tasks.push(addGemsFor(joueur.id, pack.gems));
+  if (pack.chest) {
+    tasks.push(sb.from('coffres_inventaire').insert({
+      joueur_id: joueur.id, type: pack.chest, source: 'end_of_season'
+    }));
+  }
+  if (pack.badge) {
+    tasks.push(sb.from('badges_debloques').insert({
+      joueur_id: joueur.id, badge_id: pack.badge
+    }));
+  }
+  // Carte garantie : on tire la rareté côté serveur (current ligue final
+  // → carte de cette rareté), puis on persiste via cartes_collection
+  // directement (sans passer par addCardToCollection qui suppose currentUser).
+  if (pack.card) {
+    const card = rollCardOfRarity(pack.card);
+    if (card) {
+      // Doublon check : si la carte existe déjà, on convertit via DUPLICATE_CONVERSION
+      const existingQ = await sb.from('cartes_collection')
+        .select('id').eq('joueur_id', joueur.id).eq('player_id', card.id).maybeSingle();
+      if (existingQ.data) {
+        const conv = DUPLICATE_CONVERSION[card.rarete] || {};
+        if (conv.coins) tasks.push(addCoinsFor(joueur.id, conv.coins));
+        if (conv.gems)  tasks.push(addGemsFor(joueur.id, conv.gems));
+      } else {
+        const fullName = `${card.prenom || ''} ${card.nom || ''}`.trim();
+        tasks.push(sb.from('cartes_collection').insert({
+          joueur_id: joueur.id,
+          player_id: card.id,
+          rarete: card.rarete,
+          equipe: card.equipe,
+          player_name: fullName,
+          player_country_code: card.pays,
+          player_position: card.position,
+        }));
+      }
+    }
+  }
+  // Marqueur d'idempotence + reset du flag "vu" pour qu'au prochain login
+  // l'utilisateur voie la cinématique
+  tasks.push(sb.from('joueurs').update({
+    end_of_season_pack: leagueId,
+    end_of_season_seen: false,
+  }).eq('id', joueur.id));
+
+  await Promise.all(tasks);
+  return { skipped: false, pack };
+}
+
+// Trigger admin : itère sur tous les joueurs, calcule la ligue finale,
+// distribue le pack correspondant.
+async function triggerEndOfSeason() {
+  if (!sb || !allJoueurs.length) return { distributed: 0 };
+  let count = 0, skipped = 0;
+  for (const joueur of allJoueurs) {
+    const pts = calcPoints(joueur);
+    const finalLeague = getLeagueForPoints(pts).id;
+    const result = await grantEndOfSeasonPack(joueur, finalLeague);
+    if (result.skipped) skipped++; else count++;
+  }
+  await loadData();
+  return { distributed: count, skipped };
+}
+
+// Affiche la modale cinématique fin de tournoi au currentUser. Appelé
+// après openApp si end_of_season_pack est rempli et end_of_season_seen
+// est false. Marque seen=true au fermer pour ne plus la rappeler.
+function showEndOfSeasonModal(leagueId) {
+  const pack = END_OF_SEASON_REWARDS[leagueId];
+  if (!pack) return;
+  const league = LEAGUES.find(l => l.id === leagueId) || LEAGUES[0];
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Liste des items à révéler en cascade
+  const items = [];
+  if (pack.coins)  items.push({ icon: '🪙', label: `+${pack.coins} Coins`, color: '#F4C542' });
+  if (pack.gems)   items.push({ icon: '💎', label: `+${pack.gems} Gems`,   color: '#58C8FA' });
+  if (pack.chest)  items.push({ icon: '🎁', label: `Coffre ${pack.chest.toUpperCase()}`, color: league.color });
+  if (pack.card)   items.push({ icon: '🃏', label: `Carte ${pack.card.toUpperCase()} garantie`, color: league.color });
+  if (pack.badge)  items.push({ icon: '🏅', label: 'Badge commémoratif',  color: league.color });
+  if (pack.frame)  items.push({ icon: '🖼️', label: 'Cadre exclusif',      color: league.color });
+  if (pack.avatar) items.push({ icon: '👤', label: 'Avatar champion',     color: league.color });
+  if (pack.title)  items.push({ icon: '🎖️', label: 'Titre commémoratif', color: league.color });
+
+  const bg = document.createElement('div');
+  bg.className = 'eos-anim-bg';
+  bg.id = 'eos-modal';
+  bg.innerHTML = `
+    <div class="eos-burst" style="background:radial-gradient(circle, ${league.color}44, transparent 70%)"></div>
+    <div class="eos-title" style="color:${league.color}">TOURNOI TERMINÉ</div>
+    <div class="eos-subtitle">Ligue finale : <strong style="color:${league.color}">${league.name}</strong></div>
+    <div class="eos-emoji">${league.icon === 'crown' ? '👑' : league.icon === 'diamond' ? '💎' : league.icon === 'gold-medal' ? '🥇' : league.icon === 'silver-medal' ? '🥈' : '🥉'}</div>
+    <div class="eos-loot-row" id="eos-loot-row"></div>
+    <button class="eos-take-btn" id="eos-take-btn" onclick="closeEndOfSeasonModal()">RECEVOIR !</button>
+  `;
+  document.body.appendChild(bg);
+
+  const lootRow = bg.querySelector('#eos-loot-row');
+  const takeBtn = bg.querySelector('#eos-take-btn');
+
+  if (reduced) {
+    items.forEach(it => {
+      const el = document.createElement('div');
+      el.className = 'eos-loot-item reveal';
+      el.style.borderColor = it.color + '88';
+      el.innerHTML = `<div class="eos-loot-icon">${it.icon}</div><div class="eos-loot-label" style="color:${it.color}">${it.label}</div>`;
+      lootRow.appendChild(el);
+    });
+    takeBtn.classList.add('show');
+    return;
+  }
+  if (navigator.vibrate) navigator.vibrate([100, 60, 200, 60, 300]);
+  setTimeout(() => {
+    items.forEach((it, i) => {
+      const el = document.createElement('div');
+      el.className = 'eos-loot-item';
+      el.style.borderColor = it.color + '88';
+      el.innerHTML = `<div class="eos-loot-icon">${it.icon}</div><div class="eos-loot-label" style="color:${it.color}">${it.label}</div>`;
+      lootRow.appendChild(el);
+      setTimeout(() => el.classList.add('reveal'), i * 220);
+    });
+    setTimeout(() => takeBtn.classList.add('show'), items.length * 220 + 400);
+  }, 1200);
+}
+
+async function closeEndOfSeasonModal() {
+  const bg = document.getElementById('eos-modal');
+  if (bg) { bg.style.opacity = '0'; bg.style.transition = 'opacity 300ms'; setTimeout(() => bg.remove(), 300); }
+  // Marquer comme vu pour ne pas re-afficher au prochain login
+  if (currentUser && sb) {
+    await sb.from('joueurs').update({ end_of_season_seen: true }).eq('id', currentUser);
+    const j = allJoueurs.find(j => j.id === currentUser);
+    if (j) j.end_of_season_seen = true;
+  }
 }
 
 function renderLeagueBadge(leagueId, size = 'normal') {
@@ -2158,6 +2330,13 @@ function openApp(){
       }
     }
   }, 1100);
+  // Étape 8 — Modale fin de tournoi si pack reçu mais pas encore vu
+  setTimeout(() => {
+    const j = allJoueurs.find(j => j.id === currentUser);
+    if (j && j.end_of_season_pack && !j.end_of_season_seen && typeof showEndOfSeasonModal === 'function') {
+      showEndOfSeasonModal(j.end_of_season_pack);
+    }
+  }, 1500);
 }
 
 function updateHeaderUser(){
@@ -4746,7 +4925,38 @@ function renderAdminGlobaux(){
     }
     container.appendChild(card);
   }
+
+  // Étape 8 — Danger zone : trigger pack fin de tournoi (irréversible).
+  // Affiche un état "déjà distribué" si au moins un joueur a son
+  // end_of_season_pack rempli (idempotence côté grant).
+  const alreadyDist = (allJoueurs || []).filter(j => j.end_of_season_pack).length;
+  const eosCard = document.createElement('div');
+  eosCard.style.cssText = 'margin-top:24px;padding:18px;border-radius:14px;background:linear-gradient(135deg,rgba(168,85,247,.08),rgba(244,197,66,.08));border:1.5px solid rgba(168,85,247,.35)';
+  eosCard.innerHTML = `
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:#A855F7;margin-bottom:6px">🏆 PACK FIN DE TOURNOI</div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.5">
+      Distribue à <strong>chaque joueur</strong> son pack commémoratif CDM 2026 selon sa ligue finale (basée sur ses PTS actuels).<br>
+      <span style="color:#FF8A3D;font-weight:600">⚠️ À ne déclencher qu'APRÈS la finale et tous les globaux validés.</span>
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:10px">État : ${alreadyDist > 0 ? `<span style="color:#22D16B;font-weight:700">${alreadyDist}/${allJoueurs.length} joueurs déjà servis</span> (idempotent — relancer ne re-distribue pas)` : `Non distribué`}</div>
+    <button onclick="confirmTriggerEndOfSeason()"
+            style="width:100%;padding:12px;background:linear-gradient(90deg,#A855F7,#F4C542);color:#050816;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;border:none;border-radius:10px;cursor:pointer;font-weight:800;box-shadow:0 3px 14px rgba(168,85,247,.4)">
+      ${alreadyDist > 0 ? 'RELANCER (idempotent)' : 'DISTRIBUER LES PACKS'}
+    </button>
+  `;
+  container.appendChild(eosCard);
 }
+
+async function confirmTriggerEndOfSeason() {
+  const total = (allJoueurs || []).length;
+  if (!total) { showToast('Aucun joueur'); return; }
+  if (!confirm(`Distribuer le pack fin de tournoi à ${total} joueurs ?\n\nIdempotent : les joueurs déjà servis ne reçoivent pas une 2e fois.\n\nÀ ne déclencher qu'APRÈS la finale validée.`)) return;
+  showToast('Distribution en cours…');
+  const result = await triggerEndOfSeason();
+  showToast(`✓ ${result.distributed} packs distribués · ${result.skipped} déjà servis`);
+  renderAdminGlobaux();
+}
+
 async function validateGlobal(id){
   const sel=document.getElementById('ag-'+id);
   const val=sel?sel.value.trim():'';
