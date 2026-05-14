@@ -41,6 +41,11 @@
     '.podium-item',
     '.ligue-header-v2',
     '.cards-grid > *',
+    // Follow-up Sprint 3 — cartes oubliées dans la 1re passe
+    '.card-daily-reward',  // Accueil : récompense quotidienne
+    '.card-mission',       // Accueil : mission du jour
+    '.coffres-home-card',  // Accueil : raccourci coffres
+    '.group-card',         // Résultats : tableau par groupe
     '[data-reveal]'
   ].join(',');
 
