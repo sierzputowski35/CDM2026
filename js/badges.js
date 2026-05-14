@@ -186,12 +186,12 @@ async function checkBadgeCondition(badgeId, joueur, stats) {
     case 'chests_200':     return stats.chestsOpened >= 200;
     case 'pts_1000':       return stats.pts >= 1000;
 
-    // 🎯 MISSIONS & ENGAGEMENT — stubs en attendant Étape 7 (missions) / 10 (shop)
-    case 'first_mission':         return false; // TODO Étape 7
-    case 'missions_25':           return false; // TODO Étape 7
-    case 'missions_100':          return false; // TODO Étape 7
-    case 'missions_weekly_10':    return false; // TODO Étape 7
-    case 'missions_tournoi_all':  return false; // TODO Étape 7
+    // 🎯 MISSIONS & ENGAGEMENT — câblés en Étape 7 sur missions_progress.claimed
+    case 'first_mission':         return (stats.missionsClaimedTotal   || 0) >= 1;
+    case 'missions_25':           return (stats.missionsClaimedDaily   || 0) >= 25;
+    case 'missions_100':          return (stats.missionsClaimedDaily   || 0) >= 100;
+    case 'missions_weekly_10':    return (stats.missionsClaimedWeekly  || 0) >= 10;
+    case 'missions_tournoi_all':  return (stats.missionsClaimedTournoi || 0) >= 5;
     case 'first_shop':            return false; // TODO Étape 10
     default: return false;
   }
@@ -244,6 +244,13 @@ async function checkBadges() {
       teamCompleted = Object.values(byTeam).some(n => n >= 11);
     }
 
+    // Étape 7 — Compte des missions claimed (pour badges first_mission /
+    // missions_25 / missions_100 / missions_weekly_10 / missions_tournoi_all).
+    let missionsClaimed = { daily: 0, weekly: 0, tournament: 0, total: 0 };
+    if (typeof getClaimedMissionsCount === 'function') {
+      missionsClaimed = await getClaimedMissionsCount(currentUser);
+    }
+
     const stats = computePlayerStats(joueur);
     stats.totalCartes    = cartes.length;
     stats.cartesOr       = cartes.filter(c => c.rarete === 'or').length;
@@ -251,6 +258,10 @@ async function checkBadges() {
     stats.cartesLegende  = cartes.filter(c => c.rarete === 'legende').length;
     stats.chestsOpened   = chestsOpened;
     stats.teamCompleted  = teamCompleted;
+    stats.missionsClaimedDaily   = missionsClaimed.daily;
+    stats.missionsClaimedWeekly  = missionsClaimed.weekly;
+    stats.missionsClaimedTournoi = missionsClaimed.tournament;
+    stats.missionsClaimedTotal   = missionsClaimed.total;
 
     // Phase 1 : recenser tous les badges à débloquer avant de toucher quoi que ce soit
     const toUnlock = [];
@@ -284,6 +295,12 @@ async function checkBadges() {
     if (totalBadgeXP > 0) await gainXP(totalBadgeXP, 'badges_batch');
     if (totalBadgeCoins > 0 && typeof addCoins === 'function') {
       await addCoins(totalBadgeCoins);
+    }
+
+    // Étape 7 — Dispatch missions : badges débloqués comptent côté
+    // weekly (w_badges_2 : 2 nouveaux badges dans la semaine).
+    if (typeof bumpMissionCounter === 'function') {
+      await bumpMissionCounter(currentUser, null, toUnlock.length, 'badges');
     }
 
     // Phase 4 : overlays badge en file séquentielle (attend les modales en cours)

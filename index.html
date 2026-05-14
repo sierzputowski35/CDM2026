@@ -747,6 +747,7 @@
 <script src="js/data/cotes.js"></script>
 <script src="js/badges.js"></script>
 <script src="js/cartes.js"></script>
+<script src="js/missions.js"></script>
 <script src="js/pwa.js"></script>
 <script src="js/rewards.js"></script>
 <script src="js/notifications.js"></script>
@@ -1681,20 +1682,19 @@ async function distributeMatchXP(matchId, r1, r2) {
     const pRes = p1 > p2 ? 1 : p1 < p2 ? 2 : 0;
 
     let xpAmount = 0;
+    let isExact = false, isDiff = false, isWinner = false;
     // Tier correctness — mutuellement exclusif entre vainqueur/diff/exact
     if (rRes === pRes) {
-      if (p1 === r1 && p2 === r2) xpAmount += XP_REWARDS.prono_score_exact;
-      else if (p1 - p2 === r1 - r2) xpAmount += XP_REWARDS.prono_correct_diff;
-      else xpAmount += XP_REWARDS.prono_correct_winner;
+      if (p1 === r1 && p2 === r2) { xpAmount += XP_REWARDS.prono_score_exact; isExact = true; isDiff = true; isWinner = true; }
+      else if (p1 - p2 === r1 - r2) { xpAmount += XP_REWARDS.prono_correct_diff; isDiff = true; isWinner = true; }
+      else { xpAmount += XP_REWARDS.prono_correct_winner; isWinner = true; }
     }
     // Buteur correct (si l'admin a déjà coché)
-    if (p.buteur && real.buteurs_reels?.includes(p.buteur)) {
-      xpAmount += XP_REWARDS.buteur_correct;
-    }
+    const buteurOk = !!(p.buteur && real.buteurs_reels?.includes(p.buteur));
+    if (buteurOk) xpAmount += XP_REWARDS.buteur_correct;
     // Pari bonus réussi (si l'admin a déjà coché)
-    if (p.pari_bonus && real.bonus_realise && p.pari_bonus === real.bonus_realise) {
-      xpAmount += XP_REWARDS.pari_bonus_correct;
-    }
+    const bonusOk = !!(p.pari_bonus && real.bonus_realise && p.pari_bonus === real.bonus_realise);
+    if (bonusOk) xpAmount += XP_REWARDS.pari_bonus_correct;
     if (xpAmount > 0) {
       tasks.push(gainXPFor(joueur.id, xpAmount, 'match_result'));
     }
@@ -1703,6 +1703,21 @@ async function distributeMatchXP(matchId, r1, r2) {
     const ptsForMatch = computeMatchPts(m, p, real);
     if (ptsForMatch && ptsForMatch > 0) {
       tasks.push(grantMatchChest(joueur.id, ptsForMatch, matchId));
+    }
+
+    // Étape 7 — Dispatch missions (compteurs daily/weekly)
+    if (typeof bumpMissionCounter === 'function') {
+      if (isWinner) tasks.push(bumpMissionCounter(joueur.id, 'winners'));
+      if (isDiff)   tasks.push(bumpMissionCounter(joueur.id, 'diffs'));
+      if (isExact)  tasks.push(bumpMissionCounter(joueur.id, 'exacts', 1, 'exacts'));
+      if (buteurOk) tasks.push(bumpMissionCounter(joueur.id, 'buteurCorrect'));
+      if (bonusOk)  tasks.push(bumpMissionCounter(joueur.id, 'bonusCorrect'));
+      if (ptsForMatch > 0) tasks.push(bumpMissionCounter(joueur.id, 'pts', ptsForMatch, 'pts'));
+      // Outsider gagnant : pronostic correct (winner) sur une équipe dont la cote ≥ 3
+      if (isWinner && rRes !== 0) {
+        const winCote = rRes === 1 ? (m.c1 || 1) : (m.c2 || 1);
+        if (winCote >= 3) tasks.push(bumpMissionCounter(joueur.id, 'outsiderWins'));
+      }
     }
   }
   await Promise.all(tasks);
@@ -2117,6 +2132,18 @@ function openApp(){
   updateNavBadges();
   switchTab('home',document.getElementById('tab-home'));
   setTimeout(() => checkDailyReward(), 900);
+  // Étape 7 — Init missions : rotation daily/weekly + compteur logins
+  // (1 bump par session, sessionStorage évite le double-comptage en cas de
+  // navigation interne ; le compteur est plafonné à 2 par jour côté UI).
+  setTimeout(async () => {
+    if (typeof ensureActiveMissions === 'function') await ensureActiveMissions(currentUser);
+    if (typeof bumpMissionCounter === 'function') {
+      if (sessionStorage.getItem('cdm2026_session_login_counted') !== '1') {
+        sessionStorage.setItem('cdm2026_session_login_counted', '1');
+        await bumpMissionCounter(currentUser, 'logins');
+      }
+    }
+  }, 1100);
 }
 
 function updateHeaderUser(){
@@ -2824,6 +2851,11 @@ async function openChest(coffreId) {
   // Étape 4 — XP fixe à l'ouverture (en plus du loot rollé)
   if (table.xp_open) await gainXP(table.xp_open, 'chest_open_' + coffre.type);
 
+  // Étape 7 — Dispatch missions (chestsOpened daily + chests weekly)
+  if (typeof bumpMissionCounter === 'function') {
+    await bumpMissionCounter(currentUser, 'chestsOpened', 1, 'chests');
+  }
+
   await loadData();
   showChestOpenAnimation(coffre.type, loot, cardResult);
   setTimeout(() => checkBadges(), 1500);
@@ -2976,33 +3008,12 @@ function closeCoffresModal() {
   setTimeout(() => modal.remove(), 300);
 }
 
-// ── MISSION DU JOUR ──
+// ── MISSIONS ──
+// Étape 7 — Le rendu détaillé (3 daily + 3 weekly + 5 tournament) vit
+// dans js/missions.js (renderMissionsCard). On garde un wrapper local
+// pour la compatibilité avec les appels existants d'initHomePage.
 function renderMissionCard() {
-  const container = document.getElementById('mission-home');
-  if (!container) return;
-  const joueur = allJoueurs.find(j => j.id === currentUser);
-  if (!joueur) return;
-  const today = new Date().toISOString().split('T')[0];
-  const mp = joueur.missions_progress || {};
-  const todayProg = mp[today] || { pronosFaits: 0 };
-  const target = 3;
-  const current = Math.min(todayProg.pronosFaits || 0, target);
-  const pct = (current / target) * 100;
-  const done = current >= target;
-  container.innerHTML = `
-    <div class="card-mission">
-      <div class="mission-head">
-        <div class="mission-label">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#A855F7" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
-          </svg>
-          MISSION DU JOUR
-        </div>
-        <span class="mission-count">${current}/${target}${done?' ✓':''}</span>
-      </div>
-      <div class="mission-text">Pronostique <strong>${target} matchs</strong> → <span class="gold">+50 XP bonus</span>${done?' — <span style="color:#22D16B;font-weight:700">Accomplie !</span>':''}</div>
-      <div class="mission-bar"><div class="mission-fill" style="width:${pct}%"></div></div>
-    </div>`;
+  if (typeof renderMissionsCard === 'function') renderMissionsCard();
 }
 
 function initHomePage() {
@@ -3787,25 +3798,13 @@ async function savePronostic(id){
   const pronosticEntry={...existing,s1,s2,cote:coteSnapshot};
 
   const newProg={...(joueur?.pronostics||{}),[id]:pronosticEntry};
-  // Mise à jour mission progress (localStorage)
-  const today=new Date().toISOString().split('T')[0];
-  const joueurLocal=allJoueurs.find(j=>j.id===currentUser);
-  const isFirstProno=!(joueurLocal?.pronostics||{})[id];
-  let missionUpdated=false;
-  if(isFirstProno && joueurLocal){
-    const mp=joueurLocal.missions_progress||{};
-    mp[today]=mp[today]||{pronosFaits:0};
-    mp[today].pronosFaits+=1;
-    const missionComplete=mp[today].pronosFaits===3;
-    const{error:errM}=await sb.from('joueurs').update({pronostics:newProg,missions_progress:mp}).eq('id',currentUser);
-    if(errM){showToast('Erreur');btn.disabled=false;btn.textContent='Enregistrer ce pronostic';return;}
-    if(!joueurLocal.missions_progress) joueurLocal.missions_progress={};
-    joueurLocal.missions_progress=mp;
-    missionUpdated=true;
-    if(missionComplete) setTimeout(()=>showRewardPop(0,50),1800);
-  } else {
-    const{error}=await sb.from('joueurs').update({pronostics:newProg}).eq('id',currentUser);
-    if(error){showToast('Erreur');btn.disabled=false;btn.textContent='Enregistrer ce pronostic';return;}
+  const isFirstProno=!(joueur?.pronostics||{})[id];
+  const{error}=await sb.from('joueurs').update({pronostics:newProg}).eq('id',currentUser);
+  if(error){showToast('Erreur');btn.disabled=false;btn.textContent='Enregistrer ce pronostic';return;}
+  // Étape 7 — Dispatch missions : incrémente le compteur "pronos" daily + weekly
+  // uniquement à la 1ère soumission d'un match (pas en modif).
+  if(isFirstProno && typeof bumpMissionCounter==='function'){
+    await bumpMissionCounter(currentUser, 'pronos', 1, 'pronos');
   }
   await loadData();
   // Resync data-saved pour que la détection dirty et le snapshot restent corrects.
