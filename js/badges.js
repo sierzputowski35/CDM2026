@@ -4,53 +4,80 @@
 // Extrait de index.html lignes 1639-1846 (PR #3 refactor JS)
 // ════════════════════════════════════════════════════════════
 
-// ── SPRINT 5 — BADGES ──
-// Le champ `icon` est désormais un NOM d'icône (cf. js/utils/icons.js).
-// Le rendu passe par window.icon(name, size) — plus aucun emoji Unicode ici.
+// ══ Étape 6 — Refonte complète des badges (Bilan v3 §10) ══
+// 46 badges sur 7 catégories. XP/Coins uniquement (pas de bonus
+// cosmétique). Badges Club/Rival supprimés (système Club inexistant).
+// IDs réutilisés quand sémantique identique ; sinon migration SQL
+// dans migrations.sql pour les renommages first_blood→first_prono,
+// exact_1→first_exact, exact_5→sniper, legendary_card→first_legende.
 const BADGES = [
-  // PERFORMANCE
-  { id:'first_blood',   name:'Première Lame',   desc:'1er pronostic validé',             icon:'swords',        rarete:'commun',  xp:25  },
-  { id:'exact_1',       name:'Œil de Lynx',     desc:'Trouver 1 score exact',            icon:'bullseye',      rarete:'commun',  xp:50  },
-  { id:'exact_5',       name:'Télépathe',        desc:'5 scores exacts',                  icon:'crystal-ball',  rarete:'rare',    xp:100 },
-  { id:'exact_10',      name:'Predictor God',    desc:'10 scores exacts',                 icon:'eye',           rarete:'epique',  xp:250 },
-  { id:'hat_trick',     name:'Hat-Trick',        desc:'3 scores exacts d\'affilée',       icon:'hat',           rarete:'epique',  xp:300 },
-  { id:'clutch_king',   name:'Clutch King',      desc:'Gagner sur le dernier match',      icon:'crown',         rarete:'rare',    xp:150 },
-  { id:'upset_master',  name:'Upset Master',     desc:'3 outsiders gagnants trouvés',     icon:'fox',           rarete:'epique',  xp:200 },
-  // RÉGULARITÉ
-  { id:'daily_3',       name:'Habitué',          desc:'3 jours consécutifs',              icon:'calendar',      rarete:'commun',  xp:50  },
-  { id:'daily_7',       name:'Fidèle',           desc:'7 jours consécutifs',              icon:'calendar',      rarete:'rare',    xp:150 },
-  { id:'daily_14',      name:'Inébranlable',     desc:'14 jours consécutifs',             icon:'shield',        rarete:'epique',  xp:300 },
-  { id:'daily_30',      name:'Légende du Daily', desc:'30 jours consécutifs',             icon:'star',          rarete:'legende', xp:500 },
-  { id:'streak_5',      name:'En Feu',           desc:'5 pronos corrects d\'affilée',     icon:'flame',         rarete:'rare',    xp:150 },
-  { id:'streak_10',     name:'Brasier',          desc:'10 pronos corrects d\'affilée',    icon:'meteor',        rarete:'legende', xp:400 },
-  // LIGUES
-  { id:'league_silver', name:'Promotion Argent', desc:'Atteindre la ligue Argent',        icon:'silver-medal',  rarete:'commun',  xp:75  },
-  { id:'league_gold',   name:'Promotion Or',     desc:'Atteindre la ligue Or',            icon:'gold-medal',    rarete:'rare',    xp:150 },
-  { id:'league_diamond',name:'Promotion Diamant',desc:'Atteindre la ligue Diamant',       icon:'diamond',       rarete:'epique',  xp:300 },
-  { id:'league_legend', name:'Promotion Légende',desc:'Atteindre la ligue Légende',       icon:'crown',         rarete:'legende', xp:600 },
-  // SOCIAL
-  { id:'club_member',   name:'Membre d\'un Club',desc:'Rejoindre un club',                icon:'users',         rarete:'commun',  xp:30  },
-  { id:'club_top',      name:'Roi du Club',      desc:'Être 1er de ton club',             icon:'trophy',        rarete:'rare',    xp:200 },
-  { id:'rival_5',       name:'Rival Tenace',     desc:'Dépasser un ami 5 fois',           icon:'swords',        rarete:'rare',    xp:100 },
-  // TOURNOI
-  { id:'group_complete',name:'Phase de Groupes', desc:'Pronostiquer tous les matchs de groupe', icon:'ticket',  rarete:'rare',    xp:150 },
-  { id:'round_16',      name:'8èmes de Finale',  desc:'Pronos sur tous les 8èmes',        icon:'ticket',        rarete:'rare',    xp:150 },
-  { id:'quarters',      name:'Quarts',           desc:'Pronos sur tous les quarts',       icon:'ticket',        rarete:'epique',  xp:200 },
-  { id:'semis',         name:'Demies',           desc:'Pronos sur les demi-finales',      icon:'ticket',        rarete:'epique',  xp:250 },
-  { id:'final',         name:'Finaliste',        desc:'Pronostic sur la finale',          icon:'trophy',        rarete:'legende', xp:500 },
-  // COLLECTION
-  { id:'cards_10',      name:'Apprenti Coll.',   desc:'10 cartes obtenues',               icon:'card',          rarete:'commun',  xp:50  },
-  { id:'cards_50',      name:'Collectionneur',   desc:'50 cartes obtenues',               icon:'books',         rarete:'rare',    xp:200 },
-  { id:'cards_100',     name:'Maître Coll.',     desc:'100 cartes obtenues',              icon:'museum',        rarete:'epique',  xp:400 },
-  { id:'album_team',    name:'Maître National',  desc:'Compléter une équipe entière',     icon:'shield',        rarete:'legende', xp:500 },
-  { id:'legendary_card',name:'Première Légende', desc:'Obtenir une carte légendaire',     icon:'star',          rarete:'epique',  xp:300 },
+  // 🎯 PRONOSTIC (6)
+  { id:'first_prono',   name:'Premier Prono',    desc:'1er pronostic',                       icon:'swords',       rarete:'commun',  xp:30,   coins:50   },
+  { id:'pronos_50',     name:'Pronostiqueur',    desc:'50 pronostics',                       icon:'trending-up',  rarete:'rare',    xp:200,  coins:300  },
+  { id:'first_exact',   name:'Premier Score Exact', desc:'1er score exact',                  icon:'bullseye',     rarete:'commun',  xp:100,  coins:100  },
+  { id:'sniper',        name:'Sniper',           desc:'5 scores exacts',                     icon:'crystal-ball', rarete:'rare',    xp:250,  coins:500  },
+  { id:'oracle',        name:'Oracle',           desc:'25 scores exacts',                    icon:'eye',          rarete:'legende', xp:1000, coins:1500 },
+  { id:'precision_70',  name:'Précision 70%',    desc:'70% pronos corrects (min 20)',        icon:'check-double', rarete:'epique',  xp:400,  coins:500  },
+
+  // 🔥 STREAKS & DAILY (6)
+  { id:'daily_3',       name:'Régulier',         desc:'3 jours daily consécutifs',           icon:'calendar',     rarete:'commun',  xp:50,   coins:100  },
+  { id:'daily_7',       name:'Fidèle',           desc:'7 jours daily consécutifs',           icon:'calendar',     rarete:'rare',    xp:200,  coins:300  },
+  { id:'daily_14',      name:'Inébranlable',     desc:'14 jours daily consécutifs',          icon:'shield',       rarete:'epique',  xp:400,  coins:500  },
+  { id:'daily_30',      name:'Légende du Daily', desc:'30 jours daily consécutifs',          icon:'star',         rarete:'legende', xp:1000, coins:1500 },
+  { id:'streak_5',      name:'En Feu',           desc:'5 pronos corrects d\'affilée',        icon:'flame',        rarete:'rare',    xp:200,  coins:300  },
+  { id:'streak_10',     name:'Brasier',          desc:'10 pronos corrects d\'affilée',       icon:'meteor',       rarete:'legende', xp:600,  coins:1000 },
+
+  // 🏆 LIGUES (4)
+  { id:'league_silver', name:'Promotion Argent', desc:'Atteindre Ligue Argent',              icon:'silver-medal', rarete:'commun',  xp:100,  coins:200  },
+  { id:'league_gold',   name:'Promotion Or',     desc:'Atteindre Ligue Or',                  icon:'gold-medal',   rarete:'rare',    xp:250,  coins:500  },
+  { id:'league_diamond',name:'Promotion Diamant',desc:'Atteindre Ligue Diamant',             icon:'diamond',      rarete:'epique',  xp:500,  coins:1000 },
+  { id:'league_legend', name:'Promotion Légende',desc:'Atteindre Ligue Légende',             icon:'crown',        rarete:'legende', xp:1500, coins:3000 },
+
+  // 🎫 TOURNOI (7)
+  { id:'group_complete',name:'Phase de Groupes', desc:'Pronos sur tous les matchs groupes',  icon:'ticket',       rarete:'rare',    xp:300,  coins:500  },
+  { id:'round_16',      name:'8èmes Complet',    desc:'Pronos sur tous les 8èmes',           icon:'ticket',       rarete:'rare',    xp:250,  coins:500  },
+  { id:'quarters',      name:'Quarts Complet',   desc:'Pronos sur tous les quarts',          icon:'ticket',       rarete:'epique',  xp:400,  coins:1000 },
+  { id:'semis',         name:'Demies Complet',   desc:'Pronos sur les demi-finales',         icon:'ticket',       rarete:'epique',  xp:500,  coins:1000 },
+  { id:'final',         name:'Pronostic Finale', desc:'Pronostic sur la finale',             icon:'trophy',       rarete:'legende', xp:1000, coins:2000 },
+  { id:'globaux_all',   name:'Pronostics Globaux', desc:'Tous les 7 globaux soumis',         icon:'check-double', rarete:'rare',    xp:300,  coins:500  },
+  { id:'vainqueur_trouve', name:'Vainqueur Trouvé', desc:'Trouver le vainqueur du tournoi',  icon:'crown',        rarete:'legende', xp:2000, coins:3000 },
+
+  // 🃏 COLLECTION (9)
+  { id:'cards_10',      name:'Apprenti Coll.',   desc:'10 cartes obtenues',                  icon:'card',         rarete:'commun',  xp:75,   coins:100  },
+  { id:'cards_50',      name:'Collectionneur',   desc:'50 cartes obtenues',                  icon:'books',        rarete:'rare',    xp:250,  coins:500  },
+  { id:'cards_100',     name:'Maître Coll.',     desc:'100 cartes obtenues',                 icon:'museum',       rarete:'epique',  xp:500,  coins:1000 },
+  { id:'cards_200',     name:'Maître Suprême',   desc:'200 cartes obtenues',                 icon:'museum',       rarete:'legende', xp:1200, coins:2000 },
+  { id:'album_team',    name:'Maître National',  desc:'Compléter une équipe nationale',      icon:'shield',       rarete:'legende', xp:1000, coins:2000 },
+  { id:'first_or',      name:'Première Or',      desc:'Obtenir 1ère carte Or',               icon:'gold-medal',   rarete:'commun',  xp:100,  coins:100  },
+  { id:'first_diamant', name:'Premier Diamant',  desc:'Obtenir 1ère carte Diamant',          icon:'diamond',      rarete:'rare',    xp:250,  coins:500  },
+  { id:'first_legende', name:'Première Légende', desc:'Obtenir 1ère carte Légende',          icon:'star',         rarete:'epique',  xp:500,  coins:1000 },
+  { id:'legends_5',     name:'Coll. de Légendes',desc:'5 cartes Légende',                    icon:'star',         rarete:'legende', xp:1500, coins:3000 },
+
+  // 📈 PROGRESSION (8)
+  { id:'level_5',       name:'Nouveau Talent',   desc:'Atteindre Niveau 5',                  icon:'muscle',       rarete:'commun',  xp:100,  coins:200  },
+  { id:'level_10',      name:'Pro Confirmé',     desc:'Atteindre Niveau 10',                 icon:'muscle',       rarete:'rare',    xp:300,  coins:500  },
+  { id:'level_15',      name:'Élite',            desc:'Atteindre Niveau 15',                 icon:'muscle',       rarete:'epique',  xp:600,  coins:1000 },
+  { id:'level_20',      name:'Légende Vivante',  desc:'Atteindre Niveau 20',                 icon:'crown',        rarete:'legende', xp:2000, coins:3000 },
+  { id:'chests_10',     name:'Apprenti Coffres', desc:'10 coffres ouverts',                  icon:'gift',         rarete:'commun',  xp:75,   coins:100  },
+  { id:'chests_50',     name:'Chasseur Trésors', desc:'50 coffres ouverts',                  icon:'gift',         rarete:'rare',    xp:300,  coins:500  },
+  { id:'chests_200',    name:'Maître Coffres',   desc:'200 coffres ouverts',                 icon:'gift',         rarete:'epique',  xp:800,  coins:1500 },
+  { id:'pts_1000',      name:'Premier Mille',    desc:'1 000 PTS accumulés',                 icon:'trending-up',  rarete:'epique',  xp:500,  coins:1000 },
+
+  // 🎯 MISSIONS & ENGAGEMENT (6) — conditions stub jusqu'à l'Étape 7 (missions) / 10 (shop)
+  { id:'first_mission', name:'Première Mission', desc:'1ère mission complétée',              icon:'check',        rarete:'commun',  xp:30,   coins:50   },
+  { id:'missions_25',   name:'Travailleur',      desc:'25 missions quotidiennes',            icon:'check-double', rarete:'rare',    xp:200,  coins:500  },
+  { id:'missions_100',  name:'Acharné',          desc:'100 missions quotidiennes',           icon:'check-double', rarete:'epique',  xp:500,  coins:1000 },
+  { id:'missions_weekly_10', name:'Stratège Hebdo', desc:'10 missions hebdo complétées',     icon:'calendar',     rarete:'rare',    xp:300,  coins:500  },
+  { id:'missions_tournoi_all', name:'Champion Tournoi', desc:'Toutes missions tournoi',      icon:'trophy',       rarete:'legende', xp:1500, coins:3000 },
+  { id:'first_shop',    name:'Premier Achat',    desc:'1ère transaction au shop',            icon:'coin',         rarete:'commun',  xp:50,   coins:50   },
 ];
 
 // ── SPRINT 5 — BADGE FUNCTIONS (Supabase-backed) ──
 
 function computePlayerStats(joueur) {
   const prog = joueur.pronostics || {};
-  let totalPronos = 0, scoresExacts = 0, pts = 0, streak = 0, maxStreak = 0;
+  let totalPronos = 0, scoresExacts = 0, bonDiff = 0, bonVainqueur = 0;
+  let pts = 0, streak = 0, maxStreak = 0;
   let outsiderWins = 0;
   for (const m of MATCHS) {
     const p = prog[m.id]; if (!p) continue;
@@ -62,16 +89,38 @@ function computePlayerStats(joueur) {
     if (ptsM !== null) pts += ptsM;
     if (p1===r1 && p2===r2) { scoresExacts++; streak++; maxStreak=Math.max(maxStreak,streak); }
     else { streak=0; }
-    // Outsider win: pronostiquer le vainqueur côté >3.0
+    // Tier de succès non-exact
     const rRes = r1>r2?1:r1<r2?2:0, pRes = p1>p2?1:p1<p2?2:0;
+    if (rRes===pRes && !(p1===r1 && p2===r2)) {
+      if (p1-p2 === r1-r2) bonDiff++; else bonVainqueur++;
+    }
     if (rRes===pRes && rRes!==0) {
       const winCote = rRes===1 ? (m.c1||1) : (m.c2||1);
       if (winCote >= 3.0) outsiderWins++;
     }
   }
+  // Précision : tous les pronos réussis (exact/diff/vainqueur) sur total
+  const successCount = scoresExacts + bonDiff + bonVainqueur;
+  const precision = totalPronos > 0 ? Math.round(100 * successCount / totalPronos) : 0;
+  // Globaux : compte les valeurs non vides
+  const glob = joueur.globaux || {};
+  const globauxFilled = Object.values(glob).filter(v => v && String(v).trim()).length;
+  // Vainqueur du tournoi correctement pronostiqué
+  const vainqueurRel = (typeof allGlobaux !== 'undefined' ? (allGlobaux.vainqueur || '') : '').toString().trim().toLowerCase();
+  const vainqueurUser = (glob.vainqueur || '').toString().trim().toLowerCase();
+  const vainqueurTrouve = !!vainqueurRel && vainqueurRel === vainqueurUser;
   const loginStreak = joueur.daily_streak || parseInt(localStorage.getItem('cdm2026_dr_streak')||'0');
-  return { totalPronos, scoresExacts, pts, maxStreak, loginStreak, outsiderWins,
-           totalCartes:0, cartesLegende:0 }; // cartes chargées async si besoin
+  // Niveau dérivé via getLevelInfo (fallback joueur.level si helper absent)
+  const level = typeof getLevelInfo === 'function' ? getLevelInfo(joueur).level : (joueur.level || 1);
+  return {
+    totalPronos, scoresExacts, bonDiff, bonVainqueur,
+    pts, maxStreak, loginStreak, outsiderWins,
+    precision, globauxFilled, vainqueurTrouve,
+    level,
+    // Stats chargées async dans checkBadges() :
+    totalCartes:0, cartesOr:0, cartesDiamant:0, cartesLegende:0,
+    teamCompleted:false, chestsOpened:0,
+  };
 }
 
 // Vrai uniquement si la phase contient ≥1 match ET le joueur a pronostiqué tous.
@@ -84,40 +133,66 @@ function phaseAllProno(joueur, phaseName) {
 
 async function checkBadgeCondition(badgeId, joueur, stats) {
   switch(badgeId) {
-    case 'first_blood':    return stats.totalPronos >= 1;
-    case 'exact_1':        return stats.scoresExacts >= 1;
-    case 'exact_5':        return stats.scoresExacts >= 5;
-    case 'exact_10':       return stats.scoresExacts >= 10;
-    case 'hat_trick':      return stats.maxStreak >= 3;
-    case 'clutch_king':    return (() => {
-      const lastM = [...MATCHS].reverse().find(m => allScores[m.id]);
-      if (!lastM) return false;
-      const p = (joueur.pronostics||{})[lastM.id]; if (!p) return false;
-      return computeMatchPts(lastM, p, allScores[lastM.id]) > 0;
-    })();
-    case 'upset_master':   return stats.outsiderWins >= 3;
+    // 🎯 PRONOSTIC
+    case 'first_prono':    return stats.totalPronos >= 1;
+    case 'pronos_50':      return stats.totalPronos >= 50;
+    case 'first_exact':    return stats.scoresExacts >= 1;
+    case 'sniper':         return stats.scoresExacts >= 5;
+    case 'oracle':         return stats.scoresExacts >= 25;
+    case 'precision_70':   return stats.totalPronos >= 20 && stats.precision >= 70;
+
+    // 🔥 STREAKS & DAILY
     case 'daily_3':        return stats.loginStreak >= 3;
     case 'daily_7':        return stats.loginStreak >= 7;
     case 'daily_14':       return stats.loginStreak >= 14;
     case 'daily_30':       return stats.loginStreak >= 30;
     case 'streak_5':       return stats.maxStreak >= 5;
     case 'streak_10':      return stats.maxStreak >= 10;
+
+    // 🏆 LIGUES
     case 'league_silver':  return ['argent','or','diamant','legende'].includes(joueur.league);
     case 'league_gold':    return ['or','diamant','legende'].includes(joueur.league);
     case 'league_diamond': return ['diamant','legende'].includes(joueur.league);
     case 'league_legend':  return joueur.league === 'legende';
-    // ⚠️ Garde-fou : `.every()` sur un tableau vide retourne `true` (vacuous truth).
-    // Sans le check `length > 0`, ces badges se débloquent à tort dès le 1er prono
-    // tant que la phase n'existe pas encore dans MATCHS.
+
+    // 🎫 TOURNOI
+    // Garde-fou : `.every()` sur un tableau vide retourne `true` (vacuous truth).
     case 'group_complete': return phaseAllProno(joueur, 'Groupes');
     case 'round_16':       return phaseAllProno(joueur, '8es de finale');
     case 'quarters':       return phaseAllProno(joueur, 'Quarts de finale');
     case 'semis':          return phaseAllProno(joueur, 'Demi-finales');
     case 'final':          return MATCHS.filter(m=>m.phase==='Finale').some(m=>(joueur.pronostics||{})[m.id]);
+    case 'globaux_all':    return stats.globauxFilled >= 7;
+    case 'vainqueur_trouve': return stats.vainqueurTrouve;
+
+    // 🃏 COLLECTION
     case 'cards_10':       return stats.totalCartes >= 10;
     case 'cards_50':       return stats.totalCartes >= 50;
     case 'cards_100':      return stats.totalCartes >= 100;
-    case 'legendary_card': return stats.cartesLegende >= 1;
+    case 'cards_200':      return stats.totalCartes >= 200;
+    case 'album_team':     return stats.teamCompleted;
+    case 'first_or':       return stats.cartesOr >= 1;
+    case 'first_diamant':  return stats.cartesDiamant >= 1;
+    case 'first_legende':  return stats.cartesLegende >= 1;
+    case 'legends_5':      return stats.cartesLegende >= 5;
+
+    // 📈 PROGRESSION
+    case 'level_5':        return stats.level >= 5;
+    case 'level_10':       return stats.level >= 10;
+    case 'level_15':       return stats.level >= 15;
+    case 'level_20':       return stats.level >= 20;
+    case 'chests_10':      return stats.chestsOpened >= 10;
+    case 'chests_50':      return stats.chestsOpened >= 50;
+    case 'chests_200':     return stats.chestsOpened >= 200;
+    case 'pts_1000':       return stats.pts >= 1000;
+
+    // 🎯 MISSIONS & ENGAGEMENT — stubs en attendant Étape 7 (missions) / 10 (shop)
+    case 'first_mission':         return false; // TODO Étape 7
+    case 'missions_25':           return false; // TODO Étape 7
+    case 'missions_100':          return false; // TODO Étape 7
+    case 'missions_weekly_10':    return false; // TODO Étape 7
+    case 'missions_tournoi_all':  return false; // TODO Étape 7
+    case 'first_shop':            return false; // TODO Étape 10
     default: return false;
   }
 }
@@ -143,17 +218,39 @@ async function checkBadges() {
       ...__sessionUnlockedBadges,
     ]);
 
-    // Optionally fetch carte counts
-    let totalCartes = 0, cartesLegende = 0;
+    // Récupère les stats async : cartes par rareté, coffres ouverts, équipe complète
+    let cartes = [];
     try {
-      const { data: cartes } = await sb.from('cartes_collection').select('rarete').eq('joueur_id', currentUser);
-      totalCartes = (cartes||[]).length;
-      cartesLegende = (cartes||[]).filter(c=>c.rarete==='legende').length;
+      const { data } = await sb.from('cartes_collection').select('rarete, equipe').eq('joueur_id', currentUser);
+      cartes = data || [];
+    } catch(_) {}
+    let chestsOpened = 0;
+    try {
+      const { count } = await sb.from('coffres_inventaire')
+        .select('id', { count: 'exact', head: true })
+        .eq('joueur_id', currentUser).eq('opened', true);
+      chestsOpened = count || 0;
     } catch(_) {}
 
+    // Équipe complète : au moins 1 équipe avec ≥ 11 cartes (effectif type FUT)
+    // Fallback simple si pas de colonne 'equipe' : reste false.
+    let teamCompleted = false;
+    if (cartes.length && cartes[0].equipe !== undefined) {
+      const byTeam = cartes.reduce((acc, c) => {
+        if (!c.equipe) return acc;
+        acc[c.equipe] = (acc[c.equipe] || 0) + 1;
+        return acc;
+      }, {});
+      teamCompleted = Object.values(byTeam).some(n => n >= 11);
+    }
+
     const stats = computePlayerStats(joueur);
-    stats.totalCartes = totalCartes;
-    stats.cartesLegende = cartesLegende;
+    stats.totalCartes    = cartes.length;
+    stats.cartesOr       = cartes.filter(c => c.rarete === 'or').length;
+    stats.cartesDiamant  = cartes.filter(c => c.rarete === 'diamant').length;
+    stats.cartesLegende  = cartes.filter(c => c.rarete === 'legende').length;
+    stats.chestsOpened   = chestsOpened;
+    stats.teamCompleted  = teamCompleted;
 
     // Phase 1 : recenser tous les badges à débloquer avant de toucher quoi que ce soit
     const toUnlock = [];
@@ -181,8 +278,9 @@ async function checkBadges() {
 
     // Phase 3 : UN seul gainXP cumulé → au plus 1 modal level-up,
     // pas N modales empilées (un coffre d'XP par badge).
+    // Étape 6 : coins par badge (b.coins), pas un forfait commun.
     const totalBadgeXP = toUnlock.reduce((sum, b) => sum + (b.xp || 50), 0);
-    const totalBadgeCoins = toUnlock.length * (COIN_REWARDS.badge_unlock || 100);
+    const totalBadgeCoins = toUnlock.reduce((sum, b) => sum + (b.coins || 0), 0);
     if (totalBadgeXP > 0) await gainXP(totalBadgeXP, 'badges_batch');
     if (totalBadgeCoins > 0 && typeof addCoins === 'function') {
       await addCoins(totalBadgeCoins);
@@ -259,7 +357,8 @@ function showBadgeUnlockModal(badge) {
   nameEl.textContent = badge.name;
 
   if (descEl)  { descEl.textContent = badge.desc || ''; descEl.style.display = badge.desc ? '' : 'none'; }
-  if (rewardEl){ rewardEl.innerHTML = `+${badge.xp||50} XP  +${COIN_REWARDS?.badge_unlock||100} ${window.icon('coin', 14)}`; rewardEl.style.display = ''; }
+  // Étape 6 : coins per-badge (badge.coins) au lieu d'un forfait COIN_REWARDS.badge_unlock.
+  if (rewardEl){ rewardEl.innerHTML = `+${badge.xp||50} XP  +${badge.coins||0} ${window.icon('coin', 14)}`; rewardEl.style.display = ''; }
 
   const rareteLabels = { commun:'COMMUN', rare:'RARE', epique:'ÉPIQUE', legende:'LÉGENDAIRE' };
   const rareteColors = { commun:'#9CA3AF', rare:'#58C8FA', epique:'#A855F7', legende:'#F4C542' };

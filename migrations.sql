@@ -76,3 +76,27 @@ UPDATE joueurs SET league = NULL;
 
 ALTER TABLE joueurs ADD COLUMN IF NOT EXISTS coins INTEGER DEFAULT 0;
 ALTER TABLE joueurs ADD COLUMN IF NOT EXISTS gems  INTEGER DEFAULT 0;
+
+-- ─────────────────────────────────────────────────────────────────────
+-- Étape 6 — Refonte badges (46 badges sur 7 catégories)
+-- ─────────────────────────────────────────────────────────────────────
+-- Renames d'IDs pour préserver l'historique des comptes déjà touchés :
+--   first_blood     → first_prono
+--   exact_1         → first_exact
+--   exact_5         → sniper
+--   legendary_card  → first_legende
+-- Si un compte a DÉJÀ les deux IDs (improbable mais possible), l'UPDATE
+-- échouera sur la contrainte d'unicité ; à régler manuellement le cas
+-- échéant via DELETE du nouveau puis UPDATE de l'ancien.
+
+UPDATE badges_debloques SET badge_id = 'first_prono'   WHERE badge_id = 'first_blood';
+UPDATE badges_debloques SET badge_id = 'first_exact'   WHERE badge_id = 'exact_1';
+UPDATE badges_debloques SET badge_id = 'sniper'        WHERE badge_id = 'exact_5';
+UPDATE badges_debloques SET badge_id = 'first_legende' WHERE badge_id = 'legendary_card';
+
+-- Cleanup des badges supprimés (hors spec v3 / système Club inexistant)
+DELETE FROM badges_debloques
+WHERE badge_id IN (
+  'hat_trick', 'clutch_king', 'upset_master', 'exact_10',
+  'club_member', 'club_top', 'rival_5'
+);

@@ -4,3 +4,6 @@
 
 # Config locale Claude Code (launch.json, etc.)
 .claude/
+
+# Doc de passation entre conversations (local, pas dans le repo)
+AVANCEMENT.md
