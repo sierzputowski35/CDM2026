@@ -122,3 +122,49 @@ ALTER TABLE cartes_collection ADD COLUMN IF NOT EXISTS equipe    TEXT;
 CREATE UNIQUE INDEX IF NOT EXISTS idx_cartes_unique_player
   ON cartes_collection(joueur_id, player_id)
   WHERE player_id IS NOT NULL;
+
+-- ─────────────────────────────────────────────────────────────────────
+-- Étape 7 — Système missions (3 niveaux : daily / weekly / tournament)
+-- ─────────────────────────────────────────────────────────────────────
+-- Architecture hybride :
+--   • joueurs.daily_state JSONB   — compteurs du jour, reset à minuit
+--   • joueurs.weekly_state JSONB  — compteurs de la semaine, reset lundi
+--   • joueurs.last_daily_missions_date  TEXT — clé de rotation daily
+--   • joueurs.last_weekly_missions_week TEXT — clé de rotation weekly
+--   • missions_progress (TABLE) — quelles 3 daily + 3 weekly + 5 tournoi
+--     sont actives pour chaque joueur, et leur statut claimed.
+--
+-- Les compteurs (pronos, exacts, etc.) vivent dans daily_state/weekly_state
+-- côté joueur. Le `progress` d'une mission est calculé à la volée à partir
+-- de ces compteurs + des données existantes (cartes, ligues, globaux).
+-- La table missions_progress ne stocke PAS le progress (dérivé) mais
+-- seulement l'identité des missions actives + le flag claimed.
+
+ALTER TABLE joueurs ADD COLUMN IF NOT EXISTS daily_state  JSONB DEFAULT '{}'::jsonb;
+ALTER TABLE joueurs ADD COLUMN IF NOT EXISTS weekly_state JSONB DEFAULT '{}'::jsonb;
+ALTER TABLE joueurs ADD COLUMN IF NOT EXISTS last_daily_missions_date  TEXT;
+ALTER TABLE joueurs ADD COLUMN IF NOT EXISTS last_weekly_missions_week TEXT;
+
+CREATE TABLE IF NOT EXISTS missions_progress (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  joueur_id TEXT REFERENCES joueurs(id) ON DELETE CASCADE,
+  mission_id TEXT NOT NULL,
+  mission_type TEXT NOT NULL CHECK (mission_type IN ('daily','weekly','tournament')),
+  claimed BOOLEAN DEFAULT FALSE,
+  reset_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_missions_user_type
+  ON missions_progress(joueur_id, mission_type);
+
+-- Unicité : un même joueur ne peut pas avoir 2x la même mission active
+-- dans la même fenêtre de reset. Pour tournament, reset_at IS NULL donc
+-- on garantit qu'il n'y a qu'une seule ligne par mission tournoi.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_missions_unique
+  ON missions_progress(joueur_id, mission_id, COALESCE(reset_at, 'epoch'::timestamp));
+
+-- Legacy : la colonne joueurs.missions_progress JSONB (ancien proto-système
+-- qui ne suivait qu'une seule mission "3 pronos = +50 XP") n'est plus lue
+-- ni écrite par l'app. On la laisse en DB par sécurité — peut être
+-- supprimée plus tard via : ALTER TABLE joueurs DROP COLUMN missions_progress;
