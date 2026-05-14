@@ -945,7 +945,18 @@ body {
   gap: 2px;
 }
 .buteur-btn:active { transform: scale(.96); }
-.buteur-btn.selected { border-color: var(--gold); background: rgba(255,215,0,.08); }
+.buteur-btn.selected {
+  border: 1.5px solid #F4C542;
+  background: linear-gradient(180deg, rgba(244,197,66,.22) 0%, rgba(244,197,66,.10) 100%);
+  box-shadow: 0 0 0 2px rgba(244,197,66,.18), 0 4px 14px rgba(244,197,66,.25);
+  position: relative;
+}
+.buteur-btn.selected::after {
+  content: "✓"; position: absolute; top: 4px; right: 6px;
+  font-size: 12px; font-weight: 800; color: #F4C542;
+}
+.buteur-btn.selected .buteur-nom { color: #FFCC33; font-weight: 700; }
+.buteur-btn.selected .buteur-cote { color: #FFCC33; font-weight: 700; }
 .buteur-btn.locked { cursor: default; opacity: .7; }
 .buteur-nom { font-size: 12px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .buteur-cote { font-size: 10px; color: var(--gold); font-family: 'Oswald', sans-serif; }
@@ -962,7 +973,18 @@ body {
   transition: transform .15s, border-color .15s;
 }
 .bonus-btn:active { transform: scale(.98); }
-.bonus-btn.selected { border-color: rgba(88,200,250,.5); background: rgba(88,200,250,.07); }
+.bonus-btn.selected {
+  border: 1.5px solid #F4C542;
+  background: linear-gradient(180deg, rgba(244,197,66,.22) 0%, rgba(244,197,66,.10) 100%);
+  box-shadow: 0 0 0 2px rgba(244,197,66,.18), 0 4px 14px rgba(244,197,66,.25);
+  position: relative;
+}
+.bonus-btn.selected::after {
+  content: "✓"; position: absolute; top: 4px; right: 6px;
+  font-size: 12px; font-weight: 800; color: #F4C542;
+}
+.bonus-btn.selected .bonus-label { color: #FFCC33; font-weight: 700; }
+.bonus-btn.selected .bonus-cote { color: #FFCC33; font-weight: 700; }
 .bonus-btn.locked { cursor: default; opacity: .7; }
 .bonus-btn.won { border-color: var(--green); background: rgba(34,209,107,.08); }
 .bonus-btn.lost { border-color: rgba(255,77,90,.3); background: rgba(255,77,90,.05); }
@@ -2081,6 +2103,96 @@ body {
   box-shadow: none; font-size: 13px; letter-spacing: .5px;
   font-family: 'Inter', sans-serif; font-weight: 600;
 }
+
+/* ── PRONO LOCK : "Modifier" subtle button (saved state) ── */
+.save-btn-v2.modifier-btn {
+  background: transparent;
+  color: var(--text2);
+  border: 1px solid var(--border2);
+  box-shadow: none;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .3px;
+  padding: 10px 18px;
+  text-transform: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px auto 0;
+  width: auto;
+}
+.save-btn-v2.modifier-btn:hover,
+.save-btn-v2.modifier-btn:focus {
+  border-color: rgba(244,197,66,.5);
+  color: var(--gold-primary);
+  background: rgba(244,197,66,.04);
+}
+
+/* ── PRONO LOCK : inputs verrouillés (lecture seule visible) ── */
+.match-card[data-prono-state="saved"] .score-inp {
+  pointer-events: none;
+  background: transparent;
+  border: 1px dashed rgba(244,197,66,.18);
+  color: var(--gold-primary);
+  font-weight: 700;
+}
+.match-card[data-prono-state="saved"] .score-inp::-webkit-inner-spin-button,
+.match-card[data-prono-state="saved"] .score-inp::-webkit-outer-spin-button {
+  -webkit-appearance: none; margin: 0;
+}
+.match-card[data-prono-state="saved"] .odds-cell { pointer-events: none; opacity: .55; }
+
+/* ── PRONO EDITING : inputs actifs avec halo doré ── */
+.match-card[data-prono-state="editing"] .score-inp {
+  border: 1.5px solid var(--gold-primary);
+  background: rgba(244,197,66,.06);
+  box-shadow: 0 0 0 3px rgba(244,197,66,.10);
+  color: var(--gold-primary);
+  font-weight: 700;
+}
+
+/* ── PRONO LOCK : buteur/pari non-sélectionnés sont muets ── */
+.match-card[data-prono-state="saved"] .buteur-btn:not(.selected),
+.match-card[data-prono-state="saved"] .bonus-btn:not(.selected) {
+  opacity: .28;
+  pointer-events: none;
+  filter: grayscale(.5);
+}
+
+/* ── PRONO EDITING : tous les buteur/pari cliquables ── */
+.match-card[data-prono-state="editing"] .buteur-btn,
+.match-card[data-prono-state="editing"] .bonus-btn {
+  opacity: 1; pointer-events: auto; filter: none;
+}
+
+/* Bandeau "Tu es en mode modification" */
+.edit-mode-hint {
+  font-size: 11px; color: var(--gold-primary);
+  background: rgba(244,197,66,.07);
+  border: 1px dashed rgba(244,197,66,.3);
+  border-radius: 8px;
+  padding: 6px 10px;
+  margin: 8px 0 4px;
+  text-align: center;
+  letter-spacing: .3px;
+  display: none;
+}
+.match-card[data-prono-state="editing"] .edit-mode-hint { display: block; }
+
+/* Lien Annuler en mode editing */
+.cancel-edit-link {
+  display: none;
+  margin-top: 6px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text3);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.cancel-edit-link:hover { color: var(--text2); }
+.match-card[data-prono-state="editing"] .cancel-edit-link { display: block; }
 
 /* ══ ADMIN COTES ══ */
 .admin-equipe-row {
@@ -6642,15 +6754,23 @@ function renderMatchs(){
             🎯 Jusqu'à <strong>+${maxPts} pts</strong> si score exact · ×${mult} phase
           </div>`;
       }
-      footer=`
-        <button class="save-btn-v2${hasSaved?' saved-v2':''}" id="sbtn-${m.id}" onclick="savePronostic(${m.id})">
-          ${hasSaved
-            ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> ${p.s1}–${p.s2} sauvegardé · Modifier`
-            : `<svg width="14" height="14" viewBox="0 0 24 24" fill="#050816" stroke="#050816" stroke-width="0"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> ENREGISTRER MON PRONOSTIC`
-          }
+      if (hasSaved) {
+        footer = `
+        <div class="edit-mode-hint">✏️ Tu modifies ton pronostic — n'oublie pas de sauvegarder</div>
+        <button class="save-btn-v2 modifier-btn" id="sbtn-${m.id}" onclick="enterEditMode(${m.id})">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          Modifier mon pronostic
+        </button>
+        <div class="cancel-edit-link" onclick="exitEditMode(${m.id}, true)">Annuler les modifications</div>`;
+      } else {
+        footer = `
+        <button class="save-btn-v2" id="sbtn-${m.id}" onclick="savePronostic(${m.id})">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#050816" stroke="#050816" stroke-width="0"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> ENREGISTRER MON PRONOSTIC
         </button>`;
+      }
     }
-    html+=`<div class="match-card" id="match-card-${m.id}">
+    const pronoState = real ? 'result' : (p.s1 !== undefined ? 'saved' : 'pristine');
+    html+=`<div class="match-card" id="match-card-${m.id}" data-prono-state="${pronoState}">
       <div class="match-meta">
         <span class="match-group">${groupeLabel}</span>
         <span class="match-venue">${m.venue}</span>
@@ -6663,15 +6783,41 @@ function renderMatchs(){
       </div>
       ${oddsWidget}
       <div class="score-row">
-        <input class="score-inp" type="number" min="0" max="20" id="s1-${m.id}" value="${p.s1!==undefined?p.s1:''}" placeholder="—" ${isLocked?'disabled':''}>
+        <input class="score-inp" type="number" min="0" max="20" id="s1-${m.id}" value="${p.s1!==undefined?p.s1:''}" placeholder="—" ${isLocked?'disabled':''}${p.s1!==undefined?` data-saved="${p.s1}"`:''}>
         <span class="score-sep">:</span>
-        <input class="score-inp" type="number" min="0" max="20" id="s2-${m.id}" value="${p.s2!==undefined?p.s2:''}" placeholder="—" ${isLocked?'disabled':''}>
+        <input class="score-inp" type="number" min="0" max="20" id="s2-${m.id}" value="${p.s2!==undefined?p.s2:''}" placeholder="—" ${isLocked?'disabled':''}${p.s2!==undefined?` data-saved="${p.s2}"`:''}>
       </div>
       ${renderBonusSection(m, p, isLocked)}
       ${footer}
     </div>`;
   }
+  // Snapshot des cartes en cours d'édition. Sans ça, l'echo Supabase realtime
+  // déclenche renderMatchs au milieu de la frappe → reconstruit la liste avec
+  // les valeurs DB et écrase ce que l'utilisateur venait de taper, et la carte
+  // ressort en mode "saved" au lieu de "editing".
+  const _editSnap = {};
+  document.querySelectorAll('#matchs-list .match-card[data-prono-state="editing"]').forEach(card => {
+    const id = card.id.replace('match-card-', '');
+    _editSnap[id] = {
+      s1: document.getElementById('s1-'+id)?.value,
+      s2: document.getElementById('s2-'+id)?.value,
+      snapS1: card.dataset.snapshotS1,
+      snapS2: card.dataset.snapshotS2
+    };
+  });
   document.getElementById('matchs-list').innerHTML=html;
+  Object.entries(_editSnap).forEach(([id, snap]) => {
+    const card = document.getElementById('match-card-'+id);
+    if (!card) return;
+    card.dataset.pronoState = 'editing';
+    if (snap.snapS1 !== undefined) card.dataset.snapshotS1 = snap.snapS1;
+    if (snap.snapS2 !== undefined) card.dataset.snapshotS2 = snap.snapS2;
+    const s1 = document.getElementById('s1-'+id);
+    const s2 = document.getElementById('s2-'+id);
+    if (s1 && snap.s1 !== undefined) s1.value = snap.s1;
+    if (s2 && snap.s2 !== undefined) s2.value = snap.s2;
+    if (typeof renderFooterButton === 'function') renderFooterButton(id);
+  });
   if(_pendingScrollMatchId!==null){
     const id=_pendingScrollMatchId;
     _pendingScrollMatchId=null;
@@ -6769,9 +6915,15 @@ async function savePronostic(id){
     if(error){showToast('Erreur');btn.disabled=false;btn.textContent='Enregistrer ce pronostic';return;}
   }
   await loadData();
-  btn.classList.add('saved');
+  // Resync data-saved pour que la détection dirty et le snapshot restent corrects.
+  const s1El=document.getElementById('s1-'+id),s2El=document.getElementById('s2-'+id);
+  if(s1El) s1El.dataset.saved=s1;
+  if(s2El) s2El.dataset.saved=s2;
+  // Retour en état verrouillé : inputs locked + bouton "Modifier" discret.
+  const card=document.getElementById('match-card-'+id);
+  if(card) card.dataset.pronoState='saved';
+  renderFooterButton(id);
   const labelCote=coteSnapshot>1.01?` (×${coteSnapshot.toFixed(2)})`:'';
-  btn.textContent=`✓ Enregistré${labelCote}`;
   showToast(`Pronostic sauvegardé${labelCote} !`);
   try{
     gainXP(XP_REWARDS.prono_submit, 'prono_submit');
@@ -8143,7 +8295,62 @@ function autoFillScore(matchId, s1, s2) {
   const res = parseInt(s1) > parseInt(s2) ? 0 : parseInt(s1) < parseInt(s2) ? 2 : 1;
   const cells = document.querySelectorAll('#match-card-' + matchId + ' .odds-cell');
   if (cells[res]) cells[res].classList.add('highlighted');
+  markPronoDirty(matchId);
 }
+
+// Passe la match-card en mode "édition" : déverrouille les inputs et les
+// boutons buteur/pari, remplace "Modifier" par "Sauvegarder la modification".
+// Snapshot les valeurs en cours pour permettre Annuler.
+function enterEditMode(matchId) {
+  const card = document.getElementById('match-card-' + matchId);
+  if (!card) return;
+  const s1 = document.getElementById('s1-' + matchId);
+  const s2 = document.getElementById('s2-' + matchId);
+  card.dataset.snapshotS1 = s1?.value || '';
+  card.dataset.snapshotS2 = s2?.value || '';
+  card.dataset.pronoState = 'editing';
+  renderFooterButton(matchId);
+  if (navigator.vibrate) navigator.vibrate(8);
+  setTimeout(() => s1?.focus(), 60);
+}
+
+// Sort du mode édition. Si cancel=true, restaure les valeurs d'avant édition.
+function exitEditMode(matchId, cancel) {
+  const card = document.getElementById('match-card-' + matchId);
+  if (!card) return;
+  if (cancel) {
+    const s1 = document.getElementById('s1-' + matchId);
+    const s2 = document.getElementById('s2-' + matchId);
+    if (s1) s1.value = card.dataset.snapshotS1 || s1.dataset.saved || '';
+    if (s2) s2.value = card.dataset.snapshotS2 || s2.dataset.saved || '';
+  }
+  card.dataset.pronoState = 'saved';
+  renderFooterButton(matchId);
+}
+
+// Met à jour le bouton-footer en fonction du data-prono-state actuel.
+function renderFooterButton(matchId) {
+  const card = document.getElementById('match-card-' + matchId);
+  const btn = document.getElementById('sbtn-' + matchId);
+  if (!card || !btn) return;
+  const state = card.dataset.pronoState;
+  btn.disabled = false;
+  btn.className = 'save-btn-v2';
+  if (state === 'editing') {
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="#050816" stroke="#050816" stroke-width="0"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> SAUVEGARDER LA MODIFICATION';
+    btn.setAttribute('onclick', 'savePronostic(' + matchId + ')');
+  } else if (state === 'saved') {
+    btn.classList.add('modifier-btn');
+    btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Modifier mon pronostic';
+    btn.setAttribute('onclick', 'enterEditMode(' + matchId + ')');
+  } else {
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="#050816" stroke="#050816" stroke-width="0"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> ENREGISTRER MON PRONOSTIC';
+    btn.setAttribute('onclick', 'savePronostic(' + matchId + ')');
+  }
+}
+
+// No-op: oninput historique conservé pour compat des anciens cards déjà rendus.
+function markPronoDirty(){}
 
 function spawnParticles(originEl, count) {
   const rect = originEl.getBoundingClientRect();
