@@ -202,7 +202,7 @@ async function checkBadgeCondition(badgeId, joueur, stats) {
     case 'missions_100':          return (stats.missionsClaimedDaily   || 0) >= 100;
     case 'missions_weekly_10':    return (stats.missionsClaimedWeekly  || 0) >= 10;
     case 'missions_tournoi_all':  return (stats.missionsClaimedTournoi || 0) >= 5;
-    case 'first_shop':            return false; // TODO Étape 10
+    case 'first_shop':            return (stats.shopTransactionsTotal || 0) >= 1;
     default: return false;
   }
 }
@@ -261,6 +261,14 @@ async function checkBadges() {
       missionsClaimed = await getClaimedMissionsCount(currentUser);
     }
 
+    // Étape 10 — Compte des transactions shop pour badge first_shop
+    let shopTransactionsTotal = 0;
+    try {
+      const { count } = await sb.from('shop_transactions')
+        .select('id', { count: 'exact', head: true }).eq('joueur_id', currentUser);
+      shopTransactionsTotal = count || 0;
+    } catch(_) {}
+
     const stats = computePlayerStats(joueur);
     stats.totalCartes    = cartes.length;
     stats.cartesOr       = cartes.filter(c => c.rarete === 'or').length;
@@ -272,6 +280,7 @@ async function checkBadges() {
     stats.missionsClaimedWeekly  = missionsClaimed.weekly;
     stats.missionsClaimedTournoi = missionsClaimed.tournament;
     stats.missionsClaimedTotal   = missionsClaimed.total;
+    stats.shopTransactionsTotal  = shopTransactionsTotal;
 
     // Phase 1 : recenser tous les badges à débloquer avant de toucher quoi que ce soit
     const toUnlock = [];

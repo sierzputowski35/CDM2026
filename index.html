@@ -320,6 +320,7 @@
       <div id="daily-reward-home"></div>
       <div id="mission-home"></div>
       <div id="coffres-home"></div>
+      <div id="shop-home"></div>
 
       <!-- 2. HERO CARD MATCH DU JOUR -->
       <div class="hero-card" id="home-hero-card">
@@ -748,6 +749,7 @@
 <script src="js/badges.js"></script>
 <script src="js/cartes.js"></script>
 <script src="js/missions.js"></script>
+<script src="js/shop.js"></script>
 <script src="js/pwa.js"></script>
 <script src="js/rewards.js"></script>
 <script src="js/notifications.js"></script>
@@ -1766,6 +1768,10 @@ function aggregateLevelUpRewards(oldLevel, newLevel) {
 async function gainXP(amount, source = 'autre') {
   const joueur = allJoueurs.find(j => j.id === currentUser);
   if (!joueur) return;
+  // Étape 10 — Booster Double XP : ×2 si actif (24h après achat shop)
+  if (typeof isBoostActive === 'function' && isBoostActive(joueur, 'boost_double_xp_until')) {
+    amount = amount * 2;
+  }
   const oldInfo = getLevelInfo(joueur);
   const oldXP = oldInfo.xp;
   const oldLevel = oldInfo.level;
@@ -1810,6 +1816,10 @@ async function gainXP(amount, source = 'autre') {
 async function gainXPFor(joueurId, amount, source) {
   const joueur = allJoueurs.find(j => j.id === joueurId);
   if (!joueur) return;
+  // Étape 10 — Booster Double XP : ×2 si actif (par-joueur)
+  if (typeof isBoostActive === 'function' && isBoostActive(joueur, 'boost_double_xp_until')) {
+    amount = amount * 2;
+  }
   const oldInfo = getLevelInfo(joueur);
   const oldLevel = oldInfo.level;
   const newXP = oldInfo.xp + amount;
@@ -2183,6 +2193,7 @@ async function loadData(){
   // Étape 9 — Cache des badges débloqués sur le joueur courant pour que
   // isAvatarItemUnlocked() puisse vérifier sync les unlock 'badge'
   // (cosmétiques type titre "Sniper" → badge `sniper`).
+  // Étape 10 — Cache des achats shop pour isAvatarItemUnlocked type 'shop'.
   if (currentUser) {
     const joueur = allJoueurs.find(j => j.id === currentUser);
     if (joueur) {
@@ -2191,6 +2202,7 @@ async function loadData(){
           .select('badge_id').eq('joueur_id', currentUser);
         joueur._badgeIds = new Set((badgesData || []).map(b => b.badge_id));
       } catch(_) { joueur._badgeIds = new Set(); }
+      joueur._shopPurchases = new Set(Array.isArray(joueur.shop_purchases) ? joueur.shop_purchases : []);
     }
   }
 
@@ -2799,6 +2811,10 @@ const DUPLICATE_CONVERSION = {
 async function addCoins(amount) {
   const joueur = allJoueurs.find(j => j.id === currentUser);
   if (!joueur) return;
+  // Étape 10 — Booster Double Coins : ×2 si actif (24h après achat shop)
+  if (typeof isBoostActive === 'function' && isBoostActive(joueur, 'boost_double_coins_until')) {
+    amount = amount * 2;
+  }
   await sb.from('joueurs').update({ coins: (joueur.coins || 0) + amount }).eq('id', currentUser);
 }
 
@@ -2813,6 +2829,10 @@ async function addCoinsFor(joueurId, amount) {
   if (!amount) return;
   const joueur = allJoueurs.find(j => j.id === joueurId);
   if (!joueur) return;
+  // Étape 10 — Booster Double Coins : ×2 si actif (par-joueur)
+  if (typeof isBoostActive === 'function' && isBoostActive(joueur, 'boost_double_coins_until')) {
+    amount = amount * 2;
+  }
   await sb.from('joueurs').update({ coins: (joueur.coins || 0) + amount }).eq('id', joueurId);
 }
 async function addGemsFor(joueurId, amount) {
@@ -3214,6 +3234,7 @@ function initHomePage() {
   renderDailyRewardCard();
   renderMissionCard();
   renderCoffresCard();
+  if (typeof renderShopHomeCard === 'function') renderShopHomeCard();
   renderHeroCard();
   renderQuickMatches();
   renderStreakCard();
