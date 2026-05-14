@@ -1355,9 +1355,31 @@ let allOdds = {}; // { [match_id]: { home, draw, away } } — peuplé depuis cot
 
 // ══ SYSTÈME XP UNIFIÉ (BILAN v3 — Étape 1) ══
 // joueur.xp = XP cumulé total. Le niveau se DÉRIVE via getLevelInfo().
-// Courbe : 85 × level^1.6 (palier marquant à Nv 5/10/15/20).
-// Plafond Nv 20 (~66 862 XP cumulé).
-const XP_CURVE = level => Math.floor(85 * Math.pow(level, 1.6));
+// Courbe : table ronde dérivée de 85 × level^1.6, arrondie pour
+// affichage propre en jeu (paliers marquants Nv 5/10/15/20).
+// Plafond Nv 20 = 73 865 XP cumulé.
+const XP_LEVEL_REQUIRED = {
+  1:    85,  // → Nv 2
+  2:   260,  // → Nv 3
+  3:   490,  // → Nv 4
+  4:   780,  // → Nv 5 🎁
+  5:  1100,  // → Nv 6
+  6:  1500,  // → Nv 7
+  7:  1900,  // → Nv 8
+  8:  2350,  // → Nv 9
+  9:  2850,  // → Nv 10 🎁
+  10: 3400,  // → Nv 11
+  11: 3950,  // → Nv 12
+  12: 4500,  // → Nv 13
+  13: 5150,  // → Nv 14
+  14: 5800,  // → Nv 15 🎁
+  15: 6500,  // → Nv 16
+  16: 7200,  // → Nv 17
+  17: 7900,  // → Nv 18
+  18: 8650,  // → Nv 19
+  19: 9500,  // → Nv 20 👑
+};
+const XP_CURVE = level => XP_LEVEL_REQUIRED[level] || 0;
 const MAX_LEVEL = 20;
 
 function getLevelInfo(joueur) {

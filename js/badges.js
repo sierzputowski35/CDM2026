@@ -122,13 +122,26 @@ async function checkBadgeCondition(badgeId, joueur, stats) {
   }
 }
 
+// Cache mémoire : protège contre le re-déclenchement du même badge dans
+// la session courante si l'insert DB échoue silencieusement (RLS, schéma...).
+// Sans ce filet, chaque prono qui re-déclenche checkBadges fait spawn une
+// nouvelle modal pour first_blood, alors que la condition est trivialement
+// remplie en permanence.
+const __sessionUnlockedBadges = new Set();
+
 async function checkBadges() {
   const joueur = allJoueurs.find(j => j.id === currentUser);
   if (!joueur || !sb) return;
   try {
-    const { data: alreadyUnlocked } = await sb.from('badges_debloques')
+    const { data: alreadyUnlocked, error: selectErr } = await sb
+      .from('badges_debloques')
       .select('badge_id').eq('joueur_id', currentUser);
-    const unlockedIds = new Set((alreadyUnlocked || []).map(b => b.badge_id));
+    if (selectErr) console.warn('[badges] SELECT badges_debloques failed:', selectErr);
+
+    const unlockedIds = new Set([
+      ...((alreadyUnlocked || []).map(b => b.badge_id)),
+      ...__sessionUnlockedBadges,
+    ]);
 
     // Optionally fetch carte counts
     let totalCartes = 0, cartesLegende = 0;
@@ -152,12 +165,19 @@ async function checkBadges() {
     }
     if (!toUnlock.length) return;
 
-    // Phase 2 : insert DB en un seul appel
-    try {
-      await sb.from('badges_debloques').insert(
-        toUnlock.map(b => ({ joueur_id: currentUser, badge_id: b.id }))
-      );
-    } catch(_) {}
+    // Marquer en cache mémoire IMMÉDIATEMENT : même si l'insert DB échoue,
+    // on ne reproposera plus ces badges pendant cette session.
+    for (const b of toUnlock) __sessionUnlockedBadges.add(b.id);
+
+    // Phase 2 : insert DB en un seul appel.
+    // Supabase ne throw pas sur erreur DB → on lit explicitement `error`.
+    const { error: insertErr } = await sb.from('badges_debloques').insert(
+      toUnlock.map(b => ({ joueur_id: currentUser, badge_id: b.id }))
+    );
+    if (insertErr) {
+      console.warn('[badges] INSERT badges_debloques failed:', insertErr,
+        '— badges concernés:', toUnlock.map(b => b.id));
+    }
 
     // Phase 3 : UN seul gainXP cumulé → au plus 1 modal level-up,
     // pas N modales empilées (un coffre d'XP par badge).
