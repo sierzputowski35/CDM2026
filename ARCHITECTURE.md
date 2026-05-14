@@ -32,6 +32,13 @@ CDM 2026 App/
 │   ├── rewards.js               ← particules CTA + canvas ambiantes
 │   ├── notifications.js         ← panel notifications in-app
 │   ├── badge-unlock.js          ← animation d'overlay de déblocage
+│   ├── components/
+│   │   └── skeleton.js          ← (PR #7) générateur de skeleton screens
+│   ├── utils/
+│   │   ├── icons.js             ← table d'icônes SVG
+│   │   ├── haptic.js            ← wrapper navigator.vibrate
+│   │   ├── flag.js              ← rendu drapeaux flagcdn
+│   │   └── scroll-reveal.js     ← (PR #7) IntersectionObserver reveal
 │   └── data/
 │       ├── flags.js             ← table FLAG_CODES (code pays → emoji)
 │       └── cotes.js             ← calculerCotesMatch() — fonction pure

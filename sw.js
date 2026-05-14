@@ -7,9 +7,10 @@
 // PR #3 : bump v4 après l'extraction de 10 modules JS dans /js/
 // Hotfix : bump v5 après correction de l'init() orphelin dans pwa.js
 // et du chemin des icônes dans manifest.json
+// PR #7 (Sprint 3) : bump v6 — scroll-reveal + skeleton screens
 // (force le refresh du cache pour que les clients existants récupèrent
 // la nouvelle structure de chargement)
-const CACHE = 'cdm2026-v5';
+const CACHE = 'cdm2026-v6';
 
 // FIX #8 : Les polices Google Fonts sont maintenant mises en cache
 // pour que l'app reste belle en mode hors-ligne.
@@ -38,6 +39,9 @@ const STATIC_ASSETS = [
   '/js/rewards.js',
   '/js/notifications.js',
   '/js/badge-unlock.js',
+  // PR #7 : utilitaires UX Sprint 3
+  '/js/utils/scroll-reveal.js',
+  '/js/components/skeleton.js',
 ];
 
 // ── Install : mise en cache des assets statiques ──
