@@ -64,8 +64,9 @@
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-#badge-unlock-icon { animation: badge-explode .6s cubic-bezier(.34,1.56,.64,1) both; }
-#badge-unlock-name { animation: badge-name-in .4s .3s ease both; opacity: 0; }
+/* PR #8 — Sprint 3 : zoom 0 → 1.2 → 1 sur 800ms (spring) */
+#badge-unlock-icon { animation: badge-explode .8s cubic-bezier(.34,1.56,.64,1) both; }
+#badge-unlock-name { animation: badge-name-in .4s .5s ease both; opacity: 0; }
 
 /* ══════════════════════════════════
    TÂCHE 9 — PODIUM ANIMATIONS
@@ -135,5 +136,77 @@
 @media (prefers-reduced-motion: reduce) {
   .reveal { opacity: 1; transform: none; }
   .skeleton { animation: none; background: var(--surface2); }
+}
+
+/* ══════════════════════════════════
+   SPRINT 3 (PR #8) — JUICE PRONOSTIC
+══════════════════════════════════ */
+
+/* XP toast (bottom, slide-up 300ms → tient 1.5s → fade 400ms).
+   Au-dessus de la nav (z 9999), aligné centre, GPU only. */
+.xp-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 92px; /* au-dessus de la bottom-nav */
+  transform: translate(-50%, 24px);
+  opacity: 0;
+  background: linear-gradient(135deg, var(--gold-dark), var(--gold-primary) 60%, var(--gold-light));
+  color: #050816;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  letter-spacing: 2px;
+  padding: 10px 22px;
+  border-radius: 999px;
+  box-shadow: 0 8px 24px rgba(244,197,66,.35), 0 0 0 1px rgba(255,255,255,.15) inset;
+  z-index: 9999;
+  pointer-events: none;
+  will-change: transform, opacity;
+  transition: transform 300ms cubic-bezier(.34,1.56,.64,1), opacity 300ms ease-out;
+}
+.xp-toast[data-state="in"]  { transform: translate(-50%, 0);   opacity: 1; }
+.xp-toast[data-state="out"] { transform: translate(-50%, -12px); opacity: 0; transition: transform 400ms ease-out, opacity 400ms ease-out; }
+
+/* Pulse glow sur la cellule de cote sélectionnée à la validation.
+   Joue 600ms en `box-shadow` mais on isole l'élément (`isolation`)
+   pour éviter de propager la peinture aux frères. */
+@keyframes score-pulse-glow {
+  0%   { box-shadow: 0 0 0 0   rgba(244,197,66,0); transform: scale(1); }
+  40%  { box-shadow: 0 0 0 6px rgba(244,197,66,.55), 0 0 28px rgba(244,197,66,.65); transform: scale(1.04); }
+  100% { box-shadow: 0 0 0 12px rgba(244,197,66,0); transform: scale(1); }
+}
+.score-pulse-glow {
+  isolation: isolate;
+  animation: score-pulse-glow 600ms cubic-bezier(.4,0,.2,1) both;
+  will-change: transform, box-shadow;
+}
+
+/* ══════════════════════════════════
+   SPRINT 3 (PR #8) — BADGE UNLOCK PARTICLES
+   Le canvas est positionné absolument par juice.js ;
+   on lui colle simplement un fond non-bloquant.
+══════════════════════════════════ */
+.badge-burst-canvas { pointer-events: none; }
+
+/* ══════════════════════════════════
+   SPRINT 3 (PR #8) — XP BAR scaleX
+   Override pour passer du width-fill à un transform fill quand la
+   barre porte la classe .xp-fill-scale (cas level-up). Le rendu
+   visuel est identique mais on anime sur compositor.
+══════════════════════════════════ */
+.ahv2-xp-fill.xp-fill-scale {
+  /* On part de width:100% (cf. components.css) et on simule la
+     fraction par scaleX. transform-origin:left pour grandir vers
+     la droite comme une vraie barre. */
+  width: 100% !important;
+  transform-origin: left center;
+  transition: transform 800ms cubic-bezier(.34,1.56,.64,1);
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .xp-toast { transition: opacity 100ms linear; transform: translate(-50%, 0); }
+  .xp-toast[data-state="out"] { transform: translate(-50%, 0); }
+  .score-pulse-glow { animation: none; }
+  .ahv2-xp-fill.xp-fill-scale { transition: none; }
 }
 

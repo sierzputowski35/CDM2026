@@ -16,6 +16,8 @@ function showBadgeUnlock(emoji, name) {
   nameEl.style.animation = 'none'; nameEl.offsetHeight; nameEl.style.animation = '';
   overlay.classList.remove('hidden');
   if(navigator.vibrate) navigator.vibrate([100,50,100,50,200]);
+  // PR #8 (Sprint 3) — particules dorées canvas pendant ~2s
+  if (window.Juice) Juice.badgeParticles(overlay);
   setTimeout(closeBadgeUnlock, 4000);
 }
 function closeBadgeUnlock() {

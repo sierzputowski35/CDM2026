@@ -737,6 +737,7 @@
 <script src="js/utils/haptic.js"></script>
 <script src="js/utils/scroll-reveal.js"></script>
 <script src="js/components/skeleton.js"></script>
+<script src="js/components/juice.js"></script>
 <script src="js/supabase.js"></script>
 <script src="js/data/flags.js"></script>
 <script src="js/utils/flag.js"></script>
@@ -1480,16 +1481,35 @@ function updateXPBar() {
   if (text) text.textContent = xp + '/' + required;
 }
 
+// PR #8 (Sprint 3) — Anim fill via transform: scaleX (GPU) 800ms spring.
+// Cas level-up : on remplit jusqu'à 100%, puis reset à 0 sans transition,
+// puis updateXPBar pose la fraction du nouveau niveau.
 function animateXPBar(oldXP, gain, sameLevel) {
   if (sameLevel) { setTimeout(updateXPBar, 200); return; }
   const fill = document.getElementById('h2-xp-fill');
   if (!fill) { setTimeout(updateXPBar, 200); return; }
-  fill.style.width = '100%';
+  // Capture l'état visible courant pour démarrer l'anim sans jump.
+  const parent = fill.parentElement;
+  const startRatio = parent && parent.clientWidth
+    ? Math.max(0, Math.min(1, fill.getBoundingClientRect().width / parent.clientWidth))
+    : 0;
+  // Passe la barre en mode scaleX (cf. animations.css). On force la
+  // largeur à 100% et on positionne le transform initial à ratio,
+  // sans transition, avant de relancer la transition sur scaleX(1).
+  fill.classList.add('xp-fill-scale');
+  fill.style.transition = 'none';
+  fill.style.transform = 'scaleX(' + startRatio + ')';
+  // Force reflow puis lance la transition vers 100%.
+  fill.offsetHeight;
+  fill.style.transition = '';
+  fill.style.transform = 'scaleX(1)';
   setTimeout(() => {
     fill.style.transition = 'none';
-    fill.style.width = '0%';
+    fill.style.transform = 'scaleX(0)';
     requestAnimationFrame(() => {
       fill.style.transition = '';
+      fill.style.transform = '';
+      fill.classList.remove('xp-fill-scale');
       setTimeout(updateXPBar, 100);
     });
   }, 800);
@@ -3326,6 +3346,8 @@ async function savePronostic(id){
     btn.classList.add('flash');
     setTimeout(()=>btn.classList.remove('flash'),400);
     spawnParticles(btn,8);
+    // PR #8 (Sprint 3) — juice : haptic + pulse cote sélectionnée + XP toast bottom
+    if (window.Juice) Juice.pronoSaved(btn, id, XP_REWARDS.prono_submit);
   }catch(e){}
 }
 

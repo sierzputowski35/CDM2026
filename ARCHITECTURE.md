@@ -33,7 +33,8 @@ CDM 2026 App/
 │   ├── notifications.js         ← panel notifications in-app
 │   ├── badge-unlock.js          ← animation d'overlay de déblocage
 │   ├── components/
-│   │   └── skeleton.js          ← (PR #7) générateur de skeleton screens
+│   │   ├── skeleton.js          ← (PR #7) générateur de skeleton screens
+│   │   └── juice.js             ← (PR #8) effets juicy (XP toast, pulse, particules)
 │   ├── utils/
 │   │   ├── icons.js             ← table d'icônes SVG
 │   │   ├── haptic.js            ← wrapper navigator.vibrate
