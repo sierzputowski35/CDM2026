@@ -132,11 +132,21 @@
 .cd-block {
   background: rgba(0,0,0,.5);
   border: 1px solid rgba(255,255,255,.07);
-  border-radius: 8px; padding: 4px 8px; text-align: center;
+  border-radius: 8px;
+  padding: 4px 8px;
+  text-align: center;
+  /* PR #9 — anti-layout-shift : largeur minimale fixe sur chaque
+     segment pour éviter le jitter quand les chiffres changent
+     (60→59, 9→8, etc.). 38px ≈ 2 chiffres en Bebas Neue 20px. */
+  min-width: 38px;
 }
 .cd-num {
   font-family: 'Bebas Neue', sans-serif;
   font-size: 20px; color: #fff; display: block; line-height: 1;
+  /* PR #9 — tabular-nums : chaque chiffre a la même largeur, donc
+     pas de jitter horizontal quand le compteur tourne. */
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
 }
 .cd-label { font-size: 8px; color: #718096; text-transform: uppercase; letter-spacing: .5px; }
 

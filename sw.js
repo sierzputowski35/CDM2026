@@ -9,9 +9,10 @@
 // et du chemin des icônes dans manifest.json
 // PR #7 (Sprint 3) : bump v6 — scroll-reveal + skeleton screens
 // PR #8 (Sprint 3) : bump v7 — juice (XP toast, hex pulse, badge particles)
+// PR #9 (Sprint 3) : bump v8 — motion.js + countdown tabular-nums
 // (force le refresh du cache pour que les clients existants récupèrent
 // la nouvelle structure de chargement)
-const CACHE = 'cdm2026-v7';
+const CACHE = 'cdm2026-v8';
 
 // FIX #8 : Les polices Google Fonts sont maintenant mises en cache
 // pour que l'app reste belle en mode hors-ligne.
@@ -45,6 +46,8 @@ const STATIC_ASSETS = [
   '/js/components/skeleton.js',
   // PR #8 : juice (XP toast, hex pulse, badge particles)
   '/js/components/juice.js',
+  // PR #9 : centralisation prefers-reduced-motion
+  '/js/utils/motion.js',
 ];
 
 // ── Install : mise en cache des assets statiques ──

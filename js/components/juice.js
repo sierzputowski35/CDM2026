@@ -19,7 +19,8 @@
 (function (root) {
   if (typeof window === 'undefined' || typeof document === 'undefined') return;
 
-  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // PR #9 — source de vérité : motion.prefersReduced. Fallback inline.
+  const isReduced = () => (root.motion ? root.motion.prefersReduced : window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const haptic = (n) => (root.haptic ? root.haptic(n) : (navigator.vibrate ? navigator.vibrate(n) : false));
 
   // ── XP toast (bottom, slide-up + fade) ─────────────────────
@@ -35,8 +36,8 @@
     el.offsetHeight;
     el.dataset.state = 'in';
     // Après 1.5s, on déclenche le fade. Les durées sont gérées en CSS.
-    const removeAfter = reduced ? 800 : 2200;
-    setTimeout(() => { el.dataset.state = 'out'; }, reduced ? 500 : 1800);
+    const removeAfter = isReduced() ? 800 : 2200;
+    setTimeout(() => { el.dataset.state = 'out'; }, isReduced() ? 500 : 1800);
     setTimeout(() => { el.remove(); }, removeAfter);
     return el;
   }
@@ -46,7 +47,7 @@
   // `.odds-cell.highlighted` dans la match-card. On lui ajoute la
   // classe .score-pulse-glow 600ms puis on la retire.
   function pulseSelectedScore(matchId) {
-    if (reduced) return;
+    if (isReduced()) return;
     const card = matchId != null ? document.getElementById('match-card-' + matchId) : null;
     const cell = card ? card.querySelector('.odds-cell.highlighted') : null;
     if (!cell) return;
@@ -68,7 +69,7 @@
   // depuis le centre de l'icône. GPU-safe : on dessine sur canvas
   // (pas de mutation DOM par particule). Auto-cancel sur visibility.
   function badgeParticles(rootEl) {
-    if (reduced) return;
+    if (isReduced()) return;
     if (!rootEl) rootEl = document.getElementById('badge-unlock-overlay');
     if (!rootEl) return;
 

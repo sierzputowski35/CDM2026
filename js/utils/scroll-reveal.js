@@ -48,7 +48,9 @@
   // (boucles d'admin, modales, etc.). On exclut tout descendant de :
   const EXCLUDE_ANCESTORS = '.match-modal-overlay, .level-up-modal, #badge-unlock-overlay, .notif-panel, .skeleton-container';
 
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Source de vérité : motion.prefersReduced (PR #9). Fallback inline
+  // au cas où le module motion.js n'est pas chargé.
+  const isReduced = () => (root.motion ? root.motion.prefersReduced : window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
   // ── IntersectionObserver partagé ─────────────────────────────
   // rootMargin négatif en haut : on attend que la carte rentre vraiment
@@ -90,7 +92,7 @@
       // déclenche pas l'anim d'entrée — éviterait juste un flash invisible.
       const rect = el.getBoundingClientRect();
       const isBelowViewport = rect.top > vh;
-      if (!isBelowViewport || reducedMotion) continue;
+      if (!isBelowViewport || isReduced()) continue;
 
       el.classList.add('reveal');
       io.observe(el);
