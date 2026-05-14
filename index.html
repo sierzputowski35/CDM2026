@@ -1524,10 +1524,56 @@ function pickMatchChestType(ptsGained) {
 }
 
 const COIN_REWARDS = {
-  level_up_base: 50,
+  // level_up_base supprimé — remplacé par LEVEL_UP_REWARDS (Étape 5)
+  // qui donne un montant variable par palier (50 à 2000 coins).
   prono_correct: 5,
   prono_score_exact: 30,
+  badge_unlock: 100,
 };
+
+// ══ Étape 5 — Récompenses par niveau (Bilan v3 §4) ══
+// Source de vérité : chaque entrée listée dans la modal level-up
+// et persistée (coins/gems/chest). Les cosmétiques avatar/frame/title
+// sont automatiquement disponibles via les conditions dans js/avatars.js.
+const LEVEL_UP_REWARDS = {
+  2:  { coins: 50 },
+  3:  { coins: 75 },
+  4:  { coins: 100, gems: 5 },
+  5:  { coins: 150, gems: 10, chest: 'argent', avatar: '👟', avatarLabel: 'Sneakers' },
+  6:  { coins: 200 },
+  7:  { coins: 250, gems: 10 },
+  8:  { coins: 300, frame: 'gold', frameLabel: 'Or' },
+  9:  { coins: 350, gems: 15 },
+  10: { coins: 500, gems: 25, chest: 'or', title: 'pro', titleLabel: 'Pro', avatar: '🐉', avatarLabel: 'Dragon' },
+  11: { coins: 400 },
+  12: { coins: 450, gems: 20 },
+  13: { coins: 500 },
+  14: { coins: 600, gems: 25 },
+  15: { coins: 800, gems: 50, chest: 'diamant', title: 'elite', titleLabel: 'Élite', avatar: '🦋', avatarLabel: 'Papillon' },
+  16: { coins: 700 },
+  17: { coins: 800, gems: 30 },
+  18: { coins: 900 },
+  19: { coins: 1000, gems: 40 },
+  20: { coins: 2000, gems: 100, chest: 'legende', title: 'legend', titleLabel: 'Légende Vivante', frame: 'legend', frameLabel: 'Légende', avatar: '👑', avatarLabel: 'Couronne' },
+};
+
+// Aggrégateur : cumule les rewards de tous les niveaux franchis entre
+// oldLevel (exclus) et newLevel (inclus). Utilisé par gainXP/gainXPFor
+// pour appliquer les gains et alimenter la modal.
+function aggregateLevelUpRewards(oldLevel, newLevel) {
+  const agg = { coins: 0, gems: 0, chests: [], avatars: [], frames: [], titles: [] };
+  for (let lv = oldLevel + 1; lv <= newLevel; lv++) {
+    const r = LEVEL_UP_REWARDS[lv];
+    if (!r) continue;
+    if (r.coins) agg.coins += r.coins;
+    if (r.gems)  agg.gems  += r.gems;
+    if (r.chest) agg.chests.push(r.chest);
+    if (r.avatar) agg.avatars.push({ id: r.avatar, label: r.avatarLabel || r.avatar });
+    if (r.frame)  agg.frames.push({ id: r.frame, label: r.frameLabel || r.frame });
+    if (r.title)  agg.titles.push({ id: r.title, label: r.titleLabel || r.title });
+  }
+  return agg;
+}
 
 // Gain XP pour le joueur courant (avec animations visuelles)
 async function gainXP(amount, source = 'autre') {
@@ -1538,20 +1584,36 @@ async function gainXP(amount, source = 'autre') {
   const oldLevel = oldInfo.level;
   const newXP = oldXP + amount;
   joueur.xp = newXP;
-  const newInfo = getLevelInfo(joueur);
-  const newLevel = newInfo.level;
+  const newLevel = getLevelInfo(joueur).level;
   const leveledUp = newLevel > oldLevel;
-  const coinReward = leveledUp ? (newLevel - oldLevel) * COIN_REWARDS.level_up_base : 0;
+
+  // Étape 5 — agrégation des rewards de tous les niveaux franchis
+  const agg = leveledUp ? aggregateLevelUpRewards(oldLevel, newLevel) : null;
+
   const { error } = await sb.from('joueurs').update({
-    xp: newXP, level: newLevel,
-    coins: (joueur.coins || 0) + coinReward
+    xp: newXP,
+    level: newLevel,
+    coins: (joueur.coins || 0) + (agg ? agg.coins : 0),
+    gems:  (joueur.gems  || 0) + (agg ? agg.gems  : 0),
   }).eq('id', currentUser);
   if (error) { console.error('[XP] update failed', error); return; }
   sb.from('xp_history').insert({ joueur_id: currentUser, amount, source }).then(() => {});
+
+  // Insert coffres pour chaque palier marquant (Nv 5/10/15/20)
+  if (agg && agg.chests.length) {
+    for (const chestType of agg.chests) {
+      const { error: cerr } = await sb.from('coffres_inventaire').insert({
+        joueur_id: currentUser, type: chestType, source: 'level_up'
+      });
+      if (cerr) console.warn('[level-up] chest insert failed:', cerr);
+    }
+  }
+
   showFloatingXP(amount);
   animateXPBar(oldXP, amount, !leveledUp);
+
   if (leveledUp) {
-    setTimeout(() => showLevelUpModal(newLevel, coinReward), 400);
+    setTimeout(() => showLevelUpModal(newLevel, agg), 400);
     if (navigator.vibrate) navigator.vibrate([50, 30, 100, 30, 150]);
   }
   await loadData();
@@ -1566,12 +1628,24 @@ async function gainXPFor(joueurId, amount, source) {
   const newXP = oldInfo.xp + amount;
   joueur.xp = newXP;
   const newLevel = getLevelInfo(joueur).level;
-  const coinReward = newLevel > oldLevel ? (newLevel - oldLevel) * COIN_REWARDS.level_up_base : 0;
+  const leveledUp = newLevel > oldLevel;
+  const agg = leveledUp ? aggregateLevelUpRewards(oldLevel, newLevel) : null;
+
   await sb.from('joueurs').update({
-    xp: newXP, level: newLevel,
-    coins: (joueur.coins || 0) + coinReward
+    xp: newXP,
+    level: newLevel,
+    coins: (joueur.coins || 0) + (agg ? agg.coins : 0),
+    gems:  (joueur.gems  || 0) + (agg ? agg.gems  : 0),
   }).eq('id', joueurId);
   if (source) sb.from('xp_history').insert({ joueur_id: joueurId, amount, source }).then(() => {});
+
+  if (agg && agg.chests.length) {
+    for (const chestType of agg.chests) {
+      await sb.from('coffres_inventaire').insert({
+        joueur_id: joueurId, type: chestType, source: 'level_up'
+      });
+    }
+  }
 }
 
 // Distribution XP + coffre post-match après validation d'un score admin.
@@ -1729,8 +1803,36 @@ function animateXPBar(oldXP, gain, sameLevel) {
 let _coinRainRAF = null;
 let _coinRainCoins = [];
 
-function showLevelUpModal(level, coins) {
+// Modal level-up enrichie : affiche TOUTES les récompenses gagnées
+// (cumul de tous les niveaux franchis dans le gainXP). Compatibilité
+// rétro : si on lui passe un nombre, on convertit en { coins: N }.
+function showLevelUpModal(level, agg) {
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (typeof agg === 'number') agg = { coins: agg, gems: 0, chests: [], avatars: [], frames: [], titles: [] };
+  agg = agg || { coins: 0, gems: 0, chests: [], avatars: [], frames: [], titles: [] };
+
+  const ic = (name, color) =>
+    `<span style="display:inline-flex;vertical-align:middle;margin-right:8px;color:${color}">${window.icon(name, 16)}</span>`;
+
+  const lines = [];
+  if (agg.coins) lines.push(`<div class="level-up-reward">${ic('coin','#F4C542')}<strong>+${agg.coins} Coins</strong></div>`);
+  if (agg.gems)  lines.push(`<div class="level-up-reward">${ic('gem','#58C8FA')}<strong>+${agg.gems} Gems</strong></div>`);
+  for (const chestType of (agg.chests || [])) {
+    lines.push(`<div class="level-up-reward">${ic('gift','#A855F7')}<strong>Coffre ${chestType.toUpperCase()}</strong></div>`);
+  }
+  for (const a of (agg.avatars || [])) {
+    lines.push(`<div class="level-up-reward">${ic('users','#58C8FA')}<strong>Avatar ${a.id} «&nbsp;${a.label}&nbsp;»</strong></div>`);
+  }
+  for (const f of (agg.frames || [])) {
+    lines.push(`<div class="level-up-reward">${ic('shield','#A855F7')}<strong>Cadre «&nbsp;${f.label}&nbsp;»</strong></div>`);
+  }
+  for (const t of (agg.titles || [])) {
+    lines.push(`<div class="level-up-reward">${ic('gold-medal','#F4C542')}<strong>Titre «&nbsp;${t.label}&nbsp;»</strong></div>`);
+  }
+  // Si rien à afficher (cas marginal d'un niveau sans reward dans LEVEL_UP_REWARDS),
+  // au moins indiquer la prouesse.
+  if (!lines.length) lines.push(`<div class="level-up-reward" style="opacity:.65">Nouveau palier atteint !</div>`);
+
   const modal = document.createElement('div');
   modal.className = 'level-up-modal';
   modal.innerHTML = `
@@ -1740,9 +1842,7 @@ function showLevelUpModal(level, coins) {
       <div class="level-up-glow"></div>
       <div class="level-up-label">NIVEAU</div>
       <div class="level-up-number">${level}</div>
-      <div class="level-up-rewards">
-        <div class="level-up-reward">🪙 +${coins} Coins</div>
-      </div>
+      <div class="level-up-rewards">${lines.join('')}</div>
       <button class="level-up-btn" onclick="closeLevelUpModal()">RÉCUPÉRER</button>
     </div>
   `;
