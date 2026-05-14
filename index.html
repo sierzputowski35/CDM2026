@@ -1408,10 +1408,29 @@ const XP_REWARDS = {
   prono_correct_winner: 25,
   prono_correct_diff: 50,
   prono_score_exact: 100,
+  buteur_correct: 40,           // Étape 2 — buteur correctement prédit
+  pari_bonus_correct: 40,       // Étape 2 — pari bonus réussi
+  global_prono_correct: 150,    // Étape 2 — par global validé correct
   daily_login: 30,
   badge_unlock: 75,
   league_promotion: 200,
 };
+
+// ── Étape 2 — Coffres post-match selon PTS gagnés ──
+// Méritocratie : 0 PTS = pas de coffre.
+const MATCH_CHEST_THRESHOLDS = [
+  { min: 60, type: 'legende' },
+  { min: 30, type: 'diamant' },
+  { min: 15, type: 'or' },
+  { min: 6,  type: 'argent' },
+  { min: 1,  type: 'bronze' },
+];
+
+function pickMatchChestType(ptsGained) {
+  if (!ptsGained || ptsGained <= 0) return null;
+  const t = MATCH_CHEST_THRESHOLDS.find(t => ptsGained >= t.min);
+  return t ? t.type : null;
+}
 
 const COIN_REWARDS = {
   level_up_base: 50,
@@ -1464,22 +1483,82 @@ async function gainXPFor(joueurId, amount, source) {
   if (source) sb.from('xp_history').insert({ joueur_id: joueurId, amount, source }).then(() => {});
 }
 
-// Distribution XP après validation d'un score admin
+// Distribution XP + coffre post-match après validation d'un score admin.
+// Limitation : si l'admin coche buteurs/bonus APRÈS validateMatch, ces XP
+// ne seront pas re-distribués (le coffre non plus). Conseil admin :
+// cocher buteurs/bonus AVANT de valider le score.
 async function distributeMatchXP(matchId, r1, r2) {
+  const m = MATCHS.find(mm => mm.id === matchId);
+  if (!m) return;
+  const real = allScores[matchId] || { s1: r1, s2: r2, buteurs_reels: [], bonus_realise: null };
   const rRes = r1 > r2 ? 1 : r1 < r2 ? 2 : 0;
   const tasks = [];
+
   for (const joueur of allJoueurs) {
     const p = (joueur.pronostics || {})[matchId];
     if (!p) continue;
     const p1 = parseInt(p.s1), p2 = parseInt(p.s2);
     if (isNaN(p1) || isNaN(p2)) continue;
     const pRes = p1 > p2 ? 1 : p1 < p2 ? 2 : 0;
-    if (rRes !== pRes) continue;
-    let xpAmount;
-    if (p1 === r1 && p2 === r2) xpAmount = XP_REWARDS.prono_score_exact;
-    else if (p1 - p2 === r1 - r2) xpAmount = XP_REWARDS.prono_correct_diff;
-    else xpAmount = XP_REWARDS.prono_correct_winner;
-    tasks.push(gainXPFor(joueur.id, xpAmount, 'match_result'));
+
+    let xpAmount = 0;
+    // Tier correctness — mutuellement exclusif entre vainqueur/diff/exact
+    if (rRes === pRes) {
+      if (p1 === r1 && p2 === r2) xpAmount += XP_REWARDS.prono_score_exact;
+      else if (p1 - p2 === r1 - r2) xpAmount += XP_REWARDS.prono_correct_diff;
+      else xpAmount += XP_REWARDS.prono_correct_winner;
+    }
+    // Buteur correct (si l'admin a déjà coché)
+    if (p.buteur && real.buteurs_reels?.includes(p.buteur)) {
+      xpAmount += XP_REWARDS.buteur_correct;
+    }
+    // Pari bonus réussi (si l'admin a déjà coché)
+    if (p.pari_bonus && real.bonus_realise && p.pari_bonus === real.bonus_realise) {
+      xpAmount += XP_REWARDS.pari_bonus_correct;
+    }
+    if (xpAmount > 0) {
+      tasks.push(gainXPFor(joueur.id, xpAmount, 'match_result'));
+    }
+
+    // Coffre post-match : basé sur les PTS du match (méritocratie)
+    const ptsForMatch = computeMatchPts(m, p, real);
+    if (ptsForMatch && ptsForMatch > 0) {
+      tasks.push(grantMatchChest(joueur.id, ptsForMatch, matchId));
+    }
+  }
+  await Promise.all(tasks);
+}
+
+async function grantMatchChest(joueurId, ptsGained, matchId) {
+  const chestType = pickMatchChestType(ptsGained);
+  if (!chestType) return;
+  const { error } = await sb.from('coffres_inventaire').insert({
+    joueur_id: joueurId,
+    type: chestType,
+    source: 'match_' + matchId,
+  });
+  if (error) {
+    console.warn('[match-chest] INSERT failed for', joueurId, error);
+    return;
+  }
+  // Toast visible uniquement pour le user courant (l'admin qui valide,
+  // s'il a aussi pronostiqué). Les autres verront le coffre dans leur
+  // inventaire au prochain chargement.
+  if (joueurId === currentUser && typeof showToast === 'function') {
+    showToast(`+${ptsGained} PTS · Coffre ${chestType.toUpperCase()} gagné !`);
+  }
+}
+
+// Distribution XP après validation d'un global (vainqueur/finaliste/etc.)
+async function distributeGlobalXP(globalId, val) {
+  if (!val) return;
+  const target = val.trim().toLowerCase();
+  const tasks = [];
+  for (const joueur of allJoueurs) {
+    const userVal = (joueur.globaux || {})[globalId];
+    if (!userVal) continue;
+    if (userVal.trim().toLowerCase() !== target) continue;
+    tasks.push(gainXPFor(joueur.id, XP_REWARDS.global_prono_correct, 'global_' + globalId));
   }
   await Promise.all(tasks);
 }
@@ -4301,7 +4380,11 @@ async function validateGlobal(id){
   const{error}=ex?await sb.from('globaux_reels').update({valeur:val}).eq('id',id):await sb.from('globaux_reels').insert({id,valeur:val});
   if(error){showToast('Erreur');return;}
   await loadData();
-  showToast('Résultat validé — classement mis à jour !');
+  // Étape 2 — distribution XP aux joueurs qui avaient pronostiqué juste.
+  // Idempotent uniquement à la 1ère validation : un reset/re-validation
+  // redistribuerait l'XP. Préférer resetGlobal puis validateGlobal une seule fois.
+  await distributeGlobalXP(id, val);
+  showToast('Résultat validé — classement + XP mis à jour !');
   renderAdminGlobaux();
 }
 
