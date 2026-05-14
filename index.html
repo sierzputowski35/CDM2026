@@ -762,15 +762,28 @@ const MISE = 10;
 const PHASES = {'Groupes':1,'16es de finale':1.5,'8es de finale':2,'Quarts de finale':2,'Demi-finales':3,'Finale':4};
 
 
-// ══ SPRINT 3 : SYSTÈME DE LIGUES ══
+// ══ SYSTÈME DE LIGUES (BILAN v3 — Étape 3, Option B Trophée amélioré) ══
+// Seuils refondus : 0 / 300 / 1000 / 2500 / 5000. Pas de rétrogradation,
+// pas de bonus passifs, juste un statut de prestige + récompenses massives
+// à chaque promotion (cf. LEAGUE_PROMOTION_REWARDS).
 // `icon` est un nom d'icône résolu via window.icon() (PNG pour bronze/argent, SVG sinon).
 const LEAGUES = [
-  { id:'bronze',  name:'Bronze',  min:0,    max:500,      color:'#CD7F32', icon:'league-bronze',   bg:'rgba(205,127,50,.12)'  },
-  { id:'argent',  name:'Argent',  min:500,  max:1200,     color:'#C0C0C0', icon:'league-argent',   bg:'rgba(192,192,192,.12)' },
-  { id:'or',      name:'Or',      min:1200, max:2000,     color:'#F4C542', icon:'league-or',       bg:'rgba(244,197,66,.12)'  },
-  { id:'diamant', name:'Diamant', min:2000, max:3000,     color:'#58C8FA', icon:'league-diamant',  bg:'rgba(88,200,250,.12)'  },
-  { id:'legende', name:'Légende', min:3000, max:Infinity, color:'#A855F7', icon:'league-legende',  bg:'rgba(168,85,247,.12)'  },
+  { id:'bronze',  name:'Bronze',  min:0,    max:300,      color:'#CD7F32', icon:'league-bronze',   bg:'rgba(205,127,50,.12)'  },
+  { id:'argent',  name:'Argent',  min:300,  max:1000,     color:'#C0C0C0', icon:'league-argent',   bg:'rgba(192,192,192,.12)' },
+  { id:'or',      name:'Or',      min:1000, max:2500,     color:'#F4C542', icon:'league-or',       bg:'rgba(244,197,66,.12)'  },
+  { id:'diamant', name:'Diamant', min:2500, max:5000,     color:'#58C8FA', icon:'league-diamant',  bg:'rgba(88,200,250,.12)'  },
+  { id:'legende', name:'Légende', min:5000, max:Infinity, color:'#A855F7', icon:'league-legende',  bg:'rgba(168,85,247,.12)'  },
 ];
+
+// Récompenses à chaque promotion (cumulables avec le contexte de la ligue).
+// Les cosmétiques (avatar/frame/title) s'auto-débloquent via les conditions
+// dans js/avatars.js — on les liste ici pour les afficher dans la modal.
+const LEAGUE_PROMOTION_REWARDS = {
+  argent:  { xp: 200,  coins: 500,   gems: 0,   chest: 'argent' },
+  or:      { xp: 500,  coins: 1000,  gems: 25,  chest: 'or',      avatar: 'dragon' },
+  diamant: { xp: 1000, coins: 2000,  gems: 75,  chest: 'diamant', frame: 'diamond' },
+  legende: { xp: 2000, coins: 5000,  gems: 200, chest: 'legende', frame: 'legend', title: 'Légende Vivante', avatar: 'unicorn' },
+};
 
 function getLeagueForPoints(pts) {
   return [...LEAGUES].reverse().find(l => pts >= l.min) || LEAGUES[0];
@@ -784,56 +797,129 @@ function renderLeagueBadge(leagueId, size = 'normal') {
 }
 
 async function syncAllLeagues() {
-  const toUpdate = [];
+  const toPromote = [];
   for (const joueur of allJoueurs) {
     const pts = calcPoints(joueur);
     const oldLeague = joueur.league || 'bronze';
     const newLeague = getLeagueForPoints(pts).id;
-    if (newLeague !== oldLeague) toUpdate.push({ id: joueur.id, league: newLeague, oldLeague });
+    if (newLeague === oldLeague) continue;
+    const oldIdx = LEAGUES.findIndex(l => l.id === oldLeague);
+    const newIdx = LEAGUES.findIndex(l => l.id === newLeague);
+    if (newIdx <= oldIdx) continue; // Pas de rétrogradation (Option B)
+    toPromote.push({ id: joueur.id, oldLeague, newLeague, oldIdx, newIdx });
   }
-  if (!toUpdate.length) return;
-  await Promise.all(toUpdate.map(u => sb.from('joueurs').update({ league: u.league }).eq('id', u.id)));
-  const myUp = toUpdate.find(u => u.id === currentUser);
-  if (myUp) {
-    const oldIdx = LEAGUES.findIndex(l => l.id === myUp.oldLeague);
-    const newIdx = LEAGUES.findIndex(l => l.id === myUp.league);
-    if (newIdx > oldIdx) {
-      const newLig = LEAGUES[newIdx];
-      setTimeout(() => showLeaguePromotionModal(newLig), 200);
-      gainXP(XP_REWARDS.league_promotion, 'league_promotion');
-      await sb.from('coffres_inventaire').insert({
-        joueur_id: currentUser,
-        type: myUp.league === 'legende' ? 'legende' : 'or',
-        source: 'league_promotion'
-      });
+  if (!toPromote.length) return;
+
+  // Persiste la nouvelle ligue pour tout le monde
+  await Promise.all(toPromote.map(u =>
+    sb.from('joueurs').update({ league: u.newLeague }).eq('id', u.id)
+  ));
+
+  // Distribue récompenses + notification globale pour chaque promotion.
+  // Une promotion qui saute plusieurs paliers (ex. bronze→or direct)
+  // cumule les rewards de chaque palier traversé.
+  for (const u of toPromote) {
+    for (let lvl = u.oldIdx + 1; lvl <= u.newIdx; lvl++) {
+      const league = LEAGUES[lvl];
+      await checkLeaguePromotion(u.id, league);
     }
   }
 }
 
-function showLeaguePromotionModal(league) {
+async function checkLeaguePromotion(joueurId, league) {
+  const rewards = LEAGUE_PROMOTION_REWARDS[league.id];
+  if (!rewards) return;
+  const joueur = allJoueurs.find(j => j.id === joueurId);
+  const pseudo = joueur?.pseudo || joueurId;
+
+  // 1. Persistance des récompenses (silencieuse pour les non-currentUser)
+  if (rewards.coins) await addCoinsFor(joueurId, rewards.coins);
+  if (rewards.gems)  await addGemsFor(joueurId, rewards.gems);
+  if (rewards.chest) {
+    const { error } = await sb.from('coffres_inventaire').insert({
+      joueur_id: joueurId,
+      type: rewards.chest,
+      source: 'league_promotion_' + league.id,
+    });
+    if (error) console.warn('[league-promo] chest insert failed:', error);
+  }
+  if (rewards.xp) {
+    if (joueurId === currentUser) await gainXP(rewards.xp, 'league_' + league.id);
+    else await gainXPFor(joueurId, rewards.xp, 'league_' + league.id);
+  }
+
+  // 2. Notification globale (visible par tous via le feed)
+  broadcastLeaguePromotion(joueurId, pseudo, league);
+
+  // 3. UI pour le user courant uniquement
+  if (joueurId === currentUser) {
+    setTimeout(() => showLeaguePromotionModal(league, rewards), 200);
+    if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
+    // Badge league_silver / _gold / _diamond / _legend
+    setTimeout(() => { if (typeof checkBadges === 'function') checkBadges(); }, 1500);
+  }
+}
+
+async function broadcastLeaguePromotion(joueurId, pseudo, league) {
+  // Insertion best-effort : si la table n'existe pas ou RLS refuse,
+  // on logge et on continue (pas bloquant pour le user).
+  const { error } = await sb.from('notifications_globales').insert({
+    type: 'league_promotion',
+    user_id: joueurId,
+    pseudo,
+    data: { league_id: league.id, league_name: league.name },
+  });
+  if (error) console.warn('[league-promo] broadcast failed:', error);
+}
+
+// Modal de promotion enrichie — affiche TOUTES les récompenses.
+// Variante cinématique pour la Légende (full screen + délai d'apparition).
+function showLeaguePromotionModal(league, rewards) {
+  const isLegend = league.id === 'legende';
+  const rewardsHtml = buildPromotionRewardsHtml(rewards);
   const modal = document.createElement('div');
-  modal.style.cssText = 'position:fixed;inset:0;z-index:10002;display:flex;align-items:center;justify-content:center;background:rgba(5,8,22,.94);backdrop-filter:blur(12px);opacity:0;transition:opacity 300ms';
+  modal.className = 'league-promo-modal' + (isLegend ? ' is-legend' : '');
+  modal.style.cssText = 'position:fixed;inset:0;z-index:10002;display:flex;align-items:center;justify-content:center;background:rgba(5,8,22,' + (isLegend ? '.98' : '.94') + ');backdrop-filter:blur(' + (isLegend ? '16' : '12') + 'px);opacity:0;transition:opacity 400ms';
+
+  const cardWidth = isLegend ? '360px' : '320px';
+  const titleSize = isLegend ? '58px' : '52px';
+  const legendBanner = isLegend
+    ? `<div style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:5px;color:#A855F7;margin-bottom:4px;text-shadow:0 0 12px rgba(168,85,247,.7)">★ LÉGENDE VIVANTE ★</div>`
+    : '';
+
   modal.innerHTML = `
-    <div style="background:linear-gradient(180deg,var(--bg-elevated),var(--bg-card));border:2px solid ${league.color};border-radius:24px;padding:32px 36px;text-align:center;box-shadow:0 0 60px ${league.color}55;max-width:320px;width:88%">
-      <div style="line-height:1;margin-bottom:10px;color:${league.color}">${window.icon(league.icon, 72)}</div>
+    <div style="background:linear-gradient(180deg,var(--bg-elevated),var(--bg-card));border:2px solid ${league.color};border-radius:24px;padding:32px 32px 28px;text-align:center;box-shadow:0 0 ${isLegend ? '120' : '60'}px ${league.color}66;max-width:${cardWidth};width:88%">
+      <div style="line-height:1;margin-bottom:10px;color:${league.color}">${window.icon(league.icon, isLegend ? 92 : 72)}</div>
       <div style="font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:4px;color:var(--text2)">PROMOTION</div>
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:2px;color:${league.color};line-height:1;margin:4px 0 14px">${league.name.toUpperCase()}</div>
-      <div style="background:${league.color}18;border:1px solid ${league.color}33;border-radius:12px;padding:10px 14px;font-size:13px;color:var(--text);margin-bottom:22px;display:flex;align-items:center;justify-content:center;gap:6px">
-        <span style="color:${league.color};display:inline-flex">${window.icon('gift', 16)}</span> Coffre ${league.id === 'legende' ? 'Légendaire' : 'Or'} offert · +${XP_REWARDS.league_promotion} XP
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:${titleSize};letter-spacing:2px;color:${league.color};line-height:1;margin:4px 0 10px">${league.name.toUpperCase()}</div>
+      ${legendBanner}
+      <div style="background:${league.color}14;border:1px solid ${league.color}33;border-radius:14px;padding:12px 14px;font-size:13px;color:var(--text);margin:14px 0 22px;display:flex;flex-direction:column;gap:8px">
+        ${rewardsHtml}
       </div>
-      <button onclick="this.closest('div[style]').style.opacity='0';setTimeout(()=>this.closest('div[style]').remove(),300)" style="width:100%;background:linear-gradient(180deg,var(--gold-light),var(--gold-dark));color:var(--bg-primary);border:none;border-radius:14px;padding:14px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;cursor:pointer;box-shadow:0 6px 20px rgba(244,197,66,.4)">FÉLICITATIONS !</button>
+      <button onclick="this.closest('.league-promo-modal').style.opacity='0';setTimeout(()=>this.closest('.league-promo-modal').remove(),400)" style="width:100%;background:linear-gradient(180deg,var(--gold-light),var(--gold-dark));color:var(--bg-primary);border:none;border-radius:14px;padding:14px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;cursor:pointer;box-shadow:0 6px 20px rgba(244,197,66,.4)">${isLegend ? 'LÉGENDE !' : 'FÉLICITATIONS !'}</button>
     </div>`;
   document.body.appendChild(modal);
   requestAnimationFrame(() => { modal.style.opacity = '1'; });
-  if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
+}
+
+function buildPromotionRewardsHtml(rewards) {
+  const lines = [];
+  if (rewards.xp)    lines.push(`<div>⚡ <strong>+${rewards.xp} XP</strong></div>`);
+  if (rewards.coins) lines.push(`<div>🪙 <strong>+${rewards.coins} Coins</strong></div>`);
+  if (rewards.gems)  lines.push(`<div>💎 <strong>+${rewards.gems} Gems</strong></div>`);
+  if (rewards.chest) lines.push(`<div>🎁 <strong>Coffre ${rewards.chest.toUpperCase()}</strong></div>`);
+  if (rewards.avatar)lines.push(`<div>👤 <strong>Avatar «&nbsp;${rewards.avatar}&nbsp;» débloqué</strong></div>`);
+  if (rewards.frame) lines.push(`<div>🖼️ <strong>Cadre «&nbsp;${rewards.frame}&nbsp;» débloqué</strong></div>`);
+  if (rewards.title) lines.push(`<div>🎖️ <strong>Titre «&nbsp;${rewards.title}&nbsp;»</strong></div>`);
+  return lines.join('');
 }
 
 const LEAGUES_HOME = [
-  { name:'Bronze',  color:'#CD7F32', minPts:0,    maxPts:500  },
-  { name:'Argent',  color:'#C0C0C0', minPts:500,  maxPts:1200 },
-  { name:'Or',      color:'#F4C542', minPts:1200, maxPts:2000 },
-  { name:'Diamant', color:'#58C8FA', minPts:2000, maxPts:3000 },
-  { name:'Legende', color:'#A855F7', minPts:3000, maxPts:9999 },
+  { name:'Bronze',  color:'#CD7F32', minPts:0,    maxPts:300  },
+  { name:'Argent',  color:'#C0C0C0', minPts:300,  maxPts:1000 },
+  { name:'Or',      color:'#F4C542', minPts:1000, maxPts:2500 },
+  { name:'Diamant', color:'#58C8FA', minPts:2500, maxPts:5000 },
+  { name:'Legende', color:'#A855F7', minPts:5000, maxPts:99999 },
 ];
 
 const NEWS_FEED_DATA = [
@@ -908,10 +994,10 @@ function formatCountdown(targetTimestamp) {
 
 // Ligue depuis pts
 function calcLigueFromPts(pts) {
-  if (pts >= 3000) return 'LÉGENDE';
-  if (pts >= 2000) return 'DIAMANT';
-  if (pts >= 1200) return 'OR';
-  if (pts >= 500)  return 'ARGENT';
+  if (pts >= 5000) return 'LÉGENDE';
+  if (pts >= 2500) return 'DIAMANT';
+  if (pts >= 1000) return 'OR';
+  if (pts >= 300)  return 'ARGENT';
   return 'BRONZE';
 }
 
@@ -1413,7 +1499,8 @@ const XP_REWARDS = {
   global_prono_correct: 150,    // Étape 2 — par global validé correct
   daily_login: 30,
   badge_unlock: 75,
-  league_promotion: 200,
+  // league_promotion supprimé — remplacé par LEAGUE_PROMOTION_REWARDS
+  // (Étape 3) qui donne un XP différent par palier (200/500/1000/2000).
 };
 
 // ── Étape 2 — Coffres post-match selon PTS gagnés ──
@@ -2354,6 +2441,20 @@ async function addGems(amount) {
   const joueur = allJoueurs.find(j => j.id === currentUser);
   if (!joueur) return;
   await sb.from('joueurs').update({ gems: (joueur.gems || 0) + amount }).eq('id', currentUser);
+}
+
+// Variantes silencieuses pour un joueur quelconque (côté admin, promotion ligue, etc.)
+async function addCoinsFor(joueurId, amount) {
+  if (!amount) return;
+  const joueur = allJoueurs.find(j => j.id === joueurId);
+  if (!joueur) return;
+  await sb.from('joueurs').update({ coins: (joueur.coins || 0) + amount }).eq('id', joueurId);
+}
+async function addGemsFor(joueurId, amount) {
+  if (!amount) return;
+  const joueur = allJoueurs.find(j => j.id === joueurId);
+  if (!joueur) return;
+  await sb.from('joueurs').update({ gems: (joueur.gems || 0) + amount }).eq('id', joueurId);
 }
 
 // Vérifie et déclenche la récompense quotidienne (appelé au login)
@@ -4627,9 +4728,11 @@ function openProfil(id){
   const xpRequired=info.xpRequired;
   const xpPct=info.xpPct.toFixed(0);
   const isMax=level>=MAX_LEVEL;
+  // Align\u00e9 sur LEAGUES (seuils Bilan v3) \u2014 couleurs conserv\u00e9es
+  // pour ne pas casser le look existant de la modal profil.
   const LIGUES_P=[
-    {name:'BRONZE',min:0,max:500,color:'#FF8A3D'},{name:'ARGENT',min:500,max:1200,color:'#C0C0C0'},
-    {name:'OR',min:1200,max:2000,color:'#F4C542'},{name:'DIAMANT',min:2000,max:3000,color:'#58C8FA'},{name:'L\u00c9GENDE',min:3000,max:99999,color:'#A855F7'}
+    {name:'BRONZE',min:0,max:300,color:'#FF8A3D'},{name:'ARGENT',min:300,max:1000,color:'#C0C0C0'},
+    {name:'OR',min:1000,max:2500,color:'#F4C542'},{name:'DIAMANT',min:2500,max:5000,color:'#58C8FA'},{name:'L\u00c9GENDE',min:5000,max:99999,color:'#A855F7'}
   ];
   const myL=LIGUES_P.find(l=>totalPts<l.max)||LIGUES_P[0];
   const streak=getStreak(joueur);
