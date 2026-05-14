@@ -6663,15 +6663,31 @@ function renderMatchs(){
       </div>
       ${oddsWidget}
       <div class="score-row">
-        <input class="score-inp" type="number" min="0" max="20" id="s1-${m.id}" value="${p.s1!==undefined?p.s1:''}" placeholder="—" ${isLocked?'disabled':''}>
+        <input class="score-inp" type="number" min="0" max="20" id="s1-${m.id}" value="${p.s1!==undefined?p.s1:''}" placeholder="—" ${isLocked?'disabled':''}${p.s1!==undefined?` data-saved="${p.s1}"`:''} oninput="markPronoDirty(${m.id})">
         <span class="score-sep">:</span>
-        <input class="score-inp" type="number" min="0" max="20" id="s2-${m.id}" value="${p.s2!==undefined?p.s2:''}" placeholder="—" ${isLocked?'disabled':''}>
+        <input class="score-inp" type="number" min="0" max="20" id="s2-${m.id}" value="${p.s2!==undefined?p.s2:''}" placeholder="—" ${isLocked?'disabled':''}${p.s2!==undefined?` data-saved="${p.s2}"`:''} oninput="markPronoDirty(${m.id})">
       </div>
       ${renderBonusSection(m, p, isLocked)}
       ${footer}
     </div>`;
   }
+  // Snapshot des inputs en cours de modification (utilisateur a tapé un nouveau
+  // score mais pas encore cliqué Sauvegarder). Sans ça, l'echo Supabase realtime
+  // déclenche renderMatchs au milieu de la frappe et écrase ce que l'utilisateur
+  // venait de taper → le clic "Sauvegarder" finit par enregistrer l'ancien score.
+  const _dirtySnap = {};
+  document.querySelectorAll('#matchs-list .score-inp[data-saved]').forEach(inp => {
+    if (inp.value !== inp.dataset.saved && inp.value !== '') _dirtySnap[inp.id] = inp.value;
+  });
   document.getElementById('matchs-list').innerHTML=html;
+  for (const inpId in _dirtySnap) {
+    const inp = document.getElementById(inpId);
+    if (inp) inp.value = _dirtySnap[inpId];
+  }
+  // Remettre à jour l'état "modifié" sur les boutons concernés
+  new Set(Object.keys(_dirtySnap).map(id => id.split('-')[1])).forEach(matchId => {
+    if (typeof markPronoDirty === 'function') markPronoDirty(matchId);
+  });
   if(_pendingScrollMatchId!==null){
     const id=_pendingScrollMatchId;
     _pendingScrollMatchId=null;
@@ -6770,6 +6786,12 @@ async function savePronostic(id){
   }
   await loadData();
   btn.classList.add('saved');
+  btn.classList.remove('dirty-modify');
+  // Resync data-saved pour que markPronoDirty compare bien à la dernière valeur
+  // enregistrée et pas à l'initiale après une 2e modification.
+  const s1El=document.getElementById('s1-'+id),s2El=document.getElementById('s2-'+id);
+  if(s1El) s1El.dataset.saved=s1;
+  if(s2El) s2El.dataset.saved=s2;
   const labelCote=coteSnapshot>1.01?` (×${coteSnapshot.toFixed(2)})`:'';
   btn.textContent=`✓ Enregistré${labelCote}`;
   showToast(`Pronostic sauvegardé${labelCote} !`);
@@ -8143,6 +8165,31 @@ function autoFillScore(matchId, s1, s2) {
   const res = parseInt(s1) > parseInt(s2) ? 0 : parseInt(s1) < parseInt(s2) ? 2 : 1;
   const cells = document.querySelectorAll('#match-card-' + matchId + ' .odds-cell');
   if (cells[res]) cells[res].classList.add('highlighted');
+  markPronoDirty(matchId);
+}
+
+// Bascule visuelle du bouton "Modifier" quand l'utilisateur change un score saisi.
+// Sans cela, le bouton reste vert pastel et passif → on dirait qu'il ne sauvegarde
+// pas (il sauvegarde en réalité, mais rien dans l'UI ne signale qu'il y a une
+// modif en attente).
+function markPronoDirty(id) {
+  const btn = document.getElementById('sbtn-' + id);
+  const s1 = document.getElementById('s1-' + id);
+  const s2 = document.getElementById('s2-' + id);
+  if (!btn || !s1 || !s2) return;
+  const saved1 = s1.dataset.saved, saved2 = s2.dataset.saved;
+  if (saved1 === undefined) return; // pas encore de prono enregistré : flux par défaut
+  const cur1 = s1.value, cur2 = s2.value;
+  const isDirty = cur1 !== '' && cur2 !== '' && (cur1 !== saved1 || cur2 !== saved2);
+  if (isDirty) {
+    btn.classList.remove('saved-v2');
+    btn.classList.add('dirty-modify');
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="#050816" stroke="#050816" stroke-width="0"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> SAUVEGARDER LA MODIFICATION';
+  } else {
+    btn.classList.add('saved-v2');
+    btn.classList.remove('dirty-modify');
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> ' + saved1 + '–' + saved2 + ' sauvegardé · Modifier';
+  }
 }
 
 function spawnParticles(originEl, count) {
