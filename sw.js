@@ -5,9 +5,11 @@
 // ─────────────────────────────────────────────────────────────────
 // PR #2 : bump v3 après l'extraction du CSS en /styles/*.css
 // PR #3 : bump v4 après l'extraction de 10 modules JS dans /js/
+// Hotfix : bump v5 après correction de l'init() orphelin dans pwa.js
+// et du chemin des icônes dans manifest.json
 // (force le refresh du cache pour que les clients existants récupèrent
 // la nouvelle structure de chargement)
-const CACHE = 'cdm2026-v4';
+const CACHE = 'cdm2026-v5';
 
 // FIX #8 : Les polices Google Fonts sont maintenant mises en cache
 // pour que l'app reste belle en mode hors-ligne.
