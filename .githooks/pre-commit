@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# ─────────────────────────────────────────────────────────────────
+# pre-commit hook : empêche de committer des secrets en clair.
+# Installation : ./scripts/install-hooks.sh
+# Bypass exceptionnel : git commit --no-verify (à éviter)
+# ─────────────────────────────────────────────────────────────────
+set -euo pipefail
+
+# Liste des patterns interdits dans les fichiers stagés.
+# On match sur des libellés ET sur des préfixes de clé Supabase service_role.
+PATTERNS=(
+  "SUPABASE_SERVICE_KEY\\s*[:=]\\s*['\\\"][^'\\\"]+['\\\"]"   # affectation littérale
+  "sb_secret_[A-Za-z0-9_\\-]{10,}"                          # nouvelle forme service_role
+  "service_role[^A-Za-z]{0,5}[:=]\\s*['\\\"][^'\\\"]+['\\\"]"
+  "ADMIN_PASSWORD\\s*=\\s*['\\\"][^'\\\"]+['\\\"]"
+  "ADMIN_TOKEN_SECRET\\s*=\\s*['\\\"][^'\\\"]+['\\\"]"
+)
+
+# On n'analyse que les fichiers texte ajoutés ou modifiés (pas supprimés).
+mapfile -t FILES < <(git diff --cached --name-only --diff-filter=ACMR)
+if [ ${#FILES[@]} -eq 0 ]; then
+  exit 0
+fi
+
+FAIL=0
+for f in "${FILES[@]}"; do
+  # Ignore les fichiers binaires / sw.js purgé / dossier backups
+  case "$f" in
+    backups/*|*.png|*.jpg|*.jpeg|*.gif|*.ico|*.webp|*.woff*|*.ttf|*.pdf) continue ;;
+  esac
+  [ -f "$f" ] || continue
+
+  for pat in "${PATTERNS[@]}"; do
+    if git diff --cached -U0 -- "$f" | grep -E "^\+" | grep -Ev "^\+\+\+" | grep -Eq "$pat"; then
+      echo "✖ Pattern interdit détecté dans $f :"
+      git diff --cached -U0 -- "$f" | grep -E "^\+" | grep -Ev "^\+\+\+" | grep -E "$pat" | head -3
+      FAIL=1
+    fi
+  done
+done
+
+if [ "$FAIL" -ne 0 ]; then
+  echo ""
+  echo "Commit bloqué : retire les secrets (ou utilise une variable d'env)."
+  echo "Bypass exceptionnel : git commit --no-verify (à éviter sauf urgence)"
+  exit 1
+fi
+
+exit 0
