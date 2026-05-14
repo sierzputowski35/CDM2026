@@ -741,6 +741,7 @@
 <script src="js/components/juice.js"></script>
 <script src="js/supabase.js"></script>
 <script src="js/data/flags.js"></script>
+<script src="js/data/all_players.js"></script>
 <script src="js/utils/flag.js"></script>
 <script src="js/avatars.js"></script>
 <script src="js/data/cotes.js"></script>
@@ -1505,6 +1506,19 @@ const XP_REWARDS = {
   badge_unlock: 75,
   // league_promotion supprimé — remplacé par LEAGUE_PROMOTION_REWARDS
   // (Étape 3) qui donne un XP différent par palier (200/500/1000/2000).
+  // Étape 4 — XP fixe par coffre ouvert (en plus du loot rollé)
+  chest_open_bronze:  25,
+  chest_open_argent:  50,
+  chest_open_or:      100,
+  chest_open_diamant: 175,
+  chest_open_legende: 250,
+  // Étape 4 — XP par carte obtenue (rareté du joueur réel, pas du coffre)
+  card_bronze:  5,
+  card_argent:  15,
+  card_or:      35,
+  card_diamant: 75,
+  card_legende: 150,
+  team_completion: 500,         // Bonus à compléter une équipe (≥ 11 cartes)
 };
 
 // ── Étape 2 — Coffres post-match selon PTS gagnés ──
@@ -2512,27 +2526,54 @@ const DAILY_REWARDS = [
   { day: 7, type: 'coffre', amount: 1, rarete: 'or',     icon: 'gift' },
 ];
 
+// ══ Étape 4 — Loot tables recalibrées (Bilan v3 §5) ══
+// Ajout : 5e coffre Diamant, `xp_open` (XP fixe à l'ouverture)
+// et `card_chance` (probabilité de drop d'une carte joueur, en plus du loot).
 const CHEST_LOOT_TABLES = {
-  bronze: { rolls: 2, pool: [
+  bronze:  { rolls: 2, xp_open:  25, card_chance: 0.10, pool: [
     { weight: 60, type: 'coins', amount: [30, 80] },
-    { weight: 30, type: 'xp',   amount: [25, 60] },
-    { weight: 10, type: 'gems', amount: [1, 3] },
+    { weight: 30, type: 'xp',    amount: [25, 60] },
+    { weight: 10, type: 'gems',  amount: [1, 3] },
   ]},
-  argent: { rolls: 3, pool: [
+  argent:  { rolls: 3, xp_open:  50, card_chance: 1.0, pool: [
     { weight: 55, type: 'coins', amount: [100, 250] },
-    { weight: 25, type: 'xp',   amount: [50, 120] },
-    { weight: 20, type: 'gems', amount: [3, 8] },
+    { weight: 25, type: 'xp',    amount: [50, 120] },
+    { weight: 20, type: 'gems',  amount: [3, 8] },
   ]},
-  or: { rolls: 4, pool: [
+  or:      { rolls: 4, xp_open: 100, card_chance: 1.0, pool: [
     { weight: 45, type: 'coins', amount: [300, 700] },
-    { weight: 30, type: 'xp',   amount: [100, 250] },
-    { weight: 25, type: 'gems', amount: [10, 25] },
+    { weight: 30, type: 'xp',    amount: [100, 250] },
+    { weight: 25, type: 'gems',  amount: [10, 25] },
   ]},
-  legende: { rolls: 5, pool: [
-    { weight: 35, type: 'coins', amount: [1000, 2500] },
-    { weight: 30, type: 'xp',   amount: [250, 600] },
-    { weight: 35, type: 'gems', amount: [30, 75] },
+  diamant: { rolls: 5, xp_open: 175, card_chance: 1.0, pool: [
+    { weight: 40, type: 'coins', amount: [700, 1500] },
+    { weight: 30, type: 'xp',    amount: [200, 400] },
+    { weight: 30, type: 'gems',  amount: [20, 50] },
   ]},
+  legende: { rolls: 6, xp_open: 250, card_chance: 1.0, pool: [
+    { weight: 35, type: 'coins', amount: [1500, 3000] },
+    { weight: 30, type: 'xp',    amount: [400, 800] },
+    { weight: 35, type: 'gems',  amount: [50, 100] },
+  ]},
+};
+
+// Étape 4 — Probabilité de rareté de carte selon le coffre ouvert.
+// Lignes : coffre / Colonnes : rareté carte. Pourcentages somment à 100.
+const CARD_DROP_RATES = {
+  bronze:  { bronze: 75, argent: 20, or: 4,  diamant: 0.9, legende: 0.1 },
+  argent:  { bronze: 50, argent: 35, or: 12, diamant: 2.5, legende: 0.5 },
+  or:      { bronze: 25, argent: 40, or: 25, diamant: 8,   legende: 2 },
+  diamant: { bronze: 10, argent: 25, or: 35, diamant: 22,  legende: 8 },
+  legende: { bronze: 0,  argent: 10, or: 30, diamant: 35,  legende: 25 },
+};
+
+// Étape 4 — Conversion auto FUT-style des doublons (carte déjà possédée).
+const DUPLICATE_CONVERSION = {
+  bronze:  { coins: 50 },
+  argent:  { coins: 200 },
+  or:      { coins: 500 },
+  diamant: { gems: 20 },
+  legende: { gems: 50 },
 };
 
 async function addCoins(amount) {
@@ -2663,6 +2704,70 @@ function renderDailyRewardCard() {
     </div>`;
 }
 
+// ══ Étape 4 — Système de cartes piochées dans les coffres ══
+// rollCardFromChest : applique la table CARD_DROP_RATES pour choisir
+// la rareté de carte, puis tire au hasard un joueur de cette rareté
+// dans le pool ALL_PLAYERS (528 joueurs, fichier js/data/all_players.js).
+function rollCardFromChest(chestType) {
+  if (typeof ALL_PLAYERS === 'undefined' || !ALL_PLAYERS.length) return null;
+  const rates = CARD_DROP_RATES[chestType] || CARD_DROP_RATES.bronze;
+  const order = ['bronze','argent','or','diamant','legende'];
+  let roll = Math.random() * 100, cumul = 0, cardRarity = 'bronze';
+  for (const r of order) {
+    cumul += rates[r] || 0;
+    if (roll < cumul) { cardRarity = r; break; }
+  }
+  const pool = ALL_PLAYERS.filter(p => getRarityFromRating(p.base_rating) === cardRarity);
+  if (!pool.length) return null;
+  const player = pool[Math.floor(Math.random() * pool.length)];
+  return { ...player, rarete: cardRarity };
+}
+
+// addCardToCollection : insère la carte si nouvelle, sinon doublon
+// → conversion auto FUT-style (DUPLICATE_CONVERSION). Compte les cartes
+// de l'équipe AVANT insert : passage 10 → 11 = équipe complète (+XP bonus).
+async function addCardToCollection(card) {
+  if (!card || !card.id || !currentUser) return { duplicate: false };
+  let existing = null;
+  try {
+    const { data } = await sb.from('cartes_collection')
+      .select('id').eq('joueur_id', currentUser).eq('player_id', card.id).maybeSingle();
+    existing = data;
+  } catch(_) {}
+  if (existing) {
+    const conv = DUPLICATE_CONVERSION[card.rarete] || {};
+    if (conv.coins) await addCoins(conv.coins);
+    if (conv.gems)  await addGems(conv.gems);
+    return { duplicate: true, conversion: conv, card };
+  }
+  let teamCountBefore = 0;
+  try {
+    const { count } = await sb.from('cartes_collection')
+      .select('id', { count: 'exact', head: true })
+      .eq('joueur_id', currentUser).eq('equipe', card.equipe);
+    teamCountBefore = count || 0;
+  } catch(_) {}
+  const fullName = `${card.prenom || ''} ${card.nom || ''}`.trim();
+  try {
+    await sb.from('cartes_collection').insert({
+      joueur_id: currentUser,
+      player_id: card.id,
+      rarete: card.rarete,
+      equipe: card.equipe,
+      player_name: fullName,
+      player_country_code: card.pays,
+      player_position: card.position,
+    });
+  } catch(e) { console.warn('[cartes] insert failed:', e); }
+  const xpKey = 'card_' + card.rarete;
+  if (XP_REWARDS[xpKey]) await gainXP(XP_REWARDS[xpKey], 'card_drop');
+  if (teamCountBefore === 10) {
+    await gainXP(XP_REWARDS.team_completion, 'team_completed');
+    showToast(`🏆 Équipe ${card.equipe} complète ! +${XP_REWARDS.team_completion} XP`);
+  }
+  return { duplicate: false, card };
+}
+
 // ── SYSTÈME DE COFFRES ──
 
 function rollLoot(rarete) {
@@ -2689,7 +2794,25 @@ function rollLoot(rarete) {
 async function openChest(coffreId) {
   const coffre = allCoffres.find(c => c.id === coffreId);
   if (!coffre || coffre.ouvert) return;
+  const table = CHEST_LOOT_TABLES[coffre.type] || CHEST_LOOT_TABLES.bronze;
   const loot = rollLoot(coffre.type);
+
+  // Étape 4 — Drop carte selon card_chance + CARD_DROP_RATES[coffre.type].
+  // Tirage et persist AVANT l'animation pour que le toast doublon
+  // apparaisse de façon cohérente.
+  let cardResult = null;
+  if (Math.random() < (table.card_chance || 0)) {
+    const card = rollCardFromChest(coffre.type);
+    if (card) {
+      cardResult = await addCardToCollection(card);
+      if (cardResult.duplicate) {
+        const conv = cardResult.conversion || {};
+        const gainTxt = conv.coins ? `+${conv.coins} 🪙` : conv.gems ? `+${conv.gems} 💎` : '';
+        showToast(`⚡ ${cardResult.card.nom} déjà en collection · ${gainTxt}`);
+      }
+    }
+  }
+
   await sb.from('coffres_inventaire').update({
     ouvert: true, ouvert_at: new Date().toISOString(), contenu: loot
   }).eq('id', coffreId);
@@ -2698,15 +2821,19 @@ async function openChest(coffreId) {
     else if (item.type === 'gems') await addGems(item.amount);
     else if (item.type === 'xp') await gainXP(item.amount, 'coffre_' + coffre.type);
   }
+  // Étape 4 — XP fixe à l'ouverture (en plus du loot rollé)
+  if (table.xp_open) await gainXP(table.xp_open, 'chest_open_' + coffre.type);
+
   await loadData();
-  showChestOpenAnimation(coffre.type, loot);
+  showChestOpenAnimation(coffre.type, loot, cardResult);
   setTimeout(() => checkBadges(), 1500);
 }
 
-function showChestOpenAnimation(type, loot) {
+function showChestOpenAnimation(type, loot, cardResult) {
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const CHEST_EMOJIS = { bronze: '📦', argent: '🥈', or: '🎁', legende: '👑' };
-  const CHEST_COLORS = { bronze: '#CD7F32', argent: '#C0C0C0', or: '#F4C542', legende: '#A855F7' };
+  const CHEST_EMOJIS = { bronze: '📦', argent: '🥈', or: '🎁', diamant: '💎', legende: '👑' };
+  const CHEST_COLORS = { bronze: '#CD7F32', argent: '#C0C0C0', or: '#F4C542', diamant: '#58C8FA', legende: '#A855F7' };
+  const RARETE_COLORS = { bronze: '#CD7F32', argent: '#C0C0C0', or: '#F4C542', diamant: '#58C8FA', legende: '#A855F7' };
   const color = CHEST_COLORS[type] || '#F4C542';
   const emoji = CHEST_EMOJIS[type] || '📦';
 
@@ -2727,7 +2854,28 @@ function showChestOpenAnimation(type, loot) {
   const lootRow = bg.querySelector('#chest-loot-row');
   const takeBtn = bg.querySelector('#chest-take-btn');
 
+  // Étape 4 — Tuile spéciale pour la carte droppée (toujours en premier).
+  const buildCardTile = () => {
+    if (!cardResult || !cardResult.card) return null;
+    const c = cardResult.card;
+    const rcolor = RARETE_COLORS[c.rarete] || '#F4C542';
+    const dupBadge = cardResult.duplicate
+      ? `<div style="position:absolute;top:-6px;right:-6px;background:#0F1623;color:${rcolor};font-size:9px;padding:2px 6px;border-radius:8px;border:1px solid ${rcolor}66;font-weight:700">DOUBLON</div>`
+      : '';
+    const fullName = `${c.prenom || ''} ${c.nom || ''}`.trim();
+    const el = document.createElement('div');
+    el.className = 'chest-loot-item';
+    el.style.cssText = `position:relative;border:1.5px solid ${rcolor}88;background:linear-gradient(180deg,${rcolor}22,${rcolor}05)`;
+    el.innerHTML = `${dupBadge}
+      <div class="chest-loot-icon" style="font-size:32px;color:${rcolor}">🃏</div>
+      <div class="chest-loot-amount" style="color:${rcolor};font-size:13px">${fullName}</div>
+      <div class="chest-loot-label" style="text-transform:uppercase;letter-spacing:.5px">${c.rarete}</div>`;
+    return el;
+  };
+
   if (reduced) {
+    const cardTile = buildCardTile();
+    if (cardTile) { cardTile.classList.add('reveal'); lootRow.appendChild(cardTile); }
     loot.forEach(item => {
       const el = document.createElement('div');
       el.className = 'chest-loot-item reveal';
@@ -2745,14 +2893,22 @@ function showChestOpenAnimation(type, loot) {
   }, 300);
 
   setTimeout(() => {
-    loot.forEach((item, i) => {
+    let idx = 0;
+    const cardTile = buildCardTile();
+    if (cardTile) {
+      lootRow.appendChild(cardTile);
+      setTimeout(() => cardTile.classList.add('reveal'), idx * 220);
+      idx++;
+    }
+    loot.forEach((item) => {
       const el = document.createElement('div');
       el.className = 'chest-loot-item';
       el.innerHTML = `<div class="chest-loot-icon">${LOOT_ICONS[item.type] || '🎁'}</div><div class="chest-loot-amount">+${item.amount}</div><div class="chest-loot-label">${LOOT_LABELS[item.type] || item.type}</div>`;
       lootRow.appendChild(el);
-      setTimeout(() => el.classList.add('reveal'), i * 220);
+      setTimeout(() => el.classList.add('reveal'), idx * 220);
+      idx++;
     });
-    const delay = loot.length * 220 + 400;
+    const delay = idx * 220 + 400;
     setTimeout(() => takeBtn.classList.add('show'), delay);
   }, 1300);
 }
@@ -2770,9 +2926,9 @@ function renderCoffresCard() {
   if (!container) return;
   const pending = allCoffres.filter(c => !c.ouvert);
   if (pending.length === 0) { container.innerHTML = ''; return; }
-  const typeLabels = { bronze: 'Bronze', argent: 'Argent', or: 'Or', legende: 'Légende' };
+  const typeLabels = { bronze: 'Bronze', argent: 'Argent', or: 'Or', diamant: 'Diamant', legende: 'Légende' };
   const preview = pending.slice(0, 3).map(c => {
-    const CHEST_EMOJIS = { bronze: '📦', argent: '🥈', or: '🎁', legende: '👑' };
+    const CHEST_EMOJIS = { bronze: '📦', argent: '🥈', or: '🎁', diamant: '💎', legende: '👑' };
     return CHEST_EMOJIS[c.type] || '📦';
   }).join(' ');
   container.innerHTML = `
@@ -2789,9 +2945,9 @@ function renderCoffresCard() {
 function showCoffresModal() {
   const pending = allCoffres.filter(c => !c.ouvert);
   if (pending.length === 0) { showToast('Aucun coffre à ouvrir'); return; }
-  const CHEST_EMOJIS = { bronze: '📦', argent: '🥈', or: '🎁', legende: '👑' };
-  const CHEST_NAMES  = { bronze: 'Bronze', argent: 'Argent', or: 'Or', legende: 'Légende' };
-  const CHEST_COLORS = { bronze: '#CD7F32', argent: '#C0C0C0', or: '#F4C542', legende: '#A855F7' };
+  const CHEST_EMOJIS = { bronze: '📦', argent: '🥈', or: '🎁', diamant: '💎', legende: '👑' };
+  const CHEST_NAMES  = { bronze: 'Bronze', argent: 'Argent', or: 'Or', diamant: 'Diamant', legende: 'Légende' };
+  const CHEST_COLORS = { bronze: '#CD7F32', argent: '#C0C0C0', or: '#F4C542', diamant: '#58C8FA', legende: '#A855F7' };
 
   const modal = document.createElement('div');
   modal.id = 'coffres-modal';
@@ -4459,9 +4615,10 @@ async function validateMatch(id){
   await distributeMatchXP(id, parseInt(s1), parseInt(s2));
   await loadData();
   await syncAllLeagues();
-  await distributeCardsForMatch(id);
+  // Étape 4 — Les cartes ne sont plus distribuées directement par match.
+  // Elles sont droppées en ouvrant les coffres post-match (Étape 2).
   await checkBadges();
-  showToast('Score validé ! XP + Ligues + Cartes ✓');renderAdminMatchs();
+  showToast('Score validé ! XP + Ligues + Coffres ✓');renderAdminMatchs();
 }
 
 async function resetMatch(id){
