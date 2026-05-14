@@ -1,0 +1,3 @@
+# Backups locaux créés par Claude Code avant les édits risqués
+# (utile pour rollback rapide, pas pertinent pour le repo)
+*.bak

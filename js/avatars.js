@@ -271,7 +271,7 @@ function isAvatarItemUnlocked(item, joueur) {
 
   if (t === 'streak')   return (joueur.streak || 0) >= v;
   if (t === 'ligue')    return joueur.ligue === v;
-  if (t === 'level')    return (joueur.level || 1) >= v;
+  if (t === 'level')    return (typeof getLevelInfo === 'function' ? getLevelInfo(joueur).level : (joueur.level || 1)) >= v;
   if (t === 'matches')  return (stats?.total || 0) >= v;
   if (t === 'rank')     return (joueur.rank || 999) <= v;
   if (t === 'gems')     return (joueur.gems || 0) >= v;
