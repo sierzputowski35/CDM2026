@@ -66,3 +66,13 @@ CREATE INDEX IF NOT EXISTS idx_notif_recent
 ALTER TABLE joueurs ADD COLUMN IF NOT EXISTS league TEXT;
 
 UPDATE joueurs SET league = NULL;
+
+-- ─────────────────────────────────────────────────────────────────────
+-- Étape 5 — Level-up rewards
+-- ─────────────────────────────────────────────────────────────────────
+-- gainXP écrit désormais joueurs.coins ET joueurs.gems à chaque update.
+-- On s'assure que les colonnes existent (sécurité : si elles avaient été
+-- créées silencieusement par addCoins/addGems c'est OK, mais idempotent).
+
+ALTER TABLE joueurs ADD COLUMN IF NOT EXISTS coins INTEGER DEFAULT 0;
+ALTER TABLE joueurs ADD COLUMN IF NOT EXISTS gems  INTEGER DEFAULT 0;

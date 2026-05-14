@@ -25,7 +25,7 @@ const AVATAR_CATEGORIES = {
       { e: '🎯', rarity: 'rare', locked: false },
       { e: '⚡', rarity: 'epic', locked: false },
       { e: '🔥', rarity: 'epic', locked: false },
-      { e: '👟', rarity: 'epic', locked: true, unlock: 'Niveau 10', unlockType: 'level', unlockValue: 10 },
+      { e: '👟', rarity: 'epic', locked: true, unlock: 'Niveau 5', unlockType: 'level', unlockValue: 5 },
       { e: '🥇', rarity: 'legendary', locked: true, unlock: 'Top 3', unlockType: 'rank', unlockValue: 3 },
     ]
   },
@@ -38,8 +38,8 @@ const AVATAR_CATEGORIES = {
       { e: '🦅', rarity: 'rare', locked: false },
       { e: '🦊', rarity: 'common', locked: false },
       { e: '🐺', rarity: 'epic', locked: true, unlock: 'Streak 5j', unlockType: 'streak', unlockValue: 5 },
-      { e: '🐉', rarity: 'epic', locked: true, unlock: 'Ligue Or', unlockType: 'ligue', unlockValue: 'Or' },
-      { e: '🦋', rarity: 'legendary', locked: true, unlock: '500 gemmes', unlockType: 'gems', unlockValue: 500 },
+      { e: '🐉', rarity: 'epic', locked: true, unlock: 'Niveau 10', unlockType: 'level', unlockValue: 10 },
+      { e: '🦋', rarity: 'legendary', locked: true, unlock: 'Niveau 15', unlockType: 'level', unlockValue: 15 },
       { e: '🦄', rarity: 'legendary', locked: true, unlock: 'Ligue Légende', unlockType: 'ligue', unlockValue: 'Légende' },
     ]
   },
@@ -80,7 +80,10 @@ const AVATAR_FRAMES = [
     id: 'gold',
     label: 'Or',
     rarity: 'rare',
-    locked: false,
+    locked: true,
+    unlock: 'Niveau 8',
+    unlockType: 'level',
+    unlockValue: 8,
     css: 'border: 3px solid #F4C542; border-radius: 24px; box-shadow: 0 0 14px rgba(244,197,66,0.5)',
   },
   {
@@ -139,6 +142,9 @@ const AVATAR_TITLES = [
   { id: 'default',  name: 'Joueur CDM',     color: '#8899BB', locked: false, unlock: 'Par défaut' },
   { id: 'prophet',  name: 'Prophète',       color: '#F4C542', locked: false, unlock: '5 scores exacts' },
   { id: 'sniper',   name: 'Sniper',         color: '#58C8FA', locked: false, unlock: '10 scores exacts' },
+  // Étape 5 — titres débloqués par niveau (Bilan v3 §12)
+  { id: 'pro',      name: 'Pro',            color: '#F4C542', locked: true,  unlock: 'Niveau 10', unlockType: 'level', unlockValue: 10 },
+  { id: 'elite',    name: 'Élite',          color: '#58C8FA', locked: true,  unlock: 'Niveau 15', unlockType: 'level', unlockValue: 15 },
   { id: 'clutch',   name: 'Clutch King',    color: '#FF8A3D', locked: true,  unlock: 'Streak 7 jours', unlockType: 'streak', unlockValue: 7 },
   { id: 'legend',   name: 'Légende Vivante',color: '#A855F7', locked: true,  unlock: 'Ligue Légende', unlockType: 'ligue', unlockValue: 'Légende' },
   { id: 'telepath', name: 'Télépathe',      color: '#22D16B', locked: true,  unlock: '95% précision', unlockType: 'precision', unlockValue: 95 },
