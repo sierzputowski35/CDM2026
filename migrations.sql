@@ -58,10 +58,11 @@ CREATE INDEX IF NOT EXISTS idx_notif_recent
 -- ─────────────────────────────────────────────────────────────────────
 -- Étape 3 — Resync des ligues sur les nouveaux seuils
 -- ─────────────────────────────────────────────────────────────────────
--- Les seuils ont changé (Bronze<300, Argent<1000, Or<2500, Diamant<5000,
--- Légende≥5000). Certains joueurs étaient en dessous des anciens paliers
--- mais sont automatiquement promus avec les nouveaux. On reset la colonne
--- `league` ; syncAllLeagues() la repeuplera au prochain validateMatch.
--- (Alternative : exécuter directement l'UPDATE conditionné ci-dessous.)
+-- Ajout de la colonne `league` si elle manque (le code la lit/écrit
+-- depuis longtemps mais Supabase n'avait jamais throw — les updates
+-- échouaient silencieusement).
+-- Puis reset : syncAllLeagues() repeuplera au prochain validateMatch.
+
+ALTER TABLE joueurs ADD COLUMN IF NOT EXISTS league TEXT;
 
 UPDATE joueurs SET league = NULL;

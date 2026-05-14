@@ -15,6 +15,9 @@
 (function (root) {
 
   // ─── PNG disponibles dans /assets/icons/ ───
+  // Note : 'league-argent' a été retiré ici — le PNG livré contenait
+  // l'artwork "PROFIL" au lieu d'une médaille argent. On utilise désormais
+  // le SVG inline ci-dessous. PNG conservé pour league-bronze (correct).
   const PNG_MAP = {
     'nav-home':      'home.png',
     'nav-matchs':    'matchs.png',
@@ -22,7 +25,6 @@
     'nav-club':      'club.png',
     'nav-profil':    'profil.png',
     'league-bronze': 'league_bronze.png',
-    'league-argent': 'league_argent.png',
   };
 
   // ─── SVG inline (24×24 viewBox, style Lucide) ───
@@ -75,7 +77,9 @@
     'dice':          { s: 'stroke', p: '<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8" cy="8" r="1.2" fill="currentColor"/><circle cx="16" cy="16" r="1.2" fill="currentColor"/><circle cx="16" cy="8" r="1.2" fill="currentColor"/><circle cx="8" cy="16" r="1.2" fill="currentColor"/>' },
     'sparkle':       { s: 'fill',   p: '<path d="M12 2l1.5 5.5L19 9l-5.5 1.5L12 16l-1.5-5.5L5 9l5.5-1.5z"/>' },
 
-    // Ligues custom (or/diamant/légende — pas de PNG dispo)
+    // Ligues custom (argent/or/diamant/légende — pas de PNG dispo,
+    // ou PNG cassé dans le cas de league-argent)
+    'league-argent':   { s: 'fill', p: '<circle cx="12" cy="13" r="7.5"/><path d="M9 2h6l-2 5h-2z" fill="currentColor"/><path d="M8 9l2 5M16 9l-2 5" fill="none" stroke="#050816" stroke-width="1.4" stroke-linecap="round"/>' },
     'league-or':       { s: 'fill', p: '<path d="M12 2l3 7 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z"/>' },
     'league-diamant':  { s: 'fill', p: '<path d="M6 3h12l4 6-10 12L2 9z"/>' },
     'league-legende':  { s: 'fill', p: '<path d="M12 1l2.8 7.5L22 9l-5.5 5 1.5 8L12 18l-6 4 1.5-8L2 9l7.2-.5z"/><circle cx="12" cy="12" r="2.5" fill="#050816"/>' },

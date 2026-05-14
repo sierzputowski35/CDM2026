@@ -903,14 +903,18 @@ function showLeaguePromotionModal(league, rewards) {
 }
 
 function buildPromotionRewardsHtml(rewards) {
+  // Inline icons via window.icon() — évite les emojis tofu sur les fonts
+  // qui n'ont pas le glyph (🪙 / 👤 / 🖼️ / 🎖️ sur Windows fr-FR notamment).
+  const ic = (name, color) =>
+    `<span style="display:inline-flex;vertical-align:middle;margin-right:8px;color:${color}">${window.icon(name, 16)}</span>`;
   const lines = [];
-  if (rewards.xp)    lines.push(`<div>⚡ <strong>+${rewards.xp} XP</strong></div>`);
-  if (rewards.coins) lines.push(`<div>🪙 <strong>+${rewards.coins} Coins</strong></div>`);
-  if (rewards.gems)  lines.push(`<div>💎 <strong>+${rewards.gems} Gems</strong></div>`);
-  if (rewards.chest) lines.push(`<div>🎁 <strong>Coffre ${rewards.chest.toUpperCase()}</strong></div>`);
-  if (rewards.avatar)lines.push(`<div>👤 <strong>Avatar «&nbsp;${rewards.avatar}&nbsp;» débloqué</strong></div>`);
-  if (rewards.frame) lines.push(`<div>🖼️ <strong>Cadre «&nbsp;${rewards.frame}&nbsp;» débloqué</strong></div>`);
-  if (rewards.title) lines.push(`<div>🎖️ <strong>Titre «&nbsp;${rewards.title}&nbsp;»</strong></div>`);
+  if (rewards.xp)    lines.push(`<div>${ic('zap','#F4C542')}<strong>+${rewards.xp} XP</strong></div>`);
+  if (rewards.coins) lines.push(`<div>${ic('coin','#F4C542')}<strong>+${rewards.coins} Coins</strong></div>`);
+  if (rewards.gems)  lines.push(`<div>${ic('gem','#58C8FA')}<strong>+${rewards.gems} Gems</strong></div>`);
+  if (rewards.chest) lines.push(`<div>${ic('gift','#A855F7')}<strong>Coffre ${rewards.chest.toUpperCase()}</strong></div>`);
+  if (rewards.avatar)lines.push(`<div>${ic('users','#58C8FA')}<strong>Avatar «&nbsp;${rewards.avatar}&nbsp;» débloqué</strong></div>`);
+  if (rewards.frame) lines.push(`<div>${ic('shield','#A855F7')}<strong>Cadre «&nbsp;${rewards.frame}&nbsp;» débloqué</strong></div>`);
+  if (rewards.title) lines.push(`<div>${ic('gold-medal','#F4C542')}<strong>Titre «&nbsp;${rewards.title}&nbsp;»</strong></div>`);
   return lines.join('');
 }
 
