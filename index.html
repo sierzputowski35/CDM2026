@@ -904,8 +904,7 @@ function formatCountdown(targetTimestamp) {
   };
 }
 
-// Niveau depuis XP (palier 1000)
-function calcLevel(xp) { return Math.floor((xp||0)/1000)+1; }
+// Niveau : voir getLevelInfo() (section SYSTÈME XP). Pas d'helper séparé.
 
 // Ligue depuis pts
 function calcLigueFromPts(pts) {
@@ -1354,9 +1353,33 @@ let allCoffres = []; // coffres du joueur courant
 // ══ COTES RÉELLES (depuis cotes_raw via The Odds API) ══
 let allOdds = {}; // { [match_id]: { home, draw, away } } — peuplé depuis cotes_raw
 
-// ══ SPRINT 1 : SYSTÈME XP ══
-const XP_CURVE = level => Math.floor(100 * Math.pow(level, 1.5));
-// Niv 1→2: 100xp | 2→3: 282xp | 5→6: 1118xp | 10→11: 3162xp
+// ══ SYSTÈME XP UNIFIÉ (BILAN v3 — Étape 1) ══
+// joueur.xp = XP cumulé total. Le niveau se DÉRIVE via getLevelInfo().
+// Courbe : 85 × level^1.6 (palier marquant à Nv 5/10/15/20).
+// Plafond Nv 20 (~66 862 XP cumulé).
+const XP_CURVE = level => Math.floor(85 * Math.pow(level, 1.6));
+const MAX_LEVEL = 20;
+
+function getLevelInfo(joueur) {
+  const xp = (joueur && joueur.xp) || 0;
+  let level = 1, xpCumul = 0;
+  while (level < MAX_LEVEL) {
+    const needed = XP_CURVE(level);
+    if (xp < xpCumul + needed) break;
+    xpCumul += needed;
+    level++;
+  }
+  const xpInLevel = xp - xpCumul;
+  const xpRequired = level < MAX_LEVEL ? XP_CURVE(level) : 0;
+  return {
+    level,
+    xp,
+    xpInLevel,
+    xpRequired,
+    xpPct: xpRequired > 0 ? (xpInLevel / xpRequired) * 100 : 100,
+    xpTotalCumul: xpCumul
+  };
+}
 
 const XP_REWARDS = {
   prono_submit: 10,
@@ -1378,14 +1401,13 @@ const COIN_REWARDS = {
 async function gainXP(amount, source = 'autre') {
   const joueur = allJoueurs.find(j => j.id === currentUser);
   if (!joueur) return;
-  const oldXP = joueur.xp || 0;
-  const oldLevel = joueur.level || 1;
-  let newXP = oldXP + amount;
-  let newLevel = oldLevel;
-  while (newXP >= XP_CURVE(newLevel)) {
-    newXP -= XP_CURVE(newLevel);
-    newLevel++;
-  }
+  const oldInfo = getLevelInfo(joueur);
+  const oldXP = oldInfo.xp;
+  const oldLevel = oldInfo.level;
+  const newXP = oldXP + amount;
+  joueur.xp = newXP;
+  const newInfo = getLevelInfo(joueur);
+  const newLevel = newInfo.level;
   const leveledUp = newLevel > oldLevel;
   const coinReward = leveledUp ? (newLevel - oldLevel) * COIN_REWARDS.level_up_base : 0;
   const { error } = await sb.from('joueurs').update({
@@ -1407,14 +1429,11 @@ async function gainXP(amount, source = 'autre') {
 async function gainXPFor(joueurId, amount, source) {
   const joueur = allJoueurs.find(j => j.id === joueurId);
   if (!joueur) return;
-  const oldXP = joueur.xp || 0;
-  const oldLevel = joueur.level || 1;
-  let newXP = oldXP + amount;
-  let newLevel = oldLevel;
-  while (newXP >= XP_CURVE(newLevel)) {
-    newXP -= XP_CURVE(newLevel);
-    newLevel++;
-  }
+  const oldInfo = getLevelInfo(joueur);
+  const oldLevel = oldInfo.level;
+  const newXP = oldInfo.xp + amount;
+  joueur.xp = newXP;
+  const newLevel = getLevelInfo(joueur).level;
   const coinReward = newLevel > oldLevel ? (newLevel - oldLevel) * COIN_REWARDS.level_up_base : 0;
   await sb.from('joueurs').update({
     xp: newXP, level: newLevel,
@@ -1470,16 +1489,14 @@ function showFloatingXP(amount) {
 function updateXPBar() {
   const joueur = allJoueurs.find(j => j.id === currentUser);
   if (!joueur) return;
-  const xp = joueur.xp || 0;
-  const level = joueur.level || 1;
-  const required = XP_CURVE(level);
-  const pct = Math.min(100, (xp / required) * 100);
+  const info = getLevelInfo(joueur);
+  const pct = Math.min(100, info.xpPct);
   const fill = document.getElementById('h2-xp-fill');
   const badge = document.getElementById('h2-level');
   const text = document.getElementById('h2-xp-text');
   if (fill) fill.style.width = pct + '%';
-  if (badge) badge.textContent = level;
-  if (text) text.textContent = xp + '/' + required;
+  if (badge) badge.textContent = info.level;
+  if (text) text.textContent = info.level >= MAX_LEVEL ? 'MAX' : (info.xpInLevel + '/' + info.xpRequired);
 }
 
 // PR #8 (Sprint 3) — Anim fill via transform: scaleX (GPU) 800ms spring.
@@ -1807,10 +1824,9 @@ function updateHeaderUser(){
 
   // ── Header V2 ──
   const pts=calcPoints(joueur);
-  const xp=joueur.xp||0;
-  const level=joueur.level||1;
-  const required=XP_CURVE(level);
-  const xpPct=Math.min(100,(xp/required*100)).toFixed(1);
+  const info=getLevelInfo(joueur);
+  const level=info.level;
+  const xpPct=Math.min(100,info.xpPct).toFixed(1);
   const board=getLeaderboard();
   const pos=board.findIndex(p=>p.id===currentUser);
   const rank=pos>=0?pos+1:null;
@@ -1836,7 +1852,7 @@ function updateHeaderUser(){
   if(h2xpf) h2xpf.style.width=xpPct+'%';
 
   const h2xpt=document.getElementById('h2-xp-text');
-  if(h2xpt) h2xpt.textContent=xp+'/'+required;
+  if(h2xpt) h2xpt.textContent=info.level>=MAX_LEVEL?'MAX':(info.xpInLevel+'/'+info.xpRequired);
 
   const h2coins=document.getElementById('h2-coins');
   if(h2coins) h2coins.textContent=(joueur.coins??pts).toLocaleString('fr-FR');
@@ -1956,14 +1972,14 @@ function initHomeHeader() {
   if (avEl) avEl.innerHTML = renderAvatarEl(joueur, 38, 11);
 
   const pts = calcPoints(joueur);
-  const xp = joueur.xp || 0;
-  const level = joueur.level || 1;
-  const required = XP_CURVE(level);
-  const pct = Math.min(100, (xp / required) * 100);
+  const info = getLevelInfo(joueur);
+  const pct = Math.min(100, info.xpPct);
   const fillEl = document.getElementById('home-xp-fill');
   const labelEl = document.getElementById('home-xp-label');
   if (fillEl) fillEl.style.width = pct + '%';
-  if (labelEl) labelEl.textContent = 'Niv.' + level + ' · ' + xp + '/' + required + ' XP';
+  if (labelEl) labelEl.textContent = info.level >= MAX_LEVEL
+    ? 'Niv.' + info.level + ' · MAX'
+    : 'Niv.' + info.level + ' · ' + info.xpInLevel + '/' + info.xpRequired + ' XP';
 
   const coinsEl = document.getElementById('home-coins');
   if (coinsEl) coinsEl.textContent = pts.toLocaleString('fr-FR');
@@ -2594,7 +2610,7 @@ function switchProfilTab(tab, joueurArg, statsArg, streakArg) {
         '<div class="stat-card"><div class="stat-val">' + (stats.exact||0) + '</div><div class="stat-lbl">Scores exacts</div></div>' +
         '<div class="stat-card"><div class="stat-val">' + ((stats.bonDiff||0)+(stats.bonVainqueur||0)) + '</div><div class="stat-lbl">Bons résultats</div></div>' +
         '<div class="stat-card"><div class="stat-val">' + (streak||0) + '</div><div class="stat-lbl">Série en cours</div></div>' +
-        '<div class="stat-card"><div class="stat-val">' + (joueur.level||1) + '</div><div class="stat-lbl">Niveau</div></div>' +
+        '<div class="stat-card"><div class="stat-val">' + getLevelInfo(joueur).level + '</div><div class="stat-lbl">Niveau</div></div>' +
         '<div class="stat-card"><div class="stat-val">' + (joueur.xp||0) + '</div><div class="stat-lbl">XP total</div></div>' +
         '<div class="stat-card"><div class="stat-val">' + (joueur.daily_streak||0) + '</div><div class="stat-lbl">Streak daily</div></div>' +
       '</div>';
@@ -4499,8 +4515,13 @@ function openProfil(id){
     +'<div class="stat-badge"><div class="stat-badge-val" style="color:#f87171">'+stats.rate+'</div><div class="stat-badge-lbl">Rat\u00e9s</div></div>';
 
   // \u2500\u2500 XP / LIGUE SECTION V2 \u2500\u2500
-  const xp=totalPts*10; const level=Math.floor(xp/1000)+1;
-  const xpInLvl=xp%1000; const xpPct=(xpInLvl/10).toFixed(0);
+  const info=getLevelInfo(joueur);
+  const level=info.level;
+  const xp=info.xp;
+  const xpInLvl=info.xpInLevel;
+  const xpRequired=info.xpRequired;
+  const xpPct=info.xpPct.toFixed(0);
+  const isMax=level>=MAX_LEVEL;
   const LIGUES_P=[
     {name:'BRONZE',min:0,max:500,color:'#FF8A3D'},{name:'ARGENT',min:500,max:1200,color:'#C0C0C0'},
     {name:'OR',min:1200,max:2000,color:'#F4C542'},{name:'DIAMANT',min:2000,max:3000,color:'#58C8FA'},{name:'L\u00c9GENDE',min:3000,max:99999,color:'#A855F7'}
@@ -4521,7 +4542,7 @@ function openProfil(id){
         <div style="height:100%;width:${xpPct}%;background:linear-gradient(90deg,${myL.color},#FFE680);border-radius:3px;transition:width .8s"></div>
       </div>
       <div style="font-size:10px;color:var(--text3);margin-top:4px;display:flex;align-items:center;gap:4px">
-        <span>${xpInLvl}/1000 XP pour Nv${level+1}</span>${streak>=3?`<span style="display:inline-flex;align-items:center;gap:3px;color:#FF8A3D">\u00b7 ${window.icon('flame', 11)} <span style="color:var(--text3)">S\u00e9rie ${streak}</span></span>`:''}
+        <span>${isMax?'NIVEAU MAX':`${xpInLvl}/${xpRequired} XP pour Nv${level+1}`}</span>${streak>=3?`<span style="display:inline-flex;align-items:center;gap:3px;color:#FF8A3D">\u00b7 ${window.icon('flame', 11)} <span style="color:var(--text3)">S\u00e9rie ${streak}</span></span>`:''}
       </div>
     </div>
   </div>`;
