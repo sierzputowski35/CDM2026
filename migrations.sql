@@ -183,3 +183,38 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_missions_unique
 
 ALTER TABLE joueurs ADD COLUMN IF NOT EXISTS end_of_season_pack  TEXT;
 ALTER TABLE joueurs ADD COLUMN IF NOT EXISTS end_of_season_seen  BOOLEAN DEFAULT FALSE;
+
+-- ─────────────────────────────────────────────────────────────────────
+-- Étape 10 — Shop (4 catégories : coffres / cosmétiques / boosters / cartes)
+-- ─────────────────────────────────────────────────────────────────────
+-- Journal des transactions : sert d'historique + permet de calculer
+-- les cooldowns (1/jour, 1/semaine, 1/mois) en queryant le created_at
+-- le plus récent par (joueur_id, item_id).
+--
+-- joueurs.shop_purchases JSONB stocke la liste des items "permanents"
+-- achetés (cosmétiques notamment) pour que isAvatarItemUnlocked puisse
+-- vérifier sync (sans query). Les coffres/packs/boosters ne sont pas
+-- stockés ici (consommables, ils déposent directement leur effet).
+
+CREATE TABLE IF NOT EXISTS shop_transactions (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  joueur_id TEXT REFERENCES joueurs(id) ON DELETE CASCADE,
+  item_id TEXT NOT NULL,
+  item_type TEXT NOT NULL CHECK (item_type IN ('chest','cosmetic','booster','pack')),
+  price_coins INTEGER DEFAULT 0,
+  price_gems  INTEGER DEFAULT 0,
+  created_at  TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_shop_user_date
+  ON shop_transactions(joueur_id, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_shop_user_item
+  ON shop_transactions(joueur_id, item_id, created_at DESC);
+
+ALTER TABLE joueurs ADD COLUMN IF NOT EXISTS shop_purchases JSONB DEFAULT '[]'::jsonb;
+
+-- Boosters temporaires : timestamp d'expiration, NULL = pas actif
+ALTER TABLE joueurs ADD COLUMN IF NOT EXISTS boost_double_xp_until    TIMESTAMP;
+ALTER TABLE joueurs ADD COLUMN IF NOT EXISTS boost_double_coins_until TIMESTAMP;
+ALTER TABLE joueurs ADD COLUMN IF NOT EXISTS boost_streak_until       TIMESTAMP;

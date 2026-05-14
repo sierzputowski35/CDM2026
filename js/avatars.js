@@ -33,9 +33,12 @@ const AVATAR_CATEGORIES = {
     label: 'Animaux',
     iconName: 'fox',
     items: [
-      { e: '🦁', rarity: 'rare', locked: false },
-      { e: '🐯', rarity: 'rare', locked: false },
-      { e: '🦅', rarity: 'rare', locked: false },
+      // Étape 10 — Avatars rares vendus au shop (Bilan v3 §12 = "Shop 300 🪙").
+      // Une fois achetés, ils apparaissent dans joueur._shopPurchases et
+      // sont débloqués via isAvatarItemUnlocked type 'shop'.
+      { e: '🦁', rarity: 'rare', locked: true, unlock: 'Shop · 300 🪙', unlockType: 'shop', unlockValue: 'avatar_lion' },
+      { e: '🐯', rarity: 'rare', locked: true, unlock: 'Shop · 300 🪙', unlockType: 'shop', unlockValue: 'avatar_tigre' },
+      { e: '🦅', rarity: 'rare', locked: true, unlock: 'Shop · 300 🪙', unlockType: 'shop', unlockValue: 'avatar_aigle' },
       { e: '🦊', rarity: 'common', locked: false },
       // Étape 9 — Wolf : "Streak 5 pronos" (consécutifs corrects) par spec §12,
       // pas un streak daily. On utilise le maxStreak de computePlayerStats.
@@ -55,7 +58,8 @@ const AVATAR_CATEGORIES = {
       { e: '💎', rarity: 'epic', locked: true, unlock: 'Ligue Diamant', unlockType: 'ligue', unlockValue: 'diamant' },
       { e: '🏅', rarity: 'epic', locked: true, unlock: '50 matchs', unlockType: 'matches', unlockValue: 50 },
       { e: '🎭', rarity: 'legendary', locked: true, unlock: 'Niveau 20', unlockType: 'level', unlockValue: 20 },
-      { e: '🤖', rarity: 'legendary', locked: true, unlock: '1000 gemmes', unlockType: 'gems', unlockValue: 1000 },
+      // Étape 10 — 🤖 Robot : "Shop 1000 💎" par spec §12 (dépense, pas wealth check).
+      { e: '🤖', rarity: 'legendary', locked: true, unlock: 'Shop · 1000 💎', unlockType: 'shop', unlockValue: 'avatar_robot' },
     ]
   },
   mascottes: {
@@ -344,6 +348,9 @@ function isAvatarItemUnlocked(item, joueur) {
   if (t === 'rank')     return (joueur.rank || 999) <= v;
   if (t === 'gems')     return (joueur.gems || 0) >= v;
   if (t === 'badge')    return !!joueur._badgeIds?.has?.(v);
+  // Étape 10 — Cosmétiques achetés dans le shop : on lit l'item id
+  // (ex. avatar_lion, avatar_robot) dans joueur._shopPurchases.
+  if (t === 'shop')     return !!joueur._shopPurchases?.has?.(v);
   if (t === 'precision') {
     if (!stats?.total) return false;
     const precision = Math.round(((stats.exact + stats.bonDiff + stats.bonVainqueur) / stats.total) * 100);
