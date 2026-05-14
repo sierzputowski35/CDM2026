@@ -91,7 +91,7 @@ async function distributeCardsForMatch(matchId) {
       } catch(_) {}
     }
   }
-  showToast('🃏 Cartes distribuées !');
+  showToast('Cartes distribuées !');
 }
 
 let _carteCache = [];
