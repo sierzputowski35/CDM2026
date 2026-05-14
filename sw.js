@@ -3,7 +3,10 @@
 // (ex: cdm2026-v2, cdm2026-v3 ...) pour forcer le rafraîchissement
 // du cache sur tous les appareils des utilisateurs.
 // ─────────────────────────────────────────────────────────────────
-const CACHE = 'cdm2026-v2';
+// PR #2 : bump v3 après l'extraction du CSS en /styles/*.css
+// (force le refresh du cache pour que les clients existants récupèrent
+// la nouvelle structure de chargement)
+const CACHE = 'cdm2026-v3';
 
 // FIX #8 : Les polices Google Fonts sont maintenant mises en cache
 // pour que l'app reste belle en mode hors-ligne.
@@ -15,6 +18,12 @@ const STATIC_ASSETS = [
   '/index.html',
   '/icon-192.png',
   '/icon-512.png',
+  // PR #2 : feuilles de style séparées
+  '/styles/variables.css',
+  '/styles/reset.css',
+  '/styles/components.css',
+  '/styles/animations.css',
+  '/styles/screens.css',
 ];
 
 // ── Install : mise en cache des assets statiques ──

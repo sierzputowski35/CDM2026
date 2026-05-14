@@ -1,0 +1,86 @@
+/* ════════════════════════════════════════════════════════════
+   CDM 2026 — animations.css
+   TÂCHE 5 (streak flames), TÂCHE 6 (page transitions),
+   TÂCHE 8 (badge unlock), TÂCHE 9 (podium animations)
+   Extrait de index.html lignes 1471-1549 (PR #2 refactor CSS)
+   ════════════════════════════════════════════════════════════ */
+
+/* ══════════════════════════════════
+   TÂCHE 5 — STREAK FLAMES
+══════════════════════════════════ */
+.streak-flame-container { position: relative; display: inline-block; }
+.flame {
+  font-size: 28px; display: inline-block;
+  animation: flame-flicker 0.8s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 8px rgba(255,138,61,0.8));
+}
+.flame:nth-child(2) { animation-delay: .15s; font-size: 22px; }
+.flame:nth-child(3) { animation-delay: .30s; font-size: 26px; }
+@keyframes flame-flicker {
+  0%   { transform: scale(1) rotate(-2deg); filter: drop-shadow(0 0 6px rgba(255,138,61,0.6)); }
+  100% { transform: scale(1.08) rotate(2deg); filter: drop-shadow(0 0 14px rgba(255,138,61,1)); }
+}
+.streak-card {
+  border-color: rgba(255,138,61,0.3) !important;
+  background: linear-gradient(135deg, rgba(255,138,61,0.08), transparent) !important;
+  animation: streak-glow 2.5s ease-in-out infinite;
+}
+@keyframes streak-glow {
+  0%,100% { box-shadow: 0 0 15px rgba(255,138,61,0.1); }
+  50%      { box-shadow: 0 0 30px rgba(255,138,61,0.25); }
+}
+.streak-number {
+  font-family: 'Bebas Neue', sans-serif; font-size: 48px;
+  color: #FF8A3D; line-height: 1;
+  animation: streak-bounce .6s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes streak-bounce {
+  from { transform: scale(0.5); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+/* ══════════════════════════════════
+   TÂCHE 6 — PAGE TRANSITIONS
+══════════════════════════════════ */
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(10px) scale(0.99); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes page-exit {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-6px); }
+}
+.page.entering { animation: page-enter 220ms cubic-bezier(.4,0,.2,1) both; }
+
+/* ══════════════════════════════════
+   TÂCHE 8 — BADGE UNLOCK
+══════════════════════════════════ */
+@keyframes badge-explode {
+  0%  { transform: scale(0) rotate(-20deg); opacity: 0; }
+  60% { transform: scale(1.2) rotate(5deg); }
+  100%{ transform: scale(1) rotate(0deg); opacity: 1; }
+}
+@keyframes badge-name-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+#badge-unlock-icon { animation: badge-explode .6s cubic-bezier(.34,1.56,.64,1) both; }
+#badge-unlock-name { animation: badge-name-in .4s .3s ease both; opacity: 0; }
+
+/* ══════════════════════════════════
+   TÂCHE 9 — PODIUM ANIMATIONS
+══════════════════════════════════ */
+@keyframes podium-rise {
+  from { transform: scaleY(0); transform-origin: bottom; opacity: 0; }
+  to   { transform: scaleY(1); transform-origin: bottom; opacity: 1; }
+}
+@keyframes podium-bounce-top {
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(-6px); }
+}
+.podium-base { animation: podium-rise .6s cubic-bezier(.34,1.56,.64,1) both; }
+.podium-base.p2 { animation-delay: 0s; }
+.podium-base.p1 { animation-delay: .1s; }
+.podium-base.p3 { animation-delay: .2s; }
+.podium-avatar.p1 { animation: podium-bounce-top 2s ease-in-out infinite; }
+

@@ -1,0 +1,59 @@
+/* ════════════════════════════════════════════════════════════
+   CDM 2026 — variables.css
+   Polices Google + bloc :root (palette, espacements, glow)
+   Extrait de index.html (PR #2 refactor CSS)
+   ════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;600;700;800&display=swap');
+
+:root {
+  /* Palette Supercell x Canal+ Sport */
+  --bg:        #06080f;
+  --bg2:       #0b0f1a;
+  --bg3:       #101520;
+  --surface:   #141926;
+  --surface2:  #1a2133;
+  --surface3:  #1f2840;
+
+  /* Accents */
+  --gold:      #FFD700;
+  --gold2:     #FFA500;
+  --red:       #E5002B;
+  --red2:      #FF1744;
+  --blue:      #00A8FF;
+  --green:     #00E676;
+  --purple:    #7C4DFF;
+
+  /* Text */
+  --text:      #FFFFFF;
+  --text2:     #8B9DC3;
+  --text3:     #3D4F6E;
+
+  /* Borders */
+  --border:    rgba(255,255,255,0.05);
+  --border2:   rgba(255,255,255,0.10);
+  --border3:   rgba(255,215,0,0.25);
+
+  /* Glow */
+  --glow-gold: rgba(255,215,0,0.20);
+  --glow-red:  rgba(229,0,43,0.20);
+  --glow-blue: rgba(0,168,255,0.20);
+
+  --radius:    10px;
+  --radius-lg: 20px;
+  --radius-xl: 26px;
+
+  /* ── V2 PALETTE DOPAMINE ── */
+  --bg-primary:   #050816;
+  --bg-secondary: #0B1020;
+  --bg-card:      #111827;
+  --bg-elevated:  #1A2235;
+  --gold-primary: #F4C542;
+  --gold-light:   #FFCC33;
+  --gold-dark:    #C99812;
+  --emerald:      #22D16B;
+  --crimson:      #FF4D5A;
+  --royal-purple: #A855F7;
+  --electric-blue:#58C8FA;
+  --orange-fire:  #FF8A3D;
+}
