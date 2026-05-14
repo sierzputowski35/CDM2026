@@ -50,11 +50,32 @@
   </div>
 </div>
 
-<div id="loading" style="position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:16px;">
-  <img src="icon-192.png" alt="CDM 2026" style="width:80px;height:80px;border-radius:20px;box-shadow:0 0 40px rgba(255,215,0,0.3);animation:pulse 1.5s ease-in-out infinite" onerror="this.outerHTML='<div style=\'color:#F4C542;display:inline-flex\'>'+(window.icon?window.icon('trophy',60):'')+'</div>'">
-  <div class="loading-title">UNITED 2026</div>
-  <div class="loading-spinner"></div>
+<div id="loading" style="position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;">
+  <!-- Skeleton header (PR #7) — calque le layout réel pour limiter le shift au mount -->
+  <div style="padding:14px 16px 10px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)">
+    <div class="skeleton skeleton-box" style="width:48px;height:48px;border-radius:14px"></div>
+    <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+      <div class="skeleton skeleton-box" style="width:50%;height:14px;border-radius:5px"></div>
+      <div class="skeleton skeleton-box" style="width:80%;height:8px;border-radius:4px"></div>
+    </div>
+    <div class="skeleton skeleton-box" style="width:42px;height:24px;border-radius:8px"></div>
+  </div>
+  <!-- Skeleton corps Accueil -->
+  <div id="loading-skeleton-body" style="flex:1;overflow:hidden"></div>
+  <!-- Marque + spinner discret en bas (fallback identité) -->
+  <div style="padding:16px 0 28px;display:flex;flex-direction:column;align-items:center;gap:10px">
+    <div class="loading-title" style="font-size:18px;letter-spacing:4px">UNITED 2026</div>
+    <div class="loading-spinner" style="width:18px;height:18px"></div>
+  </div>
 </div>
+<script>
+  // PR #7 : injecte le skeleton home dès que possible. window.Skeleton
+  // peut ne pas être prêt si ce <script> est exécuté avant le module
+  // (c'est le cas en début de body), donc on attend DOMContentLoaded.
+  document.addEventListener('DOMContentLoaded', function () {
+    if (window.Skeleton) Skeleton.into(document.getElementById('loading-skeleton-body'), 'home');
+  });
+</script>
 
 <div class="toast" id="toast"></div>
 
@@ -714,6 +735,9 @@
 
 <script src="js/utils/icons.js"></script>
 <script src="js/utils/haptic.js"></script>
+<script src="js/utils/scroll-reveal.js"></script>
+<script src="js/components/skeleton.js"></script>
+<script src="js/components/juice.js"></script>
 <script src="js/supabase.js"></script>
 <script src="js/data/flags.js"></script>
 <script src="js/utils/flag.js"></script>
@@ -1457,16 +1481,35 @@ function updateXPBar() {
   if (text) text.textContent = xp + '/' + required;
 }
 
+// PR #8 (Sprint 3) — Anim fill via transform: scaleX (GPU) 800ms spring.
+// Cas level-up : on remplit jusqu'à 100%, puis reset à 0 sans transition,
+// puis updateXPBar pose la fraction du nouveau niveau.
 function animateXPBar(oldXP, gain, sameLevel) {
   if (sameLevel) { setTimeout(updateXPBar, 200); return; }
   const fill = document.getElementById('h2-xp-fill');
   if (!fill) { setTimeout(updateXPBar, 200); return; }
-  fill.style.width = '100%';
+  // Capture l'état visible courant pour démarrer l'anim sans jump.
+  const parent = fill.parentElement;
+  const startRatio = parent && parent.clientWidth
+    ? Math.max(0, Math.min(1, fill.getBoundingClientRect().width / parent.clientWidth))
+    : 0;
+  // Passe la barre en mode scaleX (cf. animations.css). On force la
+  // largeur à 100% et on positionne le transform initial à ratio,
+  // sans transition, avant de relancer la transition sur scaleX(1).
+  fill.classList.add('xp-fill-scale');
+  fill.style.transition = 'none';
+  fill.style.transform = 'scaleX(' + startRatio + ')';
+  // Force reflow puis lance la transition vers 100%.
+  fill.offsetHeight;
+  fill.style.transition = '';
+  fill.style.transform = 'scaleX(1)';
   setTimeout(() => {
     fill.style.transition = 'none';
-    fill.style.width = '0%';
+    fill.style.transform = 'scaleX(0)';
     requestAnimationFrame(() => {
       fill.style.transition = '';
+      fill.style.transform = '';
+      fill.classList.remove('xp-fill-scale');
       setTimeout(updateXPBar, 100);
     });
   }, 800);
@@ -2562,7 +2605,9 @@ function switchProfilTab(tab, joueurArg, statsArg, streakArg) {
 }
 
 async function renderProfilBadges(container, joueur) {
-  container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);font-size:13px">Chargement des badges…</div>';
+  // Skeleton avant le fetch Supabase (PR #7)
+  if (window.Skeleton) Skeleton.into(container, 'badge-grid', 12);
+  else container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);font-size:13px">Chargement des badges…</div>';
   const earnedIds = await getEarnedBadgeIds(joueur.id);
   const earnedCount = earnedIds.size;
   const total = BADGES.length;
@@ -2583,7 +2628,9 @@ async function renderProfilBadges(container, joueur) {
 }
 
 async function renderProfilCollection(container, joueur) {
-  container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);font-size:13px">Chargement des cartes…</div>';
+  // Skeleton avant le fetch Supabase (PR #7)
+  if (window.Skeleton) Skeleton.into(container, 'card-grid', 6);
+  else container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text3);font-size:13px">Chargement des cartes…</div>';
   let cartes = [];
   try {
     const { data } = await sb.from('cartes_collection').select('*').eq('joueur_id', joueur.id).order('id', {ascending:false});
@@ -3299,6 +3346,8 @@ async function savePronostic(id){
     btn.classList.add('flash');
     setTimeout(()=>btn.classList.remove('flash'),400);
     spawnParticles(btn,8);
+    // PR #8 (Sprint 3) — juice : haptic + pulse cote sélectionnée + XP toast bottom
+    if (window.Juice) Juice.pronoSaved(btn, id, XP_REWARDS.prono_submit);
   }catch(e){}
 }
 
