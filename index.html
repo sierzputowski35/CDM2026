@@ -1029,7 +1029,8 @@ async function checkLeaguePromotion(joueurId, league) {
 
   // 3. UI pour le user courant uniquement
   if (joueurId === currentUser) {
-    setTimeout(() => showLeaguePromotionModal(league, rewards), 200);
+    // SPRINT 1 — Queue prioritaire (100) : passe AVANT level-up et badges.
+    RewardQueue.enqueue({ type: 'league_promotion', data: { league, rewards } });
     if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
     // Badge league_silver / _gold / _diamond / _legend
     setTimeout(() => { if (typeof checkBadges === 'function') checkBadges(); }, 1500);
@@ -1764,6 +1765,125 @@ function aggregateLevelUpRewards(oldLevel, newLevel) {
   return agg;
 }
 
+// SPRINT 1 — REWARD QUEUE MANAGER
+// File centralisée pour les modales bloquantes (level-up, ligue, badge, coffre).
+// Évite les superpositions causées par les setTimeout indépendants.
+// Détection de fin via MutationObserver (pas de polling). Skip via tap.
+const RewardQueue = {
+  queue: [],
+  playing: false,
+  current: null,
+  priorities: {
+    league_promotion: 100,
+    level_up:          80,
+    badge_unlock:      60,
+    chest_opened:      40,
+  },
+  enqueue(item) {
+    if (!item || !item.type) return;
+    if (item.priority == null) item.priority = this.priorities[item.type] || 0;
+    this.queue.push(item);
+    this.queue.sort((a, b) => b.priority - a.priority);
+    if (!this.playing) this.playNext();
+  },
+  async playNext() {
+    const next = this.queue.shift();
+    if (!next) { this.playing = false; this.current = null; return; }
+    this.playing = true;
+    this.current = next;
+    try {
+      switch (next.type) {
+        case 'level_up':
+          if (typeof showLevelUpModal === 'function') {
+            showLevelUpModal(next.data.level, next.data.agg);
+            await this._waitGone('.level-up-modal');
+          }
+          break;
+        case 'league_promotion':
+          if (typeof showLeaguePromotionModal === 'function') {
+            showLeaguePromotionModal(next.data.league, next.data.rewards);
+            await this._waitGone('.league-promo-modal');
+          }
+          break;
+        case 'badge_unlock':
+          if (typeof showBadgeUnlockModal === 'function') {
+            showBadgeUnlockModal(next.data);
+            await this._waitHidden('#badge-unlock-overlay');
+          }
+          break;
+        case 'chest_opened':
+          if (typeof showChestOpenAnimation === 'function') {
+            showChestOpenAnimation(next.data.type, next.data.loot, next.data.cardResult);
+            await this._waitGone('.chest-anim-bg');
+          }
+          break;
+      }
+    } catch (e) {
+      console.warn('[RewardQueue]', next.type, 'error:', e);
+    }
+    this.current = null;
+    // Micro-gap pour éviter le clignotement entre 2 modales.
+    await new Promise(r => setTimeout(r, 150));
+    this.playNext();
+  },
+  // Attend que le sélecteur disparaisse du DOM (timeout sécurité 20s).
+  _waitGone(selector, maxWait = 20000) {
+    return new Promise(resolve => {
+      if (!document.querySelector(selector)) return resolve();
+      const start = Date.now();
+      const obs = new MutationObserver(() => {
+        if (!document.querySelector(selector)) { obs.disconnect(); resolve(); }
+        else if (Date.now() - start > maxWait) { obs.disconnect(); console.warn('[RewardQueue] timeout', selector); resolve(); }
+      });
+      obs.observe(document.body, { childList: true, subtree: true });
+    });
+  },
+  // Attend que l'élément (toujours présent dans le DOM) reçoive .hidden.
+  _waitHidden(selector, maxWait = 20000) {
+    return new Promise(resolve => {
+      const el = document.querySelector(selector);
+      if (!el || el.classList.contains('hidden')) return resolve();
+      const start = Date.now();
+      const obs = new MutationObserver(() => {
+        if (el.classList.contains('hidden')) { obs.disconnect(); resolve(); }
+        else if (Date.now() - start > maxWait) { obs.disconnect(); console.warn('[RewardQueue] timeout', selector); resolve(); }
+      });
+      obs.observe(el, { attributes: true, attributeFilter: ['class'] });
+    });
+  },
+  // Skip = ferme la modale en cours (le _waitGone/Hidden enchaîne la suite).
+  skip() {
+    if (!this.current) return;
+    switch (this.current.type) {
+      case 'level_up':
+        if (typeof closeLevelUpModal === 'function') closeLevelUpModal();
+        break;
+      case 'league_promotion': {
+        const m = document.querySelector('.league-promo-modal');
+        if (m) { m.style.opacity = '0'; setTimeout(() => m.remove(), 400); }
+        break;
+      }
+      case 'badge_unlock':
+        if (typeof closeBadgeUnlock === 'function') closeBadgeUnlock();
+        break;
+      case 'chest_opened':
+        // Skip différé jusqu'au Sprint 6 (chest opening AAA). Le bouton
+        // « TOUT PRENDRE » de l'anim actuelle clôt déjà la séquence.
+        break;
+    }
+  },
+};
+window.RewardQueue = RewardQueue;
+
+// Tap-to-skip global : tap hors d'un bouton pendant une anim ferme la modale
+// courante. Les boutons CTA (RÉCUPÉRER / FÉLICITATIONS / SUPER) gardent leur
+// handler natif qui aboutit au même close → la queue avance.
+document.addEventListener('click', e => {
+  if (!RewardQueue.playing || !RewardQueue.current) return;
+  if (e.target.closest('button')) return;
+  RewardQueue.skip();
+}, true);
+
 // Gain XP pour le joueur courant (avec animations visuelles)
 async function gainXP(amount, source = 'autre') {
   const joueur = allJoueurs.find(j => j.id === currentUser);
@@ -1806,7 +1926,9 @@ async function gainXP(amount, source = 'autre') {
   animateXPBar(oldXP, amount, !leveledUp);
 
   if (leveledUp) {
-    setTimeout(() => showLevelUpModal(newLevel, agg), 400);
+    // SPRINT 1 — Passage par la RewardQueue (au lieu de setTimeout direct)
+    // pour s'ordonner avec une éventuelle promo de ligue / coffre / badge.
+    RewardQueue.enqueue({ type: 'level_up', data: { level: newLevel, agg } });
     if (navigator.vibrate) navigator.vibrate([50, 30, 100, 30, 150]);
   }
   await loadData();
@@ -3070,7 +3192,9 @@ async function openChest(coffreId) {
   }
 
   await loadData();
-  showChestOpenAnimation(coffre.type, loot, cardResult);
+  // SPRINT 1 — Passage par la queue. Si gainXP ci-dessus a fait level-up,
+  // le level_up (prio 80) jouera AVANT le chest_opened (prio 40).
+  RewardQueue.enqueue({ type: 'chest_opened', data: { type: coffre.type, loot, cardResult } });
   setTimeout(() => checkBadges(), 1500);
 }
 

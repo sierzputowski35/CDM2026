@@ -328,12 +328,20 @@ async function checkBadges() {
 }
 
 // ── File d'attente pour les overlays de déblocage badge ──
-// Empêche l'empilement quand plusieurs badges sautent en même temps
-// (ex. score exact = first_blood + exact_1 + ... d'un coup).
+// SPRINT 1 — Route via RewardQueue (centralisation level-up/ligue/coffre/badge).
+// Fallback maintenu si RewardQueue absente (compat / chargement script).
 const __badgeOverlayQueue = [];
 let __badgeOverlayBusy = false;
 
 function enqueueBadgeOverlays(badges) {
+  if (window.RewardQueue) {
+    for (const b of badges) {
+      window.RewardQueue.enqueue({ type: 'badge_unlock', data: b });
+    }
+    if (badges.length && navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
+    return;
+  }
+  // Fallback ancien comportement
   for (const b of badges) __badgeOverlayQueue.push(b);
   drainBadgeOverlayQueue();
 }
@@ -341,12 +349,10 @@ function enqueueBadgeOverlays(badges) {
 function drainBadgeOverlayQueue() {
   if (__badgeOverlayBusy || !__badgeOverlayQueue.length) return;
   __badgeOverlayBusy = true;
-  // Attendre que toute modal level-up éventuelle se ferme avant d'enchaîner.
   waitForLevelUpClosed().then(() => {
     const badge = __badgeOverlayQueue.shift();
     showBadgeUnlockModal(badge);
     if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
-    // showBadgeUnlockModal auto-ferme après 5500ms (cf. setTimeout interne)
     setTimeout(() => {
       __badgeOverlayBusy = false;
       drainBadgeOverlayQueue();
@@ -354,8 +360,7 @@ function drainBadgeOverlayQueue() {
   });
 }
 
-// gainXP programme showLevelUpModal via setTimeout(400ms), donc on lui laisse
-// 600ms pour apparaître avant de conclure qu'il n'y aura pas de modal.
+// Fallback uniquement : poll DOM pour attendre la fermeture du level-up modal.
 function waitForLevelUpClosed() {
   return new Promise(resolve => {
     setTimeout(() => {
