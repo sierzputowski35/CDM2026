@@ -2755,43 +2755,7 @@ body {
   <div class="main">
     <div id="page-home" class="page active">
 
-      <!-- 1. HEADER JOUEUR -->
-      <div class="home-header">
-        <div class="home-header__left">
-          <div class="player-avatar" id="home-avatar" onclick="openAvatarModal()" style="cursor:pointer"></div>
-          <div>
-            <div class="player-name-home" id="home-username">Joueur</div>
-            <div class="player-xp">
-              <div class="xp-bar"><div class="xp-bar__fill" id="home-xp-fill" style="width:0%"></div></div>
-              <span class="xp-label" id="home-xp-label">Niv.1 · 0/1000 XP</span>
-            </div>
-          </div>
-        </div>
-        <div class="home-header__right">
-          <div class="currency-pill">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-              <polygon points="12,2 15,9 22,9 17,14 19,21 12,17 5,21 7,14 2,9 9,9" stroke="#F4C542" stroke-width="1.8" fill="none"/>
-            </svg>
-            <span class="currency-pill__amount" id="home-coins">0</span>
-          </div>
-          <div class="currency-pill currency-pill--gems">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" stroke="#A855F7" stroke-width="1.8" fill="none"/>
-            </svg>
-            <span class="currency-pill__amount currency-pill--gems" id="home-gems">0</span>
-          </div>
-          <button class="notif-btn" onclick="switchTab('profil',document.getElementById('tab-profil'))" aria-label="Profil">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
-                 stroke="currentColor" stroke-width="2" stroke-linecap="round">
-              <circle cx="12" cy="8" r="4"/>
-              <path d="M20 21a8 8 0 10-16 0"/>
-            </svg>
-            <div class="notif-dot" id="notif-dot"></div>
-          </button>
-        </div>
-      </div>
-
-      <!-- 1b. DAILY REWARD + MISSION (V2 dopamine) -->
+      <!-- 1. DAILY REWARD + MISSION (V2 dopamine) -->
       <div id="daily-reward-home"></div>
       <div id="mission-home"></div>
       <div id="coffres-home"></div>
@@ -8270,16 +8234,16 @@ function generateNotifs() {
   }
 
   // Badge proche
-  const stats = getBadgeStats(joueur);
+  const stats = computePlayerStats(joueur);
   const key = 'cdm2026_badges_' + joueur.id;
   const earned = new Set(JSON.parse(localStorage.getItem(key) || '[]'));
   const proche = BADGES.find(b => !earned.has(b.id) && (
-    (b.id === 'nostradamus' && stats.exact >= 2) ||
-    (b.id === 'warm_up' && stats.totalPronos >= 4) ||
-    (b.id === 'on_fire' && stats.bestStreak >= 2) ||
-    (b.id === 'century' && stats.pts >= 80)
+    (b.id === 'exact_5'   && stats.scoresExacts >= 3) ||
+    (b.id === 'exact_10'  && stats.scoresExacts >= 7) ||
+    (b.id === 'hat_trick' && stats.maxStreak    >= 2) ||
+    (b.id === 'streak_5'  && stats.maxStreak    >= 3)
   ));
-  if (proche) notifs.push({ icon: proche.emoji, title: `Badge "${proche.name}" presque débloqué !`, sub: 'Continue comme ça 💪', action: null });
+  if (proche) notifs.push({ icon: proche.icon, title: `Badge "${proche.name}" presque débloqué !`, sub: 'Continue comme ça 💪', action: null });
 
   return notifs;
 }
