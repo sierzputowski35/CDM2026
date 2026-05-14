@@ -39,6 +39,7 @@ CDM 2026 App/
 │   │   ├── icons.js             ← table d'icônes SVG
 │   │   ├── haptic.js            ← wrapper navigator.vibrate
 │   │   ├── flag.js              ← rendu drapeaux flagcdn
+│   │   ├── motion.js            ← (PR #9) prefers-reduced-motion centralisé
 │   │   └── scroll-reveal.js     ← (PR #7) IntersectionObserver reveal
 │   └── data/
 │       ├── flags.js             ← table FLAG_CODES (code pays → emoji)
