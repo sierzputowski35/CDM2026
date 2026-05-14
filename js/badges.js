@@ -74,6 +74,14 @@ function computePlayerStats(joueur) {
            totalCartes:0, cartesLegende:0 }; // cartes chargées async si besoin
 }
 
+// Vrai uniquement si la phase contient ≥1 match ET le joueur a pronostiqué tous.
+function phaseAllProno(joueur, phaseName) {
+  const arr = MATCHS.filter(m => m.phase === phaseName);
+  if (!arr.length) return false;
+  const prog = joueur.pronostics || {};
+  return arr.every(m => prog[m.id]);
+}
+
 async function checkBadgeCondition(badgeId, joueur, stats) {
   switch(badgeId) {
     case 'first_blood':    return stats.totalPronos >= 1;
@@ -98,10 +106,13 @@ async function checkBadgeCondition(badgeId, joueur, stats) {
     case 'league_gold':    return ['or','diamant','legende'].includes(joueur.league);
     case 'league_diamond': return ['diamant','legende'].includes(joueur.league);
     case 'league_legend':  return joueur.league === 'legende';
-    case 'group_complete': return MATCHS.filter(m=>m.phase==='Groupes').every(m=>(joueur.pronostics||{})[m.id]);
-    case 'round_16':       return MATCHS.filter(m=>m.phase==='Huitièmes').every(m=>(joueur.pronostics||{})[m.id]);
-    case 'quarters':       return MATCHS.filter(m=>m.phase==='Quarts').every(m=>(joueur.pronostics||{})[m.id]);
-    case 'semis':          return MATCHS.filter(m=>m.phase==='Demies').every(m=>(joueur.pronostics||{})[m.id]);
+    // ⚠️ Garde-fou : `.every()` sur un tableau vide retourne `true` (vacuous truth).
+    // Sans le check `length > 0`, ces badges se débloquent à tort dès le 1er prono
+    // tant que la phase n'existe pas encore dans MATCHS.
+    case 'group_complete': return phaseAllProno(joueur, 'Groupes');
+    case 'round_16':       return phaseAllProno(joueur, '8es de finale');
+    case 'quarters':       return phaseAllProno(joueur, 'Quarts de finale');
+    case 'semis':          return phaseAllProno(joueur, 'Demi-finales');
     case 'final':          return MATCHS.filter(m=>m.phase==='Finale').some(m=>(joueur.pronostics||{})[m.id]);
     case 'cards_10':       return stats.totalCartes >= 10;
     case 'cards_50':       return stats.totalCartes >= 50;
