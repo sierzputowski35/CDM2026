@@ -168,3 +168,18 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_missions_unique
 -- qui ne suivait qu'une seule mission "3 pronos = +50 XP") n'est plus lue
 -- ni écrite par l'app. On la laisse en DB par sécurité — peut être
 -- supprimée plus tard via : ALTER TABLE joueurs DROP COLUMN missions_progress;
+
+-- ─────────────────────────────────────────────────────────────────────
+-- Étape 8 — Pack de fin de tournoi (cosmétiques commémoratifs)
+-- ─────────────────────────────────────────────────────────────────────
+-- L'admin déclenche `triggerEndOfSeason()` après validation de la finale.
+-- Pour chaque joueur, on calcule sa ligue finale (à partir des PTS) et
+-- on distribue le pack correspondant (coins, gems, coffre, carte
+-- garantie de rareté, badge commémoratif, parfois frame/avatar/titre).
+--
+-- Idempotence : le flag `end_of_season_pack` empêche la double-distribution.
+-- L'utilisateur voit la modale cinématique à son prochain login, après
+-- quoi `end_of_season_seen` est passé à TRUE.
+
+ALTER TABLE joueurs ADD COLUMN IF NOT EXISTS end_of_season_pack  TEXT;
+ALTER TABLE joueurs ADD COLUMN IF NOT EXISTS end_of_season_seen  BOOLEAN DEFAULT FALSE;

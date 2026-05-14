@@ -262,6 +262,106 @@
   align-self: center;
 }
 
+/* ── Étape 8 — END OF SEASON CINEMATIC MODAL ── */
+.eos-anim-bg {
+  position: fixed; inset: 0; z-index: 10010;
+  background: rgba(5,8,22,.96);
+  backdrop-filter: blur(14px);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 40px 16px 24px; gap: 14px;
+  overflow-y: auto;
+  animation: eos-fadein .4s ease-out;
+}
+@keyframes eos-fadein {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.eos-burst {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  animation: eos-pulse 2.4s ease-in-out infinite;
+}
+@keyframes eos-pulse {
+  0%, 100% { opacity: .5; transform: scale(1); }
+  50%      { opacity: 1;  transform: scale(1.15); }
+}
+.eos-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 36px; letter-spacing: 4px;
+  text-shadow: 0 0 24px currentColor;
+  z-index: 1;
+  animation: eos-title-in .8s cubic-bezier(.25,.46,.45,.94) both;
+}
+@keyframes eos-title-in {
+  from { transform: translateY(-20px) scale(.8); opacity: 0; }
+  to   { transform: translateY(0) scale(1);     opacity: 1; }
+}
+.eos-subtitle {
+  font-size: 14px; color: var(--text2);
+  letter-spacing: .04em; z-index: 1;
+  animation: eos-title-in 1s .15s cubic-bezier(.25,.46,.45,.94) both;
+}
+.eos-emoji {
+  font-size: 100px; line-height: 1;
+  filter: drop-shadow(0 0 24px rgba(244,197,66,.6));
+  z-index: 1;
+  animation: eos-emoji-pop 1.2s .3s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes eos-emoji-pop {
+  0%   { transform: scale(0) rotate(-180deg); opacity: 0; }
+  60%  { transform: scale(1.3) rotate(20deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg);    opacity: 1; }
+}
+.eos-loot-row {
+  display: flex; flex-wrap: wrap; justify-content: center;
+  gap: 10px; max-width: 360px;
+  margin-top: 8px; z-index: 1;
+}
+.eos-loot-item {
+  width: 100px; padding: 10px 8px;
+  background: rgba(15,22,35,.7);
+  border: 1.5px solid rgba(255,255,255,.1);
+  border-radius: 12px;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 4px;
+  opacity: 0;
+  transform: translateY(20px) scale(.85);
+  transition: opacity .35s, transform .35s cubic-bezier(.34,1.56,.64,1);
+}
+.eos-loot-item.reveal {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+.eos-loot-icon {
+  font-size: 28px; line-height: 1;
+}
+.eos-loot-label {
+  font-size: 10.5px; font-weight: 700;
+  letter-spacing: .04em; text-transform: uppercase;
+  text-align: center; line-height: 1.2;
+}
+.eos-take-btn {
+  margin-top: 8px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px; letter-spacing: 3px;
+  padding: 12px 32px;
+  background: linear-gradient(90deg, #F4C542, #FFD668);
+  color: #050816; border: none; border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(244,197,66,.5);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity .35s, transform .35s;
+  z-index: 1;
+}
+.eos-take-btn.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+.eos-take-btn:active { transform: scale(.96); }
+
 /* ══════════════════════════════════
    NAV
 ══════════════════════════════════ */

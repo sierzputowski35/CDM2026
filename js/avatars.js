@@ -67,6 +67,8 @@ const AVATAR_CATEGORIES = {
       { e: '🍁', rarity: 'rare', locked: false },
       { e: '🎪', rarity: 'epic', locked: true, unlock: 'Ligue Argent', unlockType: 'ligue', unlockValue: 'argent' },
       { e: '🚀', rarity: 'legendary', locked: true, unlock: 'Ligue Légende', unlockType: 'ligue', unlockValue: 'legende' },
+      // Étape 8 — Avatar commémoratif "Champion CDM 2026" (pack fin Légende)
+      { e: '🎽', rarity: 'legendary', locked: true, unlock: 'Pack fin Légende CDM 2026', unlockType: 'badge', unlockValue: 'cdm2026_legende' },
     ]
   }
 };
@@ -128,6 +130,37 @@ const AVATAR_FRAMES = [
     unlockType: 'season_winner',
     css: 'border: 3px solid #FF4D5A; border-radius: 24px; box-shadow: 0 0 22px rgba(255,77,90,0.7)',
   },
+  // ── Étape 8 — Cadres commémoratifs CDM 2026 (exclusifs, ne reviennent pas) ──
+  {
+    id: 'cdm2026_or',
+    label: 'Or CDM 2026',
+    rarity: 'rare',
+    locked: true,
+    unlock: 'Pack fin Or',
+    unlockType: 'badge',
+    unlockValue: 'cdm2026_or',
+    css: 'border: 3px solid #F4C542; border-radius: 24px; box-shadow: 0 0 18px rgba(244,197,66,0.6), inset 0 0 6px rgba(244,197,66,0.3)',
+  },
+  {
+    id: 'cdm2026_diamant',
+    label: 'Diamant CDM 2026',
+    rarity: 'epic',
+    locked: true,
+    unlock: 'Pack fin Diamant',
+    unlockType: 'badge',
+    unlockValue: 'cdm2026_diamant',
+    css: 'border: 3px solid #58C8FA; border-radius: 24px; box-shadow: 0 0 22px rgba(88,200,250,0.65), inset 0 0 8px rgba(88,200,250,0.35)',
+  },
+  {
+    id: 'cdm2026_legende',
+    label: 'Légende CDM 2026',
+    rarity: 'legendary',
+    locked: true,
+    unlock: 'Pack fin Légende',
+    unlockType: 'badge',
+    unlockValue: 'cdm2026_legende',
+    css: 'border: 3px solid #A855F7; border-radius: 24px; box-shadow: 0 0 28px rgba(168,85,247,0.8), inset 0 0 10px rgba(168,85,247,0.4)',
+  },
 ];
 
 // Étape 9 — Ajout unlockType/unlockValue machine-readable pour que
@@ -157,6 +190,8 @@ const AVATAR_TITLES = [
   { id: 'legend',   name: 'Légende Vivante',color: '#A855F7', locked: true,  unlock: 'Ligue Légende', unlockType: 'ligue', unlockValue: 'legende' },
   { id: 'telepath', name: 'Télépathe',      color: '#22D16B', locked: true,  unlock: '95% précision', unlockType: 'precision', unlockValue: 95 },
   { id: 'champion', name: 'Champion',       color: '#FF4D5A', locked: true,  unlock: 'Vainqueur Saison', unlockType: 'season_winner' },
+  // Étape 8 — Titre commémoratif "Légende du Mondial 2026" (pack fin Légende)
+  { id: 'mondial2026', name: 'Légende du Mondial 2026', color: '#F4C542', locked: true, unlock: 'Pack fin Légende CDM 2026', unlockType: 'badge', unlockValue: 'cdm2026_legende' },
 ];
 
 const RARITY_COLORS = {

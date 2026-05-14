@@ -70,6 +70,16 @@ const BADGES = [
   { id:'missions_weekly_10', name:'Stratège Hebdo', desc:'10 missions hebdo complétées',     icon:'calendar',     rarete:'rare',    xp:300,  coins:500  },
   { id:'missions_tournoi_all', name:'Champion Tournoi', desc:'Toutes missions tournoi',      icon:'trophy',       rarete:'legende', xp:1500, coins:3000 },
   { id:'first_shop',    name:'Premier Achat',    desc:'1ère transaction au shop',            icon:'coin',         rarete:'commun',  xp:50,   coins:50   },
+
+  // 🏅 COMMÉMORATIFS CDM 2026 (5) — distribués par l'Étape 8 selon
+  // la ligue finale. Pas de XP/coins (le pack en distribue déjà), juste
+  // un badge-souvenir exclusif. Conditions câblées via badges_debloques
+  // (l'admin trigger fait l'insert direct, pas de condition à checker).
+  { id:'cdm2026_bronze',  name:'CDM 2026 — Participant', desc:'Tournoi 2026 terminé en Ligue Bronze',  icon:'bullseye',     rarete:'commun',  xp:0, coins:0 },
+  { id:'cdm2026_argent',  name:'CDM 2026 — Combattant',  desc:'Tournoi 2026 terminé en Ligue Argent',  icon:'silver-medal', rarete:'rare',    xp:0, coins:0 },
+  { id:'cdm2026_or',      name:'CDM 2026 — Or',          desc:'Tournoi 2026 terminé en Ligue Or',      icon:'gold-medal',   rarete:'epique',  xp:0, coins:0 },
+  { id:'cdm2026_diamant', name:'CDM 2026 — Diamant',     desc:'Tournoi 2026 terminé en Ligue Diamant', icon:'diamond',      rarete:'epique',  xp:0, coins:0 },
+  { id:'cdm2026_legende', name:'CDM 2026 — Légende',     desc:'Tournoi 2026 terminé en Ligue Légende', icon:'crown',        rarete:'legende', xp:0, coins:0 },
 ];
 
 // ── SPRINT 5 — BADGE FUNCTIONS (Supabase-backed) ──
