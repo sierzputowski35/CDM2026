@@ -131,24 +131,76 @@ async function checkBadges() {
     stats.totalCartes = totalCartes;
     stats.cartesLegende = cartesLegende;
 
+    // Phase 1 : recenser tous les badges à débloquer avant de toucher quoi que ce soit
+    const toUnlock = [];
     for (const badge of BADGES) {
       if (unlockedIds.has(badge.id)) continue;
       if (await checkBadgeCondition(badge.id, joueur, stats)) {
-        await unlockBadge(badge);
-        unlockedIds.add(badge.id);
+        toUnlock.push(badge);
       }
     }
+    if (!toUnlock.length) return;
+
+    // Phase 2 : insert DB en un seul appel
+    try {
+      await sb.from('badges_debloques').insert(
+        toUnlock.map(b => ({ joueur_id: currentUser, badge_id: b.id }))
+      );
+    } catch(_) {}
+
+    // Phase 3 : UN seul gainXP cumulé → au plus 1 modal level-up,
+    // pas N modales empilées (un coffre d'XP par badge).
+    const totalBadgeXP = toUnlock.reduce((sum, b) => sum + (b.xp || 50), 0);
+    const totalBadgeCoins = toUnlock.length * (COIN_REWARDS.badge_unlock || 100);
+    if (totalBadgeXP > 0) await gainXP(totalBadgeXP, 'badges_batch');
+    if (totalBadgeCoins > 0 && typeof addCoins === 'function') {
+      await addCoins(totalBadgeCoins);
+    }
+
+    // Phase 4 : overlays badge en file séquentielle (attend les modales en cours)
+    enqueueBadgeOverlays(toUnlock);
   } catch(e) { console.warn('checkBadges error:', e); }
 }
 
-async function unlockBadge(badge) {
-  try {
-    await sb.from('badges_debloques').insert({ joueur_id: currentUser, badge_id: badge.id });
-  } catch(_) {}
-  await gainXP(badge.xp || 50, 'badge_' + badge.id);
-  if (typeof addCoins === 'function') await addCoins(COIN_REWARDS.badge_unlock || 100);
-  showBadgeUnlockModal(badge);
-  if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
+// ── File d'attente pour les overlays de déblocage badge ──
+// Empêche l'empilement quand plusieurs badges sautent en même temps
+// (ex. score exact = first_blood + exact_1 + ... d'un coup).
+const __badgeOverlayQueue = [];
+let __badgeOverlayBusy = false;
+
+function enqueueBadgeOverlays(badges) {
+  for (const b of badges) __badgeOverlayQueue.push(b);
+  drainBadgeOverlayQueue();
+}
+
+function drainBadgeOverlayQueue() {
+  if (__badgeOverlayBusy || !__badgeOverlayQueue.length) return;
+  __badgeOverlayBusy = true;
+  // Attendre que toute modal level-up éventuelle se ferme avant d'enchaîner.
+  waitForLevelUpClosed().then(() => {
+    const badge = __badgeOverlayQueue.shift();
+    showBadgeUnlockModal(badge);
+    if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
+    // showBadgeUnlockModal auto-ferme après 5500ms (cf. setTimeout interne)
+    setTimeout(() => {
+      __badgeOverlayBusy = false;
+      drainBadgeOverlayQueue();
+    }, 5800);
+  });
+}
+
+// gainXP programme showLevelUpModal via setTimeout(400ms), donc on lui laisse
+// 600ms pour apparaître avant de conclure qu'il n'y aura pas de modal.
+function waitForLevelUpClosed() {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      const tick = () => {
+        if (!document.querySelector('.level-up-modal')) return resolve();
+        setTimeout(tick, 200);
+      };
+      tick();
+    }, 600);
+  });
 }
 
 // Retourne les badges débloqués depuis Supabase (async) ou localStorage (fallback)
