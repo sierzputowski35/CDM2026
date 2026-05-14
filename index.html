@@ -51,7 +51,7 @@
 </div>
 
 <div id="loading" style="position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:16px;">
-  <img src="icon-192.png" alt="CDM 2026" style="width:80px;height:80px;border-radius:20px;box-shadow:0 0 40px rgba(255,215,0,0.3);animation:pulse 1.5s ease-in-out infinite" onerror="this.outerHTML='<div style=\'font-size:60px\'>🏆</div>'">
+  <img src="icon-192.png" alt="CDM 2026" style="width:80px;height:80px;border-radius:20px;box-shadow:0 0 40px rgba(255,215,0,0.3);animation:pulse 1.5s ease-in-out infinite" onerror="this.outerHTML='<div style=\'color:#F4C542;display:inline-flex\'>'+(window.icon?window.icon('trophy',60):'')+'</div>'">
   <div class="loading-title">UNITED 2026</div>
   <div class="loading-spinner"></div>
 </div>
@@ -69,7 +69,7 @@
       </div>
       <button onclick="closeMatchModal()" style="background:var(--surface);border:1px solid var(--border2);color:var(--text2);font-size:16px;width:36px;height:36px;border-radius:50%;cursor:pointer;flex-shrink:0">✕</button>
     </div>
-    <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:8px">🎯 Pronostics des joueurs</div>
+    <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:5px"><span data-icon="bullseye" data-icon-size="12"></span>Pronostics des joueurs</div>
     <div id="mm-players"></div>
   </div>
 </div>
@@ -85,7 +85,7 @@
         <div style="font-family:'Oswald',sans-serif;font-size:18px;font-weight:700;letter-spacing:1.5px;color:var(--gold)">MON AVATAR</div>
         <div style="display:flex;align-items:center;gap:8px">
           <div style="background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:4px 10px;font-size:13px;font-weight:700;color:#58C8FA;display:flex;align-items:center;gap:5px">
-            <span>💎</span><span id="av-gems-count">0</span>
+            <span data-icon="gem" data-icon-size="14"></span><span id="av-gems-count">0</span>
           </div>
           <button onclick="closeAvatarModal()" style="background:var(--surface);border:1px solid var(--border2);color:var(--text2);font-size:16px;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
         </div>
@@ -149,7 +149,7 @@
         display:flex;align-items:center;justify-content:center;gap:8px;
         transition:transform 0.15s,filter 0.15s
       ">
-        <span>✓</span> SAUVEGARDER
+        <span data-icon="check" data-icon-size="14"></span> SAUVEGARDER
       </button>
     </div>
 
@@ -218,7 +218,7 @@
         <label>Ton mot de passe <span style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0">(choisis-le toi-même)</span></label>
         <div style="position:relative">
           <input type="password" id="login-code" placeholder="Minimum 4 caractères" maxlength="20" style="padding-right:44px"/>
-          <button type="button" onclick="togglePwd('login-code',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:4px">👁</button>
+          <button type="button" onclick="togglePwd('login-code',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;padding:4px;display:inline-flex;align-items:center"><span data-icon="eye" data-icon-size="18"></span></button>
         </div>
         <div style="font-size:11px;color:var(--text3);margin-top:5px">Note-le bien — il te sera demandé à chaque connexion</div>
       </div>
@@ -421,7 +421,7 @@
       <div id="ranking-list"></div>
       <!-- FEED SOCIAL -->
       <div id="feed-section" style="margin-top:16px;display:none">
-        <div style="font-family:'Oswald',sans-serif;font-size:14px;font-weight:600;letter-spacing:1px;color:var(--text2);text-transform:uppercase;margin-bottom:10px">🔥 Activité récente</div>
+        <div style="font-family:'Oswald',sans-serif;font-size:14px;font-weight:600;letter-spacing:1px;color:var(--text2);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px"><span data-icon="flame" data-icon-size="14" style="color:#FF8A3D"></span>Activité récente</div>
         <div class="card" style="padding:12px 14px">
           <div id="feed-list"></div>
         </div>
@@ -437,13 +437,13 @@
       <div id="pronos-matchs">
         <div class="section-sub">Saisissez votre score avant le coup d'envoi · 0 pt si non rempli</div>
         <div style="text-align:center;margin:4px 0 8px">
-          <button onclick="togglePtsLegend()" style="background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer;text-decoration:underline;font-family:inherit">❓ Comment les points sont calculés ?</button>
+          <button onclick="togglePtsLegend()" style="background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer;text-decoration:underline;font-family:inherit">Comment les points sont calculés ?</button>
         </div>
         <div class="pts-legend-panel" id="pts-legend-panel" style="display:none">
-          <div class="pts-legend-title">📊 Système de Points</div>
+          <div class="pts-legend-title"><span style="display:inline-flex;align-items:center;gap:6px"><span data-icon="trending-up" data-icon-size="14"></span>Système de Points</span></div>
           <div class="pts-legend-grid">
             <div class="pts-legend-item">
-              <div class="pts-legend-icon">🎯</div>
+              <div class="pts-legend-icon" data-icon="bullseye" data-icon-size="22" style="color:var(--gold-primary)"></div>
               <div class="pts-legend-info">
                 <span class="pts-legend-name">Score exact</span>
                 <span class="pts-legend-val">5 pts × mult.</span>
@@ -451,7 +451,7 @@
               </div>
             </div>
             <div class="pts-legend-item">
-              <div class="pts-legend-icon">📐</div>
+              <div class="pts-legend-icon" data-icon="trending-up" data-icon-size="22" style="color:#58C8FA"></div>
               <div class="pts-legend-info">
                 <span class="pts-legend-name">Bonne différence</span>
                 <span class="pts-legend-val">3 pts × mult.</span>
@@ -459,7 +459,7 @@
               </div>
             </div>
             <div class="pts-legend-item">
-              <div class="pts-legend-icon">✅</div>
+              <div class="pts-legend-icon" data-icon="check" data-icon-size="22" style="color:#22D16B"></div>
               <div class="pts-legend-info">
                 <span class="pts-legend-name">Bon vainqueur</span>
                 <span class="pts-legend-val">1 pt × mult.</span>
@@ -467,7 +467,7 @@
               </div>
             </div>
             <div class="pts-legend-item">
-              <div class="pts-legend-icon">❌</div>
+              <div class="pts-legend-icon" style="color:#FF4D5A;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px">×</div>
               <div class="pts-legend-info">
                 <span class="pts-legend-name">Mauvais résultat</span>
                 <span class="pts-legend-val">0 pt</span>
@@ -484,33 +484,33 @@
             <span class="pts-legend-mult-chip">Finale <span>×4</span></span>
           </div>
           <div style="height:1px;background:var(--border);margin:12px 0"></div>
-          <div class="pts-legend-title" style="font-size:13px;margin-bottom:8px">🌍 Pronostics Globaux — Cotes</div>
+          <div class="pts-legend-title" style="font-size:13px;margin-bottom:8px"><span style="display:inline-flex;align-items:center;gap:6px"><span data-icon="trophy" data-icon-size="14" style="color:var(--gold-primary)"></span>Pronostics Globaux — Cotes</span></div>
           <div style="font-size:10px;color:var(--text3);margin-bottom:8px;line-height:1.5">
             Pour les pronos <strong style="color:var(--text2)">Vainqueur du tournoi, Meilleur buteur, Finaliste…</strong>
             les points dépendent de la difficulté du choix. Plus l'équipe/joueur est outsider, plus tu gagnes de points si tu as raison.
           </div>
           <div class="pts-legend-grid" style="grid-template-columns:1fr 1fr 1fr;gap:6px">
             <div class="pts-legend-item" style="flex-direction:column;align-items:center;text-align:center;padding:8px 6px">
-              <span style="font-size:20px">⭐</span>
+              <span data-icon="star" data-icon-size="20" style="color:#22D16B"></span>
               <span class="pts-legend-name" style="margin-top:4px">Grand favori</span>
               <span class="pts-legend-val" style="color:#22D16B">+5 pts</span>
               <span class="pts-legend-note">Ex : France, Espagne</span>
             </div>
             <div class="pts-legend-item" style="flex-direction:column;align-items:center;text-align:center;padding:8px 6px">
-              <span style="font-size:20px">⚡</span>
+              <span data-icon="zap" data-icon-size="20" style="color:var(--gold)"></span>
               <span class="pts-legend-name" style="margin-top:4px">Outsider</span>
               <span class="pts-legend-val" style="color:var(--gold)">+15–22 pts</span>
               <span class="pts-legend-note">Ex : Turquie, Suède</span>
             </div>
             <div class="pts-legend-item" style="flex-direction:column;align-items:center;text-align:center;padding:8px 6px">
-              <span style="font-size:20px">🔥</span>
+              <span data-icon="flame" data-icon-size="20" style="color:#FF8A3D"></span>
               <span class="pts-legend-name" style="margin-top:4px">Gros outsider</span>
               <span class="pts-legend-val" style="color:#FF8A3D">+30 pts</span>
               <span class="pts-legend-note">Ex : DR Congo, Haïti</span>
             </div>
           </div>
           <div style="margin-top:10px;font-size:10px;color:var(--text3);line-height:1.6;background:var(--surface2);border-radius:8px;padding:8px 10px">
-            💡 <strong style="color:var(--text2)">Résumé :</strong> Les pronos de matchs rapportent entre 1 et 5 pts × multiplicateur de phase. Les pronos globaux rapportent entre 5 pts (favori) et 30 pts (outsider) selon la cote de l'équipe ou du joueur choisi.
+            <strong style="color:var(--text2)">Résumé :</strong> Les pronos de matchs rapportent entre 1 et 5 pts × multiplicateur de phase. Les pronos globaux rapportent entre 5 pts (favori) et 30 pts (outsider) selon la cote de l'équipe ou du joueur choisi.
           </div>
         </div>
         <div class="filter-bar">
@@ -539,7 +539,7 @@
       <!-- FILTRE GROUPES -->
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">
         <button class="filter-btn active" id="fg-tous" onclick="setGroupeFilter('tous',this)">Tous les groupes</button>
-        <button class="filter-btn" id="fg-phases" onclick="setGroupeFilter('phases',this)">🏆 Phases finales</button>
+        <button class="filter-btn" id="fg-phases" onclick="setGroupeFilter('phases',this)"><span style="display:inline-flex;align-items:center;gap:6px"><span data-icon="trophy" data-icon-size="14" style="color:var(--gold-primary)"></span>Phases finales</span></button>
         <button class="filter-btn" id="fg-A" onclick="setGroupeFilter('A',this)">Groupe A</button>
         <button class="filter-btn" id="fg-B" onclick="setGroupeFilter('B',this)">Groupe B</button>
         <button class="filter-btn" id="fg-C" onclick="setGroupeFilter('C',this)">Groupe C</button>
@@ -560,6 +560,28 @@
         <div id="competition-globaux"></div>
       </div>
     </div>
+    <div id="page-club" class="page">
+      <div class="stripe"></div>
+      <div class="club-chat-shell">
+        <div class="club-chat-header">
+          <div class="club-chat-title">
+            <span class="club-chat-icon" data-icon="users" data-icon-size="18"></span>
+            <span>Chat du club</span>
+          </div>
+          <div class="club-chat-sub" id="club-chat-count">0 message</div>
+        </div>
+        <div class="club-chat-body" id="club-chat-messages">
+          <div class="club-chat-empty">Aucun message pour l'instant. Lance la discussion !</div>
+        </div>
+        <form class="club-chat-form" id="club-chat-form" onsubmit="sendClubMessage(event)">
+          <input type="text" class="club-chat-input" id="club-chat-input" placeholder="Écris un message…" autocomplete="off" maxlength="500">
+          <button type="submit" class="club-chat-send" aria-label="Envoyer">
+            <span data-icon="zap" data-icon-size="18"></span>
+          </button>
+        </form>
+        <div class="club-chat-note">Messages stockés localement sur ton appareil</div>
+      </div>
+    </div>
     <div id="page-profil" class="page">
       <div class="stripe"></div>
       <div class="section-title">Mon Profil</div>
@@ -569,26 +591,20 @@
   <nav class="bottom-nav">
     <button class="nav-tab active" onclick="switchTab('home',this)" id="tab-home" aria-label="Accueil">
       <div class="nav-icon-wrap">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-        </svg>
+        <span class="nav-icon" data-icon="nav-home" data-icon-size="24"></span>
       </div>
       <span>Accueil</span>
     </button>
     <button class="nav-tab" onclick="switchTab('pronos',this)" id="tab-pronos" aria-label="Pronos">
       <div class="nav-icon-wrap">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="none">
-          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-        </svg>
+        <span class="nav-icon" data-icon="nav-matchs" data-icon-size="24"></span>
         <span class="nav-badge" id="badge-pronos" style="display:none">0</span>
       </div>
       <span>Pronos</span>
     </button>
     <button class="nav-tab" onclick="switchTab('arene',this)" id="tab-arene" aria-label="Arène">
       <div class="nav-icon-wrap">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/>
-        </svg>
+        <span class="nav-icon" data-icon="nav-arene" data-icon-size="24"></span>
       </div>
       <span>Arène</span>
     </button>
@@ -600,11 +616,16 @@
       </div>
       <span>Résultats</span>
     </button>
+    <button class="nav-tab" onclick="switchTab('club',this)" id="tab-club" aria-label="Club">
+      <div class="nav-icon-wrap">
+        <span class="nav-icon" data-icon="nav-club" data-icon-size="24"></span>
+        <span class="nav-badge" id="badge-club" style="display:none">0</span>
+      </div>
+      <span>Club</span>
+    </button>
     <button class="nav-tab" onclick="switchTab('profil',this)" id="tab-profil" aria-label="Profil">
       <div class="nav-icon-wrap">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/>
-        </svg>
+        <span class="nav-icon" data-icon="nav-profil" data-icon-size="24"></span>
       </div>
       <span>Profil</span>
     </button>
@@ -615,7 +636,7 @@
 <div id="admin-app-screen" class="hidden">
   <div class="header">
     <div class="logo">
-      <div class="logo-flags"><img src="icon-192.png" alt="" style="width:32px;height:32px;border-radius:9px;display:block" onerror="this.outerHTML='🏆'"></div>
+      <div class="logo-flags"><img src="icon-192.png" alt="" style="width:32px;height:32px;border-radius:9px;display:block" onerror="this.outerHTML='<span style=&quot;color:#F4C542;display:inline-flex&quot;>'+(window.icon?window.icon('trophy',32):'')+'</span>'"></div>
       <div>
         <div class="logo-text">UNITED 2026</div>
         <div class="logo-sub">Mode organisateur</div>
@@ -628,7 +649,7 @@
     <button class="nav-btn" onclick="showAdminPage('admin-globaux',this)">Globaux</button>
     <button class="nav-btn" onclick="showAdminPage('admin-cagnotte',this)">Cagnotte</button>
     <button class="nav-btn" onclick="showAdminPage('admin-joueurs',this)">Joueurs</button>
-    <button class="nav-btn" onclick="showAdminPage('admin-cotes',this)">🎲 Cotes</button>
+    <button class="nav-btn" onclick="showAdminPage('admin-cotes',this)"><span style="display:inline-flex;align-items:center;gap:6px"><span data-icon="dice" data-icon-size="14"></span>Cotes</span></button>
   </div>
   <div class="main">
     <div id="page-admin-matchs" class="page active">
@@ -671,15 +692,15 @@
 
     <div id="page-admin-cotes" class="page">
       <div class="stripe"></div>
-      <div class="section-title">🎲 Gestion des cotes</div>
+      <div class="section-title"><span style="display:inline-flex;align-items:center;gap:8px"><span data-icon="dice" data-icon-size="20"></span>Gestion des cotes</span></div>
       <div class="section-sub">Modifier les pts d'une équipe → recalcul automatique de toutes ses cotes match</div>
       <div style="display:flex;flex-wrap:wrap;gap:6px;margin:14px 0;font-size:11px">
-        <span style="background:rgba(244,197,66,.15);padding:4px 8px;border-radius:6px">🏆 5 = favori absolu</span>
-        <span style="background:rgba(168,85,247,.15);padding:4px 8px;border-radius:6px">⭐ 6-8 = challenger</span>
-        <span style="background:rgba(88,200,250,.15);padding:4px 8px;border-radius:6px">💪 10-15 = outsider crédible</span>
-        <span style="background:rgba(34,209,107,.15);padding:4px 8px;border-radius:6px">📊 17-22 = outsider confirmé</span>
-        <span style="background:rgba(255,138,61,.15);padding:4px 8px;border-radius:6px">🎯 25-28 = petit outsider</span>
-        <span style="background:rgba(255,77,90,.15);padding:4px 8px;border-radius:6px">🌱 33+ = longshot</span>
+        <span style="background:rgba(244,197,66,.15);padding:4px 8px;border-radius:6px;display:inline-flex;align-items:center;gap:4px"><span data-icon="trophy" data-icon-size="12" style="color:#F4C542"></span>5 = favori absolu</span>
+        <span style="background:rgba(168,85,247,.15);padding:4px 8px;border-radius:6px;display:inline-flex;align-items:center;gap:4px"><span data-icon="star" data-icon-size="12" style="color:#A855F7"></span>6-8 = challenger</span>
+        <span style="background:rgba(88,200,250,.15);padding:4px 8px;border-radius:6px;display:inline-flex;align-items:center;gap:4px"><span data-icon="muscle" data-icon-size="12" style="color:#58C8FA"></span>10-15 = outsider crédible</span>
+        <span style="background:rgba(34,209,107,.15);padding:4px 8px;border-radius:6px;display:inline-flex;align-items:center;gap:4px"><span data-icon="trending-up" data-icon-size="12" style="color:#22D16B"></span>17-22 = outsider confirmé</span>
+        <span style="background:rgba(255,138,61,.15);padding:4px 8px;border-radius:6px;display:inline-flex;align-items:center;gap:4px"><span data-icon="bullseye" data-icon-size="12" style="color:#FF8A3D"></span>25-28 = petit outsider</span>
+        <span style="background:rgba(255,77,90,.15);padding:4px 8px;border-radius:6px;display:inline-flex;align-items:center;gap:4px"><span data-icon="sparkle" data-icon-size="12" style="color:#FF4D5A"></span>33+ = longshot</span>
       </div>
       <div style="display:flex;gap:6px;margin-bottom:14px">
         <button class="filter-btn active" id="ec-pts" onclick="setEquipesSort('pts',this)">Par force</button>
@@ -691,6 +712,7 @@
   </div>
 </div>
 
+<script src="js/utils/icons.js"></script>
 <script src="js/supabase.js"></script>
 <script src="js/avatars.js"></script>
 <script src="js/data/flags.js"></script>
@@ -701,6 +723,7 @@
 <script src="js/rewards.js"></script>
 <script src="js/notifications.js"></script>
 <script src="js/badge-unlock.js"></script>
+<script src="js/club-chat.js"></script>
 <script>
 
 const MISE = 10;
@@ -713,12 +736,13 @@ const PHASES = {'Groupes':1,'16es de finale':1.5,'8es de finale':2,'Quarts de fi
 
 
 // ══ SPRINT 3 : SYSTÈME DE LIGUES ══
+// `icon` est un nom d'icône résolu via window.icon() (PNG pour bronze/argent, SVG sinon).
 const LEAGUES = [
-  { id:'bronze',  name:'Bronze',  min:0,    max:500,      color:'#CD7F32', icon:'🥉', bg:'rgba(205,127,50,.12)'  },
-  { id:'argent',  name:'Argent',  min:500,  max:1200,     color:'#C0C0C0', icon:'🥈', bg:'rgba(192,192,192,.12)' },
-  { id:'or',      name:'Or',      min:1200, max:2000,     color:'#F4C542', icon:'🥇', bg:'rgba(244,197,66,.12)'  },
-  { id:'diamant', name:'Diamant', min:2000, max:3000,     color:'#58C8FA', icon:'💎', bg:'rgba(88,200,250,.12)'  },
-  { id:'legende', name:'Légende', min:3000, max:Infinity, color:'#A855F7', icon:'👑', bg:'rgba(168,85,247,.12)'  },
+  { id:'bronze',  name:'Bronze',  min:0,    max:500,      color:'#CD7F32', icon:'league-bronze',   bg:'rgba(205,127,50,.12)'  },
+  { id:'argent',  name:'Argent',  min:500,  max:1200,     color:'#C0C0C0', icon:'league-argent',   bg:'rgba(192,192,192,.12)' },
+  { id:'or',      name:'Or',      min:1200, max:2000,     color:'#F4C542', icon:'league-or',       bg:'rgba(244,197,66,.12)'  },
+  { id:'diamant', name:'Diamant', min:2000, max:3000,     color:'#58C8FA', icon:'league-diamant',  bg:'rgba(88,200,250,.12)'  },
+  { id:'legende', name:'Légende', min:3000, max:Infinity, color:'#A855F7', icon:'league-legende',  bg:'rgba(168,85,247,.12)'  },
 ];
 
 function getLeagueForPoints(pts) {
@@ -728,7 +752,8 @@ function getLeagueForPoints(pts) {
 function renderLeagueBadge(leagueId, size = 'normal') {
   const l = LEAGUES.find(x => x.id === leagueId) || LEAGUES[0];
   const px = size === 'small' ? 18 : size === 'big' ? 48 : 22;
-  return `<span style="display:inline-flex;align-items:center;justify-content:center;width:${px}px;height:${px}px;border-radius:50%;background:${l.color}22;border:1px solid ${l.color}66;font-size:${Math.floor(px*.55)}px;flex-shrink:0" title="Ligue ${l.name}">${l.icon}</span>`;
+  const inner = Math.floor(px * .7);
+  return `<span style="display:inline-flex;align-items:center;justify-content:center;width:${px}px;height:${px}px;border-radius:50%;background:${l.color}22;border:1px solid ${l.color}66;flex-shrink:0;color:${l.color}" title="Ligue ${l.name}">${window.icon(l.icon, inner)}</span>`;
 }
 
 async function syncAllLeagues() {
@@ -763,11 +788,11 @@ function showLeaguePromotionModal(league) {
   modal.style.cssText = 'position:fixed;inset:0;z-index:10002;display:flex;align-items:center;justify-content:center;background:rgba(5,8,22,.94);backdrop-filter:blur(12px);opacity:0;transition:opacity 300ms';
   modal.innerHTML = `
     <div style="background:linear-gradient(180deg,var(--bg-elevated),var(--bg-card));border:2px solid ${league.color};border-radius:24px;padding:32px 36px;text-align:center;box-shadow:0 0 60px ${league.color}55;max-width:320px;width:88%">
-      <div style="font-size:72px;line-height:1;margin-bottom:10px">${league.icon}</div>
+      <div style="line-height:1;margin-bottom:10px;color:${league.color}">${window.icon(league.icon, 72)}</div>
       <div style="font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:4px;color:var(--text2)">PROMOTION</div>
       <div style="font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:2px;color:${league.color};line-height:1;margin:4px 0 14px">${league.name.toUpperCase()}</div>
-      <div style="background:${league.color}18;border:1px solid ${league.color}33;border-radius:12px;padding:10px 14px;font-size:13px;color:var(--text);margin-bottom:22px">
-        🎁 Coffre ${league.id === 'legende' ? 'Légendaire' : 'Or'} offert · +${XP_REWARDS.league_promotion} XP
+      <div style="background:${league.color}18;border:1px solid ${league.color}33;border-radius:12px;padding:10px 14px;font-size:13px;color:var(--text);margin-bottom:22px;display:flex;align-items:center;justify-content:center;gap:6px">
+        <span style="color:${league.color};display:inline-flex">${window.icon('gift', 16)}</span> Coffre ${league.id === 'legende' ? 'Légendaire' : 'Or'} offert · +${XP_REWARDS.league_promotion} XP
       </div>
       <button onclick="this.closest('div[style]').style.opacity='0';setTimeout(()=>this.closest('div[style]').remove(),300)" style="width:100%;background:linear-gradient(180deg,var(--gold-light),var(--gold-dark));color:var(--bg-primary);border:none;border-radius:14px;padding:14px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;cursor:pointer;box-shadow:0 6px 20px rgba(244,197,66,.4)">FÉLICITATIONS !</button>
     </div>`;
@@ -1667,8 +1692,16 @@ async function doLogin(){
 
 function togglePwd(inputId,btn){
   const inp=document.getElementById(inputId);
-  if(inp.type==='password'){inp.type='text';btn.textContent='🙈';}
-  else{inp.type='password';btn.textContent='👁';}
+  const host=btn.querySelector('[data-icon]')||btn;
+  if(inp.type==='password'){
+    inp.type='text';
+    host.innerHTML=window.icon('eye',18);
+    host.style.opacity='0.5';
+  } else {
+    inp.type='password';
+    host.innerHTML=window.icon('eye',18);
+    host.style.opacity='1';
+  }
 }
 
 async function doAdminLogin(){
@@ -1767,6 +1800,7 @@ function updateHeaderUser(){
 
   // Notif badge
   updateNotifBadge();
+  if (typeof updateClubBadge === 'function') updateClubBadge();
 }
 function openAdminApp(){
   ['login-screen','admin-login-screen','app-screen'].forEach(hide);show('admin-app-screen');
@@ -1788,6 +1822,7 @@ const TAB_MAP = {
     tabs[1]?.classList.remove('active');
     renderGroupes();
   } },
+  club: { page: 'club', render: renderClubChat },
   profil: { page: 'profil', render: renderProfilPage }
 };
 
@@ -2114,13 +2149,13 @@ function renderNewsFeed() {
 // ══ SPRINT 2 : DAILY REWARD & COFFRES ══
 
 const DAILY_REWARDS = [
-  { day: 1, type: 'coins',  amount: 50,  icon: '🪙' },
-  { day: 2, type: 'xp',    amount: 100, icon: '⭐' },
-  { day: 3, type: 'coins',  amount: 100, icon: '🪙' },
-  { day: 4, type: 'coffre', amount: 1, rarete: 'bronze', icon: '📦' },
-  { day: 5, type: 'gems',   amount: 10,  icon: '💎' },
-  { day: 6, type: 'coins',  amount: 250, icon: '🪙' },
-  { day: 7, type: 'coffre', amount: 1, rarete: 'or',     icon: '🎁' },
+  { day: 1, type: 'coins',  amount: 50,  icon: 'coin' },
+  { day: 2, type: 'xp',    amount: 100, icon: 'star' },
+  { day: 3, type: 'coins',  amount: 100, icon: 'coin' },
+  { day: 4, type: 'coffre', amount: 1, rarete: 'bronze', icon: 'gift' },
+  { day: 5, type: 'gems',   amount: 10,  icon: 'gem' },
+  { day: 6, type: 'coins',  amount: 250, icon: 'coin' },
+  { day: 7, type: 'coffre', amount: 1, rarete: 'or',     icon: 'gift' },
 ];
 
 const CHEST_LOOT_TABLES = {
@@ -2190,9 +2225,9 @@ function showDailyRewardModal(reward, streak) {
     const amountLabel = r.type === 'coffre' ? r.rarete : r.amount;
     return `<div class="dr-day ${cls}">
       <div class="dr-day-num">J${d}</div>
-      <div class="dr-day-icon">${r.icon}</div>
+      <div class="dr-day-icon">${window.icon(r.icon, 28)}</div>
       <div class="dr-day-amount">${amountLabel}</div>
-      ${isPast ? '<div class="dr-check">✓</div>' : ''}
+      ${isPast ? `<div class="dr-check">${window.icon('check', 12)}</div>` : ''}
     </div>`;
   }).join('');
 
@@ -2203,10 +2238,10 @@ function showDailyRewardModal(reward, streak) {
   modal.innerHTML = `
     <div class="dr-card">
       <div class="dr-title">RÉCOMPENSE QUOTIDIENNE</div>
-      <div class="dr-streak">🔥 Série de ${streak} jour${streak > 1 ? 's' : ''} · Jour ${dayInCycle}/7</div>
+      <div class="dr-streak" style="display:inline-flex;align-items:center;gap:6px;color:#FF8A3D">${window.icon('flame', 14)} <span style="color:var(--text2)">Série de ${streak} jour${streak > 1 ? 's' : ''} · Jour ${dayInCycle}/7</span></div>
       <div class="dr-days-grid">${daysHtml}</div>
       <div class="dr-reward-preview">
-        <div class="dr-reward-icon">${reward.icon}</div>
+        <div class="dr-reward-icon">${window.icon(reward.icon, 56)}</div>
         <div>
           <div class="dr-reward-amount">${rewardLabel}</div>
           <div class="dr-reward-sub">Récompense du jour ${dayInCycle}</div>
@@ -2252,10 +2287,10 @@ function renderDailyRewardCard() {
   if (!claimed) { container.innerHTML = ''; return; }
   container.innerHTML = `
     <div class="card-daily-reward" style="opacity:.75;pointer-events:none">
-      <div class="daily-icon">✅<span class="daily-pulse"></span></div>
+      <div class="daily-icon">${window.icon('check-double', 28)}<span class="daily-pulse"></span></div>
       <div class="daily-info">
         <div class="daily-title">Récompense réclamée !</div>
-        <div class="daily-sub">🔥 Série de ${streak} jour${streak > 1 ? 's' : ''} · Reviens demain</div>
+        <div class="daily-sub" style="display:inline-flex;align-items:center;gap:5px"><span style="color:#FF8A3D;display:inline-flex">${window.icon('flame', 13)}</span> Série de ${streak} jour${streak > 1 ? 's' : ''} · Reviens demain</div>
       </div>
     </div>`;
 }
@@ -2486,9 +2521,9 @@ function renderProfilPage() {
     '</div>' +
     '<div class="card" style="margin-top:10px;padding:16px">' +
       '<div class="profil-tabs">' +
-        '<div class="profil-tab active" id="ptab-stats" onclick="switchProfilTab(\'stats\')">📊 Stats</div>' +
-        '<div class="profil-tab" id="ptab-badges" onclick="switchProfilTab(\'badges\')">🏅 Badges</div>' +
-        '<div class="profil-tab" id="ptab-collection" onclick="switchProfilTab(\'collection\')">🃏 Cartes</div>' +
+        '<div class="profil-tab active" id="ptab-stats" onclick="switchProfilTab(\'stats\')"><span style="display:inline-flex;align-items:center;gap:5px">' + window.icon('trending-up', 14) + 'Stats</span></div>' +
+        '<div class="profil-tab" id="ptab-badges" onclick="switchProfilTab(\'badges\')"><span style="display:inline-flex;align-items:center;gap:5px">' + window.icon('gold-medal', 14) + 'Badges</span></div>' +
+        '<div class="profil-tab" id="ptab-collection" onclick="switchProfilTab(\'collection\')"><span style="display:inline-flex;align-items:center;gap:5px">' + window.icon('card', 14) + 'Cartes</span></div>' +
       '</div>' +
       '<div id="profil-tab-content"></div>' +
     '</div>';
@@ -2538,7 +2573,7 @@ async function renderProfilBadges(container, joueur) {
          const unlocked = earnedIds.has(b.id);
          return `<div class="badge-item badge-rarete-${b.rarete} ${unlocked?'unlocked':'locked'}"
                       title="${b.desc||b.name}">
-                   <div class="badge-icon">${b.icon||'🏅'}</div>
+                   <div class="badge-icon">${window.icon(b.icon || 'gold-medal', 32)}</div>
                    <div class="badge-name">${b.name}</div>
                  </div>`;
        }).join('')}
@@ -2703,7 +2738,7 @@ function renderClassement(){
   const ligGap=nextLig?nextLig.min-mePts:0;
   document.getElementById('stats-grid').innerHTML=`
     <div class="ligue-header-v2">
-      <div class="ligue-icon-v2" style="background:${myLig.bg};color:${myLig.color};border:1px solid ${myLig.color}44;font-size:28px">${myLig.icon}</div>
+      <div class="ligue-icon-v2" style="background:${myLig.bg};color:${myLig.color};border:1px solid ${myLig.color}44;display:inline-flex;align-items:center;justify-content:center">${window.icon(myLig.icon, 32)}</div>
       <div class="ligue-details-v2">
         <div class="ligue-name-v2" style="color:${myLig.color}">LIGUE ${myLig.name.toUpperCase()} <span style="font-size:14px;color:var(--text2)">· #${meRank}</span></div>
         <div class="ligue-pts-v2">${mePts} pts${nextLig?` · encore ${ligGap} pts pour ${nextLig.name}`:' · Rang maximum !'}</div>
@@ -4433,7 +4468,8 @@ function openProfil(id){
       <div style="height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden">
         <div style="height:100%;width:${xpPct}%;background:linear-gradient(90deg,${myL.color},#FFE680);border-radius:3px;transition:width .8s"></div>
       </div>
-      <div style="font-size:10px;color:var(--text3);margin-top:4px">${xpInLvl}/1000 XP pour Nv${level+1}${streak>=3?' \u00b7 \ud83d\udd25 S\u00e9rie '+streak:''}
+      <div style="font-size:10px;color:var(--text3);margin-top:4px;display:flex;align-items:center;gap:4px">
+        <span>${xpInLvl}/1000 XP pour Nv${level+1}</span>${streak>=3?`<span style="display:inline-flex;align-items:center;gap:3px;color:#FF8A3D">\u00b7 ${window.icon('flame', 11)} <span style="color:var(--text3)">S\u00e9rie ${streak}</span></span>`:''}
       </div>
     </div>
   </div>`;
@@ -4446,7 +4482,7 @@ function openProfil(id){
   const allBadgeHtml=BADGES.map(b=>{
     const unlocked=earnedBadges.some(e=>e.id===b.id);
     return `<div class="badge-cell ${unlocked?'unlocked':'locked'}">
-      <div class="badge-cell-icon">${b.emoji}</div>
+      <div class="badge-cell-icon">${window.icon(b.icon || 'gold-medal', 28)}</div>
       <div class="badge-cell-name">${b.name}</div>
     </div>`;
   }).join('');

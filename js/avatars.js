@@ -9,9 +9,15 @@
 // SYSTÈME AVATAR AAA — CDM 2026
 // ══════════════════════════════════════════
 
+// NB : le champ `e:` reste un emoji Unicode car il sert d'IDENTIFIANT
+// persisté côté joueur (avatar choisi, stocké en localStorage + Supabase).
+// Le rendu visible passe par twUrl() (Twemoji PNG) → l'emoji n'apparaît
+// jamais en tant que glyphe à l'utilisateur, seulement comme image.
+// Les `label:` (visibles) sont migrés en icônes via window.icon().
 const AVATAR_CATEGORIES = {
   foot: {
-    label: '⚽ Football',
+    label: 'Football',
+    iconName: 'bullseye',
     items: [
       { e: '⚽', rarity: 'common', locked: false },
       { e: '🥅', rarity: 'common', locked: false },
@@ -24,7 +30,8 @@ const AVATAR_CATEGORIES = {
     ]
   },
   animaux: {
-    label: '🐯 Animaux',
+    label: 'Animaux',
+    iconName: 'fox',
     items: [
       { e: '🦁', rarity: 'rare', locked: false },
       { e: '🐯', rarity: 'rare', locked: false },
@@ -32,23 +39,25 @@ const AVATAR_CATEGORIES = {
       { e: '🦊', rarity: 'common', locked: false },
       { e: '🐺', rarity: 'epic', locked: true, unlock: 'Streak 5j', unlockType: 'streak', unlockValue: 5 },
       { e: '🐉', rarity: 'epic', locked: true, unlock: 'Ligue Or', unlockType: 'ligue', unlockValue: 'Or' },
-      { e: '🦋', rarity: 'legendary', locked: true, unlock: '💎 500', unlockType: 'gems', unlockValue: 500 },
+      { e: '🦋', rarity: 'legendary', locked: true, unlock: '500 gemmes', unlockType: 'gems', unlockValue: 500 },
       { e: '🦄', rarity: 'legendary', locked: true, unlock: 'Ligue Légende', unlockType: 'ligue', unlockValue: 'Légende' },
     ]
   },
   legendes: {
-    label: '👑 Légendes',
+    label: 'Légendes',
+    iconName: 'crown',
     items: [
       { e: '👑', rarity: 'rare', locked: false },
       { e: '🌟', rarity: 'rare', locked: false },
       { e: '💎', rarity: 'epic', locked: true, unlock: 'Ligue Diamant', unlockType: 'ligue', unlockValue: 'Diamant' },
       { e: '🏅', rarity: 'epic', locked: true, unlock: '50 matchs', unlockType: 'matches', unlockValue: 50 },
       { e: '🎭', rarity: 'legendary', locked: true, unlock: 'Niveau 20', unlockType: 'level', unlockValue: 20 },
-      { e: '🤖', rarity: 'legendary', locked: true, unlock: '💎 1000', unlockType: 'gems', unlockValue: 1000 },
+      { e: '🤖', rarity: 'legendary', locked: true, unlock: '1000 gemmes', unlockType: 'gems', unlockValue: 1000 },
     ]
   },
   mascottes: {
-    label: '🏆 CDM',
+    label: 'CDM',
+    iconName: 'trophy',
     items: [
       { e: '🌍', rarity: 'common', locked: false },
       { e: '🗽', rarity: 'common', locked: false },
@@ -365,16 +374,16 @@ function renderAvatarCatNav(activeCat) {
   if (!nav) return;
   nav.innerHTML = Object.entries(AVATAR_CATEGORIES).map(([key, cat]) => `
     <div class="av-cat-pill ${key === activeCat ? 'active' : ''}"
+         data-cat-key="${key}"
          onclick="selectAvatarCat('${key}')">
-      ${cat.label}
+      <span style="display:inline-flex;align-items:center;gap:6px">${window.icon(cat.iconName || 'star', 16)} ${cat.label}</span>
     </div>
   `).join('');
 }
 
 function selectAvatarCat(cat) {
   document.querySelectorAll('.av-cat-pill').forEach(p => p.classList.remove('active'));
-  const pill = [...document.querySelectorAll('.av-cat-pill')]
-    .find(p => p.textContent.trim().includes(AVATAR_CATEGORIES[cat]?.label?.split(' ')[1] || cat));
+  const pill = document.querySelector(`.av-cat-pill[data-cat-key="${cat}"]`);
   if (pill) pill.classList.add('active');
 
   const joueur = allJoueurs.find(j => j.id === currentUser);
@@ -398,8 +407,8 @@ function renderAvatarEmojiGrid(cat, joueur) {
              onerror="this.outerHTML='<span style=font-size:28px;line-height:1>${item.e}</span>'"
              loading="lazy">
         ${!unlocked ? `
-          <div style="position:absolute;inset:0;background:rgba(5,8,22,0.65);display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:14px;gap:2px">
-            <span style="font-size:14px">🔒</span>
+          <div style="position:absolute;inset:0;background:rgba(5,8,22,0.65);display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:14px;gap:2px;color:rgba(255,255,255,0.85)">
+            ${window.icon('lock', 14)}
             <span style="font-size:8px;color:rgba(255,255,255,0.6);padding:0 4px;text-align:center;line-height:1.2">${item.unlock || ''}</span>
           </div>
         ` : ''}
@@ -415,10 +424,8 @@ function pickAvatarEmoji(emoji, locked) {
   pendingAvatarConfig.emoji = emoji;
   applyAvatarPreview();
   const activeCat = document.querySelector('.av-cat-pill.active');
-  const catKey = activeCat ? Object.keys(AVATAR_CATEGORIES).find(k =>
-    activeCat.textContent.includes(AVATAR_CATEGORIES[k].label.split(' ')[1] || k)
-  ) : 'foot';
-  renderAvatarEmojiGrid(catKey || 'foot', allJoueurs.find(j => j.id === currentUser));
+  const catKey = activeCat?.dataset.catKey || 'foot';
+  renderAvatarEmojiGrid(catKey, allJoueurs.find(j => j.id === currentUser));
 }
 
 // ── Grille Cadres ──
@@ -445,8 +452,8 @@ function renderAvatarFrameGrid(joueur) {
           ${frame.rarity === 'legendary' ? '✦ ' : ''}${frame.label}
         </div>
         ${!unlocked ? `
-          <div style="position:absolute;inset:0;background:rgba(5,8,22,0.6);display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:16px;gap:4px">
-            <span style="font-size:16px">🔒</span>
+          <div style="position:absolute;inset:0;background:rgba(5,8,22,0.6);display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:16px;gap:4px;color:rgba(255,255,255,0.85)">
+            ${window.icon('lock', 16)}
             <span style="font-size:9px;color:rgba(255,255,255,0.6);text-align:center;padding:0 6px">${frame.unlock || ''}</span>
           </div>
         ` : ''}
@@ -479,8 +486,8 @@ function renderAvatarBgGrid(joueur) {
            style="background:${bg.bg}"
            onclick="${unlocked ? `pickAvatarBg('${bg.id}')` : ''}">
         ${flagLayer}
-        ${selected ? '<div style="position:absolute;top:4px;right:4px;width:16px;height:16px;border-radius:50%;background:#F4C542;display:flex;align-items:center;justify-content:center;font-size:9px;color:#050816;font-weight:900;z-index:2">✓</div>' : ''}
-        ${!unlocked ? '<div style="position:absolute;inset:0;background:rgba(5,8,22,0.6);display:flex;align-items:center;justify-content:center;border-radius:14px;font-size:16px;z-index:2">🔒</div>' : ''}
+        ${selected ? `<div style="position:absolute;top:4px;right:4px;width:16px;height:16px;border-radius:50%;background:#F4C542;display:flex;align-items:center;justify-content:center;color:#050816;z-index:2">${window.icon('check', 10)}</div>` : ''}
+        ${!unlocked ? `<div style="position:absolute;inset:0;background:rgba(5,8,22,0.6);display:flex;align-items:center;justify-content:center;border-radius:14px;z-index:2;color:rgba(255,255,255,0.85)">${window.icon('lock', 16)}</div>` : ''}
         <div style="position:absolute;bottom:0;left:0;right:0;padding:2px 0;background:rgba(0,0,0,0.55);text-align:center;font-size:8px;color:rgba(255,255,255,0.9);font-weight:700;z-index:2">${bg.label}</div>
       </div>
     `;
@@ -516,9 +523,9 @@ function renderAvatarTitleGrid(joueur) {
            style="${!unlocked ? 'opacity:0.45;cursor:not-allowed' : ''}">
         <div>
           <div style="font-size:14px;font-weight:700;color:${t.color}">${t.name}</div>
-          <div style="font-size:11px;color:var(--text3);margin-top:2px">${!unlocked ? '🔒 ' : '✓ '}${t.unlock}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px;display:flex;align-items:center;gap:4px">${!unlocked ? window.icon('lock', 11) : window.icon('check', 11)} <span>${t.unlock}</span></div>
         </div>
-        ${selected ? '<div style="color:var(--gold,#F4C542);font-size:18px">✓</div>' : ''}
+        ${selected ? `<div style="color:var(--gold,#F4C542);display:inline-flex;align-items:center">${window.icon('check', 18)}</div>` : ''}
       </div>
     `;
   }).join('');
@@ -540,7 +547,7 @@ async function saveAvatarConfig() {
   }
 
   const btn = document.getElementById('av-save-btn');
-  const btnReset = () => { if (btn) { btn.innerHTML = '<span>✓</span> SAUVEGARDER'; btn.disabled = false; btn.style.opacity = '1'; } };
+  const btnReset = () => { if (btn) { btn.innerHTML = `${window.icon('check', 14)} <span>SAUVEGARDER</span>`; btn.disabled = false; btn.style.opacity = '1'; } };
   if (btn) { btn.innerHTML = '...'; btn.style.opacity = '0.7'; btn.disabled = true; }
 
   const payload = JSON.stringify(pendingAvatarConfig);
@@ -574,5 +581,5 @@ async function saveAvatarConfig() {
   }
 
   if (typeof refreshPage === 'function') refreshPage();
-  showToast('✨ Avatar mis à jour !');
+  showToast('Avatar mis à jour !');
 }

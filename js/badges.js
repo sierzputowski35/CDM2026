@@ -5,43 +5,45 @@
 // ════════════════════════════════════════════════════════════
 
 // ── SPRINT 5 — BADGES ──
+// Le champ `icon` est désormais un NOM d'icône (cf. js/utils/icons.js).
+// Le rendu passe par window.icon(name, size) — plus aucun emoji Unicode ici.
 const BADGES = [
   // PERFORMANCE
-  { id:'first_blood',   name:'Première Lame',   desc:'1er pronostic validé',             icon:'⚔️',  rarete:'commun',  xp:25  },
-  { id:'exact_1',       name:'Œil de Lynx',     desc:'Trouver 1 score exact',            icon:'🎯',  rarete:'commun',  xp:50  },
-  { id:'exact_5',       name:'Télépathe',        desc:'5 scores exacts',                  icon:'🔮',  rarete:'rare',    xp:100 },
-  { id:'exact_10',      name:'Predictor God',    desc:'10 scores exacts',                 icon:'👁️', rarete:'epique',  xp:250 },
-  { id:'hat_trick',     name:'Hat-Trick',        desc:'3 scores exacts d\'affilée',       icon:'🎩',  rarete:'epique',  xp:300 },
-  { id:'clutch_king',   name:'Clutch King',      desc:'Gagner sur le dernier match',      icon:'👑',  rarete:'rare',    xp:150 },
-  { id:'upset_master',  name:'Upset Master',     desc:'3 outsiders gagnants trouvés',     icon:'🦊',  rarete:'epique',  xp:200 },
+  { id:'first_blood',   name:'Première Lame',   desc:'1er pronostic validé',             icon:'swords',        rarete:'commun',  xp:25  },
+  { id:'exact_1',       name:'Œil de Lynx',     desc:'Trouver 1 score exact',            icon:'bullseye',      rarete:'commun',  xp:50  },
+  { id:'exact_5',       name:'Télépathe',        desc:'5 scores exacts',                  icon:'crystal-ball',  rarete:'rare',    xp:100 },
+  { id:'exact_10',      name:'Predictor God',    desc:'10 scores exacts',                 icon:'eye',           rarete:'epique',  xp:250 },
+  { id:'hat_trick',     name:'Hat-Trick',        desc:'3 scores exacts d\'affilée',       icon:'hat',           rarete:'epique',  xp:300 },
+  { id:'clutch_king',   name:'Clutch King',      desc:'Gagner sur le dernier match',      icon:'crown',         rarete:'rare',    xp:150 },
+  { id:'upset_master',  name:'Upset Master',     desc:'3 outsiders gagnants trouvés',     icon:'fox',           rarete:'epique',  xp:200 },
   // RÉGULARITÉ
-  { id:'daily_3',       name:'Habitué',          desc:'3 jours consécutifs',              icon:'📅',  rarete:'commun',  xp:50  },
-  { id:'daily_7',       name:'Fidèle',           desc:'7 jours consécutifs',              icon:'🗓️', rarete:'rare',    xp:150 },
-  { id:'daily_14',      name:'Inébranlable',     desc:'14 jours consécutifs',             icon:'🛡️', rarete:'epique',  xp:300 },
-  { id:'daily_30',      name:'Légende du Daily', desc:'30 jours consécutifs',             icon:'🌟',  rarete:'legende', xp:500 },
-  { id:'streak_5',      name:'En Feu',           desc:'5 pronos corrects d\'affilée',     icon:'🔥',  rarete:'rare',    xp:150 },
-  { id:'streak_10',     name:'Brasier',          desc:'10 pronos corrects d\'affilée',    icon:'☄️',  rarete:'legende', xp:400 },
+  { id:'daily_3',       name:'Habitué',          desc:'3 jours consécutifs',              icon:'calendar',      rarete:'commun',  xp:50  },
+  { id:'daily_7',       name:'Fidèle',           desc:'7 jours consécutifs',              icon:'calendar',      rarete:'rare',    xp:150 },
+  { id:'daily_14',      name:'Inébranlable',     desc:'14 jours consécutifs',             icon:'shield',        rarete:'epique',  xp:300 },
+  { id:'daily_30',      name:'Légende du Daily', desc:'30 jours consécutifs',             icon:'star',          rarete:'legende', xp:500 },
+  { id:'streak_5',      name:'En Feu',           desc:'5 pronos corrects d\'affilée',     icon:'flame',         rarete:'rare',    xp:150 },
+  { id:'streak_10',     name:'Brasier',          desc:'10 pronos corrects d\'affilée',    icon:'meteor',        rarete:'legende', xp:400 },
   // LIGUES
-  { id:'league_silver', name:'Promotion Argent', desc:'Atteindre la ligue Argent',        icon:'🥈',  rarete:'commun',  xp:75  },
-  { id:'league_gold',   name:'Promotion Or',     desc:'Atteindre la ligue Or',            icon:'🥇',  rarete:'rare',    xp:150 },
-  { id:'league_diamond',name:'Promotion Diamant',desc:'Atteindre la ligue Diamant',       icon:'💎',  rarete:'epique',  xp:300 },
-  { id:'league_legend', name:'Promotion Légende',desc:'Atteindre la ligue Légende',       icon:'👑',  rarete:'legende', xp:600 },
+  { id:'league_silver', name:'Promotion Argent', desc:'Atteindre la ligue Argent',        icon:'silver-medal',  rarete:'commun',  xp:75  },
+  { id:'league_gold',   name:'Promotion Or',     desc:'Atteindre la ligue Or',            icon:'gold-medal',    rarete:'rare',    xp:150 },
+  { id:'league_diamond',name:'Promotion Diamant',desc:'Atteindre la ligue Diamant',       icon:'diamond',       rarete:'epique',  xp:300 },
+  { id:'league_legend', name:'Promotion Légende',desc:'Atteindre la ligue Légende',       icon:'crown',         rarete:'legende', xp:600 },
   // SOCIAL
-  { id:'club_member',   name:'Membre d\'un Club',desc:'Rejoindre un club',                icon:'👥',  rarete:'commun',  xp:30  },
-  { id:'club_top',      name:'Roi du Club',      desc:'Être 1er de ton club',             icon:'🏆',  rarete:'rare',    xp:200 },
-  { id:'rival_5',       name:'Rival Tenace',     desc:'Dépasser un ami 5 fois',           icon:'⚔️',  rarete:'rare',    xp:100 },
+  { id:'club_member',   name:'Membre d\'un Club',desc:'Rejoindre un club',                icon:'users',         rarete:'commun',  xp:30  },
+  { id:'club_top',      name:'Roi du Club',      desc:'Être 1er de ton club',             icon:'trophy',        rarete:'rare',    xp:200 },
+  { id:'rival_5',       name:'Rival Tenace',     desc:'Dépasser un ami 5 fois',           icon:'swords',        rarete:'rare',    xp:100 },
   // TOURNOI
-  { id:'group_complete',name:'Phase de Groupes', desc:'Pronostiquer tous les matchs de groupe', icon:'🎫', rarete:'rare',    xp:150 },
-  { id:'round_16',      name:'8èmes de Finale',  desc:'Pronos sur tous les 8èmes',        icon:'🎟️', rarete:'rare',    xp:150 },
-  { id:'quarters',      name:'Quarts',           desc:'Pronos sur tous les quarts',       icon:'🎟️', rarete:'epique',  xp:200 },
-  { id:'semis',         name:'Demies',           desc:'Pronos sur les demi-finales',      icon:'🎟️', rarete:'epique',  xp:250 },
-  { id:'final',         name:'Finaliste',        desc:'Pronostic sur la finale',          icon:'🏆',  rarete:'legende', xp:500 },
+  { id:'group_complete',name:'Phase de Groupes', desc:'Pronostiquer tous les matchs de groupe', icon:'ticket',  rarete:'rare',    xp:150 },
+  { id:'round_16',      name:'8èmes de Finale',  desc:'Pronos sur tous les 8èmes',        icon:'ticket',        rarete:'rare',    xp:150 },
+  { id:'quarters',      name:'Quarts',           desc:'Pronos sur tous les quarts',       icon:'ticket',        rarete:'epique',  xp:200 },
+  { id:'semis',         name:'Demies',           desc:'Pronos sur les demi-finales',      icon:'ticket',        rarete:'epique',  xp:250 },
+  { id:'final',         name:'Finaliste',        desc:'Pronostic sur la finale',          icon:'trophy',        rarete:'legende', xp:500 },
   // COLLECTION
-  { id:'cards_10',      name:'Apprenti Coll.',   desc:'10 cartes obtenues',               icon:'🃏',  rarete:'commun',  xp:50  },
-  { id:'cards_50',      name:'Collectionneur',   desc:'50 cartes obtenues',               icon:'📚',  rarete:'rare',    xp:200 },
-  { id:'cards_100',     name:'Maître Coll.',     desc:'100 cartes obtenues',              icon:'🏛️', rarete:'epique',  xp:400 },
-  { id:'album_team',    name:'Maître National',  desc:'Compléter une équipe entière',     icon:'🛡️', rarete:'legende', xp:500 },
-  { id:'legendary_card',name:'Première Légende', desc:'Obtenir une carte légendaire',     icon:'⭐',  rarete:'epique',  xp:300 },
+  { id:'cards_10',      name:'Apprenti Coll.',   desc:'10 cartes obtenues',               icon:'card',          rarete:'commun',  xp:50  },
+  { id:'cards_50',      name:'Collectionneur',   desc:'50 cartes obtenues',               icon:'books',         rarete:'rare',    xp:200 },
+  { id:'cards_100',     name:'Maître Coll.',     desc:'100 cartes obtenues',              icon:'museum',        rarete:'epique',  xp:400 },
+  { id:'album_team',    name:'Maître National',  desc:'Compléter une équipe entière',     icon:'shield',        rarete:'legende', xp:500 },
+  { id:'legendary_card',name:'Première Légende', desc:'Obtenir une carte légendaire',     icon:'star',          rarete:'epique',  xp:300 },
 ];
 
 // ── SPRINT 5 — BADGE FUNCTIONS (Supabase-backed) ──
@@ -170,11 +172,11 @@ function showBadgeUnlockModal(badge) {
   const rareteEl= document.getElementById('badge-unlock-rarete');
   const equipBtn= document.getElementById('badge-equip-btn');
 
-  icon.textContent = badge.icon || badge.emoji || '🏅';
+  icon.innerHTML = window.icon(badge.icon || 'gold-medal', 72);
   nameEl.textContent = badge.name;
 
   if (descEl)  { descEl.textContent = badge.desc || ''; descEl.style.display = badge.desc ? '' : 'none'; }
-  if (rewardEl){ rewardEl.textContent = `+${badge.xp||50} XP  +${COIN_REWARDS?.badge_unlock||100} 🪙`; rewardEl.style.display = ''; }
+  if (rewardEl){ rewardEl.innerHTML = `+${badge.xp||50} XP  +${COIN_REWARDS?.badge_unlock||100} ${window.icon('coin', 14)}`; rewardEl.style.display = ''; }
 
   const rareteLabels = { commun:'COMMUN', rare:'RARE', epique:'ÉPIQUE', legende:'LÉGENDAIRE' };
   const rareteColors = { commun:'#9CA3AF', rare:'#58C8FA', epique:'#A855F7', legende:'#F4C542' };

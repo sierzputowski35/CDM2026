@@ -15,7 +15,7 @@ function generateNotifs() {
   const lastClaim = localStorage.getItem('cdm2026_last_claim');
   if (lastClaim !== today) {
     const streak = parseInt(localStorage.getItem('cdm2026_dr_streak') || '0');
-    notifs.push({ icon: '🎁', title: 'Récompense quotidienne disponible !', sub: `Jour ${streak + 1} — réclamez vos bonus`, action: () => switchTab('home', document.getElementById('tab-home')) });
+    notifs.push({ icon: 'gift', title: 'Récompense quotidienne disponible !', sub: `Jour ${streak + 1} — réclamez vos bonus`, action: () => switchTab('home', document.getElementById('tab-home')) });
   }
 
   // Matchs sans prono dans les prochaines 24h
@@ -27,7 +27,7 @@ function generateNotifs() {
     return ts > now && ts < now + 86400000;
   });
   if (urgents.length > 0) {
-    notifs.push({ icon: '⚡', title: `${urgents.length} match${urgents.length > 1 ? 's' : ''} à pronostiquer aujourd'hui`, sub: urgents.slice(0, 2).map(m => `${m.name1} vs ${m.name2}`).join(' · '), action: () => switchTab('pronos', document.getElementById('tab-pronos')) });
+    notifs.push({ icon: 'zap', title: `${urgents.length} match${urgents.length > 1 ? 's' : ''} à pronostiquer aujourd'hui`, sub: urgents.slice(0, 2).map(m => `${m.name1} vs ${m.name2}`).join(' · '), action: () => switchTab('pronos', document.getElementById('tab-pronos')) });
   }
 
   // Quelqu'un a dépassé dans le classement
@@ -36,7 +36,7 @@ function generateNotifs() {
   if (myRank > 1) {
     const above = board[myRank - 2];
     const gap = above.pts - (board[myRank - 1]?.pts || 0);
-    if (gap <= 10) notifs.push({ icon: '📈', title: `${above.pseudo} est devant toi de seulement ${gap} pt${gap > 1 ? 's' : ''}`, sub: 'Pronostique pour reprendre la tête !', action: () => switchTab('pronos', document.getElementById('tab-pronos')) });
+    if (gap <= 10) notifs.push({ icon: 'trending-up', title: `${above.pseudo} est devant toi de seulement ${gap} pt${gap > 1 ? 's' : ''}`, sub: 'Pronostique pour reprendre la tête !', action: () => switchTab('pronos', document.getElementById('tab-pronos')) });
   }
 
   // Badge proche
@@ -49,7 +49,7 @@ function generateNotifs() {
     (b.id === 'hat_trick' && stats.maxStreak    >= 2) ||
     (b.id === 'streak_5'  && stats.maxStreak    >= 3)
   ));
-  if (proche) notifs.push({ icon: proche.icon, title: `Badge "${proche.name}" presque débloqué !`, sub: 'Continue comme ça 💪', action: null });
+  if (proche) notifs.push({ icon: proche.icon, title: `Badge "${proche.name}" presque débloqué !`, sub: 'Continue comme ça', action: null });
 
   return notifs;
 }
@@ -68,11 +68,11 @@ function openNotifPanel() {
   const list = document.getElementById('notif-list');
   if (!list) return;
   if (!notifs.length) {
-    list.innerHTML = `<div style="text-align:center;padding:32px;color:var(--text3)"><div style="font-size:40px;margin-bottom:12px">✅</div><div>Tout est à jour !</div></div>`;
+    list.innerHTML = `<div style="text-align:center;padding:32px;color:var(--text3)"><div style="margin-bottom:12px;color:var(--text2)">${window.icon('check-double', 40)}</div><div>Tout est à jour !</div></div>`;
   } else {
     list.innerHTML = notifs.map((n, i) => `
       <div class="notif-item" style="${n.action ? 'cursor:pointer' : ''}">
-        <div class="notif-dot-icon">${n.icon}</div>
+        <div class="notif-dot-icon">${window.icon(n.icon, 22)}</div>
         <div class="notif-text">
           <strong>${n.title}</strong>
           <span>${n.sub}</span>
