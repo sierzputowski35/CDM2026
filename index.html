@@ -4587,6 +4587,11 @@ function closeProfil(){
 let toastTimer;
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2500);}
 
+// ══ BOOTSTRAP ══
+// L'appel init() était auparavant dans la section PWA INSTALL ;
+// déplacé ici (PR hotfix) pour qu'il s'exécute après la définition
+// de la fonction init() au-dessus.
+init();
 </script>
 </body>
 </html>

@@ -64,7 +64,9 @@ function closePwaModal() {
 
 initPWA();
 
-init();
+// NB : l'appel init() (bootstrap de l'app) qui était placé ici dans le
+// code original a été déplacé à la fin du <script> inline d'index.html
+// pour qu'il s'exécute APRÈS la définition de la fonction init.
 
 // PWA Service Worker
 if ('serviceWorker' in navigator) {
