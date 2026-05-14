@@ -2008,6 +2008,20 @@ async function loadData(){
     } catch(e) { allCoffres = []; }
   }
 
+  // Étape 9 — Cache des badges débloqués sur le joueur courant pour que
+  // isAvatarItemUnlocked() puisse vérifier sync les unlock 'badge'
+  // (cosmétiques type titre "Sniper" → badge `sniper`).
+  if (currentUser) {
+    const joueur = allJoueurs.find(j => j.id === currentUser);
+    if (joueur) {
+      try {
+        const { data: badgesData } = await sb.from('badges_debloques')
+          .select('badge_id').eq('joueur_id', currentUser);
+        joueur._badgeIds = new Set((badgesData || []).map(b => b.badge_id));
+      } catch(_) { joueur._badgeIds = new Set(); }
+    }
+  }
+
   // Badge nav mis à jour après chaque reload
   if (currentUser) { updateHeaderUser(); updateNavBadges(); }
 }

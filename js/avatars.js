@@ -37,10 +37,13 @@ const AVATAR_CATEGORIES = {
       { e: '🐯', rarity: 'rare', locked: false },
       { e: '🦅', rarity: 'rare', locked: false },
       { e: '🦊', rarity: 'common', locked: false },
-      { e: '🐺', rarity: 'epic', locked: true, unlock: 'Streak 5j', unlockType: 'streak', unlockValue: 5 },
-      { e: '🐉', rarity: 'epic', locked: true, unlock: 'Niveau 10', unlockType: 'level', unlockValue: 10 },
+      // Étape 9 — Wolf : "Streak 5 pronos" (consécutifs corrects) par spec §12,
+      // pas un streak daily. On utilise le maxStreak de computePlayerStats.
+      { e: '🐺', rarity: 'epic', locked: true, unlock: 'Streak 5 pronos', unlockType: 'prono_streak', unlockValue: 5 },
+      // Étape 9 — Dragon : "Atteindre Ligue Or" par spec §12 (pas niveau 10).
+      { e: '🐉', rarity: 'epic', locked: true, unlock: 'Ligue Or', unlockType: 'ligue', unlockValue: 'or' },
       { e: '🦋', rarity: 'legendary', locked: true, unlock: 'Niveau 15', unlockType: 'level', unlockValue: 15 },
-      { e: '🦄', rarity: 'legendary', locked: true, unlock: 'Ligue Légende', unlockType: 'ligue', unlockValue: 'Légende' },
+      { e: '🦄', rarity: 'legendary', locked: true, unlock: 'Ligue Légende', unlockType: 'ligue', unlockValue: 'legende' },
     ]
   },
   legendes: {
@@ -49,7 +52,7 @@ const AVATAR_CATEGORIES = {
     items: [
       { e: '👑', rarity: 'rare', locked: false },
       { e: '🌟', rarity: 'rare', locked: false },
-      { e: '💎', rarity: 'epic', locked: true, unlock: 'Ligue Diamant', unlockType: 'ligue', unlockValue: 'Diamant' },
+      { e: '💎', rarity: 'epic', locked: true, unlock: 'Ligue Diamant', unlockType: 'ligue', unlockValue: 'diamant' },
       { e: '🏅', rarity: 'epic', locked: true, unlock: '50 matchs', unlockType: 'matches', unlockValue: 50 },
       { e: '🎭', rarity: 'legendary', locked: true, unlock: 'Niveau 20', unlockType: 'level', unlockValue: 20 },
       { e: '🤖', rarity: 'legendary', locked: true, unlock: '1000 gemmes', unlockType: 'gems', unlockValue: 1000 },
@@ -62,8 +65,8 @@ const AVATAR_CATEGORIES = {
       { e: '🌍', rarity: 'common', locked: false },
       { e: '🗽', rarity: 'common', locked: false },
       { e: '🍁', rarity: 'rare', locked: false },
-      { e: '🎪', rarity: 'epic', locked: true, unlock: 'Ligue Argent', unlockType: 'ligue', unlockValue: 'Argent' },
-      { e: '🚀', rarity: 'legendary', locked: true, unlock: 'Ligue Légende', unlockType: 'ligue', unlockValue: 'Légende' },
+      { e: '🎪', rarity: 'epic', locked: true, unlock: 'Ligue Argent', unlockType: 'ligue', unlockValue: 'argent' },
+      { e: '🚀', rarity: 'legendary', locked: true, unlock: 'Ligue Légende', unlockType: 'ligue', unlockValue: 'legende' },
     ]
   }
 };
@@ -103,7 +106,7 @@ const AVATAR_FRAMES = [
     locked: true,
     unlock: 'Ligue Diamant',
     unlockType: 'ligue',
-    unlockValue: 'Diamant',
+    unlockValue: 'diamant',
     css: 'border: 3px solid #58C8FA; border-radius: 24px; box-shadow: 0 0 18px rgba(88,200,250,0.5)',
   },
   {
@@ -113,7 +116,7 @@ const AVATAR_FRAMES = [
     locked: true,
     unlock: 'Ligue Légende',
     unlockType: 'ligue',
-    unlockValue: 'Légende',
+    unlockValue: 'legende',
     css: 'border: 3px solid #A855F7; border-radius: 24px; box-shadow: 0 0 22px rgba(168,85,247,0.7)',
   },
   {
@@ -127,26 +130,31 @@ const AVATAR_FRAMES = [
   },
 ];
 
+// Étape 9 — Ajout unlockType/unlockValue machine-readable pour que
+// isAvatarItemUnlocked puisse vraiment vérifier (auparavant juste un
+// label texte → jamais débloqué).
 const AVATAR_BACKGROUNDS = [
   { id: 'cosmos',  label: 'Cosmos',   bg: 'linear-gradient(135deg, #1a1060, #0a2a50)', locked: false },
   { id: 'fire',    label: 'Feu',      bg: 'linear-gradient(135deg, #3D1000, #6B2000)', locked: false },
   { id: 'jungle',  label: 'Jungle',   bg: 'linear-gradient(135deg, #002A1A, #004430)', locked: false },
   { id: 'ocean',   label: 'Océan',    bg: 'linear-gradient(135deg, #001A3D, #003060)', locked: false },
-  { id: 'sunset',  label: 'Sunset',   bg: 'linear-gradient(135deg, #3D1A00, #5A2A00)', locked: true, unlock: 'Niveau 5' },
-  { id: 'legend',  label: 'Légende',  bg: 'linear-gradient(135deg, #1A0035, #2A0055)', locked: true, unlock: 'Ligue Or' },
-  { id: 'gold',    label: 'Or Pur',   bg: 'linear-gradient(135deg, #2A1A00, #3D2800)', locked: true, unlock: 'Ligue Or' },
-  { id: 'arctic',  label: 'Arctique', bg: 'linear-gradient(135deg, #001A35, #00253A)', locked: true, unlock: 'Streak 10j' },
+  { id: 'sunset',  label: 'Sunset',   bg: 'linear-gradient(135deg, #3D1A00, #5A2A00)', locked: true, unlock: 'Niveau 5',    unlockType: 'level',  unlockValue: 5 },
+  { id: 'legend',  label: 'Légende',  bg: 'linear-gradient(135deg, #1A0035, #2A0055)', locked: true, unlock: 'Ligue Or',    unlockType: 'ligue',  unlockValue: 'or' },
+  { id: 'gold',    label: 'Or Pur',   bg: 'linear-gradient(135deg, #2A1A00, #3D2800)', locked: true, unlock: 'Ligue Or',    unlockType: 'ligue',  unlockValue: 'or' },
+  { id: 'arctic',  label: 'Arctique', bg: 'linear-gradient(135deg, #001A35, #00253A)', locked: true, unlock: 'Streak 10 jours', unlockType: 'streak', unlockValue: 10 },
 ];
 
 const AVATAR_TITLES = [
   { id: 'default',  name: 'Joueur CDM',     color: '#8899BB', locked: false, unlock: 'Par défaut' },
-  { id: 'prophet',  name: 'Prophète',       color: '#F4C542', locked: false, unlock: '5 scores exacts' },
-  { id: 'sniper',   name: 'Sniper',         color: '#58C8FA', locked: false, unlock: '10 scores exacts' },
+  // Étape 9 — Sniper : unlock via badge `sniper` (Étape 6 = 5 scores exacts)
+  // par spec §12. Auparavant locked:false (toujours visible) — corrigé.
+  { id: 'sniper',   name: 'Sniper',         color: '#58C8FA', locked: true,  unlock: 'Badge Sniper (5 exacts)', unlockType: 'badge', unlockValue: 'sniper' },
+  { id: 'prophet',  name: 'Prophète',       color: '#F4C542', locked: false, unlock: 'Bonus collection' },
   // Étape 5 — titres débloqués par niveau (Bilan v3 §12)
   { id: 'pro',      name: 'Pro',            color: '#F4C542', locked: true,  unlock: 'Niveau 10', unlockType: 'level', unlockValue: 10 },
   { id: 'elite',    name: 'Élite',          color: '#58C8FA', locked: true,  unlock: 'Niveau 15', unlockType: 'level', unlockValue: 15 },
   { id: 'clutch',   name: 'Clutch King',    color: '#FF8A3D', locked: true,  unlock: 'Streak 7 jours', unlockType: 'streak', unlockValue: 7 },
-  { id: 'legend',   name: 'Légende Vivante',color: '#A855F7', locked: true,  unlock: 'Ligue Légende', unlockType: 'ligue', unlockValue: 'Légende' },
+  { id: 'legend',   name: 'Légende Vivante',color: '#A855F7', locked: true,  unlock: 'Ligue Légende', unlockType: 'ligue', unlockValue: 'legende' },
   { id: 'telepath', name: 'Télépathe',      color: '#22D16B', locked: true,  unlock: '95% précision', unlockType: 'precision', unlockValue: 95 },
   { id: 'champion', name: 'Champion',       color: '#FF4D5A', locked: true,  unlock: 'Vainqueur Saison', unlockType: 'season_winner' },
 ];
@@ -267,6 +275,13 @@ function renderAvatarEl(joueur, size = 34, radius = 10) {
 }
 
 // ── Vérifier si un item est débloqué pour ce joueur ──
+// Étape 9 — Corrections du bug D-01 :
+//   • `joueur.ligue` → `joueur.league` (syncAllLeagues écrit "league")
+//   • valeurs unlockValue en minuscules ('argent','or','diamant','legende')
+//     pour matcher LEAGUES côté Étape 3
+//   • `joueur.streak` → `joueur.daily_streak` (champ réellement écrit)
+//   • Ajout types 'prono_streak' (max série pronos corrects) et 'badge'
+//     (lecture de joueur._badgeIds Set chargé par loadData).
 function isAvatarItemUnlocked(item, joueur) {
   if (!item.locked) return true;
   if (!joueur) return false;
@@ -275,12 +290,25 @@ function isAvatarItemUnlocked(item, joueur) {
   const t = item.unlockType;
   const v = item.unlockValue;
 
-  if (t === 'streak')   return (joueur.streak || 0) >= v;
-  if (t === 'ligue')    return joueur.ligue === v;
+  if (t === 'streak')        return (joueur.daily_streak || 0) >= v;
+  if (t === 'prono_streak') {
+    // Plus fiable que recalculer ici : si le badge streak_N existe pour
+    // le joueur, on est sûr qu'il a eu N pronos corrects consécutifs.
+    if (joueur._badgeIds?.has?.('streak_10') && v <= 10) return true;
+    if (joueur._badgeIds?.has?.('streak_5')  && v <= 5)  return true;
+    // Fallback : compute via computePlayerStats si dispo (badges.js)
+    if (typeof computePlayerStats === 'function') {
+      const ps = computePlayerStats(joueur);
+      return (ps.maxStreak || 0) >= v;
+    }
+    return false;
+  }
+  if (t === 'ligue')    return joueur.league === v;
   if (t === 'level')    return (typeof getLevelInfo === 'function' ? getLevelInfo(joueur).level : (joueur.level || 1)) >= v;
   if (t === 'matches')  return (stats?.total || 0) >= v;
   if (t === 'rank')     return (joueur.rank || 999) <= v;
   if (t === 'gems')     return (joueur.gems || 0) >= v;
+  if (t === 'badge')    return !!joueur._badgeIds?.has?.(v);
   if (t === 'precision') {
     if (!stats?.total) return false;
     const precision = Math.round(((stats.exact + stats.bonDiff + stats.bonVainqueur) / stats.total) * 100);
