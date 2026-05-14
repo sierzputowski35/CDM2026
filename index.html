@@ -3003,7 +3003,7 @@ body {
       <div class="stripe"></div>
       <div class="sub-tabs">
         <button class="sub-tab active" onclick="switchPronosTab('matchs',this)">Matchs</button>
-        <button class="sub-tab" onclick="switchPronosTab('globaux',this)">Globaux</button>
+        <button class="sub-tab" onclick="switchPronosTab('globaux',this)">Compétition</button>
       </div>
       <!-- SOUS-ONGLET MATCHS -->
       <div id="pronos-matchs">
@@ -3105,7 +3105,7 @@ body {
       <div class="stripe"></div>
       <div class="sub-tabs">
         <button class="sub-tab active" onclick="switchResultatsTab('groupes',this)">Groupes</button>
-        <button class="sub-tab" onclick="switchResultatsTab('cagnotte',this)">Cagnotte</button>
+        <button class="sub-tab" onclick="switchResultatsTab('competition',this)">Compétition</button>
       </div>
       <div id="resultats-groupes">
       <!-- FILTRE GROUPES -->
@@ -3127,10 +3127,9 @@ body {
       </div>
       <div id="groupes-list"></div>
       </div>
-      <div id="resultats-cagnotte" style="display:none">
-        <div class="section-title">Cagnotte</div>
-        <div id="pot-total-val"></div>
-        <div id="pot-cagnotte-content"></div>
+      <div id="resultats-competition" style="display:none">
+        <div id="competition-bracket"></div>
+        <div id="competition-globaux"></div>
       </div>
     </div>
     <div id="page-profil" class="page">
@@ -5322,7 +5321,7 @@ function refreshPage(){
   const sel=isAdmin?'#admin-app-screen .page.active':'#app-screen .page.active';
   const id=document.querySelector(sel)?.id?.replace('page-','');
   if(!id)return;
-  const fns={home:renderHomePage,classement:renderClassement,matchs:function(){document.getElementById('pronos-globaux')?.style.display==='none'?renderMatchs():renderGlobaux();},groupes:function(){renderGroupes();renderBracket();},cagnotte:renderCagnotte,profil:renderProfilPage,'admin-matchs':renderAdminMatchs,'admin-globaux':renderAdminGlobaux,'admin-cagnotte':renderAdminCagnotte,'admin-joueurs':renderAdminJoueurs,'admin-cotes':renderAdminCotes};
+  const fns={home:renderHomePage,classement:renderClassement,matchs:function(){document.getElementById('pronos-globaux')?.style.display==='none'?renderMatchs():renderGlobaux();},groupes:function(){document.getElementById('resultats-competition')?.style.display!=='none'?renderCompetition():renderGroupes();},profil:renderProfilPage,'admin-matchs':renderAdminMatchs,'admin-globaux':renderAdminGlobaux,'admin-cagnotte':renderAdminCagnotte,'admin-joueurs':renderAdminJoueurs,'admin-cotes':renderAdminCotes};
   fns[id]?.();
 }
 
@@ -5457,7 +5456,17 @@ const TAB_MAP = {
   home: { page: 'home', render: renderHomePage },
   pronos: { page: 'matchs', render: function(){ document.getElementById('pronos-matchs').style.display=''; document.getElementById('pronos-globaux').style.display='none'; const tabs=document.querySelectorAll('#page-matchs .sub-tab'); tabs[0]?.classList.add('active'); tabs[1]?.classList.remove('active'); renderMatchs(); } },
   arene: { page: 'classement', render: renderClassement },
-  resultats: { page: 'groupes', render: function(){ renderGroupes(); renderBracket(); } },
+  resultats: { page: 'groupes', render: function(){
+    // Reset sur le sous-onglet "Groupes" (par défaut)
+    const grp=document.getElementById('resultats-groupes');
+    const cmp=document.getElementById('resultats-competition');
+    if(grp) grp.style.display='';
+    if(cmp) cmp.style.display='none';
+    const tabs=document.querySelectorAll('#page-groupes .sub-tab');
+    tabs[0]?.classList.add('active');
+    tabs[1]?.classList.remove('active');
+    renderGroupes();
+  } },
   profil: { page: 'profil', render: renderProfilPage }
 };
 
@@ -5497,11 +5506,11 @@ function switchPronosTab(sub, btn) {
 
 function switchResultatsTab(sub, btn) {
   document.getElementById('resultats-groupes').style.display = sub === 'groupes' ? '' : 'none';
-  document.getElementById('resultats-cagnotte').style.display = sub === 'cagnotte' ? '' : 'none';
+  document.getElementById('resultats-competition').style.display = sub === 'competition' ? '' : 'none';
   btn.parentElement.querySelectorAll('.sub-tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  if (sub === 'groupes') { renderGroupes(); renderBracket(); }
-  else renderCagnotte();
+  if (sub === 'groupes') renderGroupes();
+  else renderCompetition();
 }
 
 // ── HOME PAGE AAA ──────────────────────────────────────────────
@@ -7292,17 +7301,67 @@ function renderBracket(){
 
   html+='</div></div>';
 
-  // Insérer après les groupes
+  // Cible : container Compétition (onglet Résultats) si présent
+  const target=document.getElementById('competition-bracket');
+  if(target){ target.innerHTML=html; return; }
+  // Fallback historique : après les groupes
   const container=document.getElementById('groupes-list');
   if(container){
     const bracketDiv=document.createElement('div');
     bracketDiv.id='bracket-section';
     bracketDiv.innerHTML=html;
-    // Supprimer l'ancien bracket si présent
     const old=document.getElementById('bracket-section');
     if(old) old.remove();
     container.parentNode.insertBefore(bracketDiv, container.nextSibling);
   }
+}
+
+// Onglet Résultats > Compétition : bracket + pronos globaux en lecture seule
+// (les inputs et le bouton "Enregistrer" restent dans Pronos > Compétition
+// pour éviter le doublon d'IDs).
+function renderCompetition(){
+  renderBracket();
+  const gContainer = document.getElementById('competition-globaux');
+  if (!gContainer) return;
+  const joueur = allJoueurs.find(j => j.id === currentUser);
+  const glob = joueur?.globaux || {};
+  const hasReal = Object.keys(allGlobaux).length > 0;
+  const totalAvecGlob = Math.max(1, allJoueurs.filter(j => j.globaux && Object.keys(j.globaux).length > 0).length);
+  function probaBar(val, gid) {
+    if (!val) return '';
+    const cnt = allJoueurs.filter(j => (j.globaux||{})[gid]?.trim().toLowerCase() === val.trim().toLowerCase()).length;
+    const pct = Math.round((cnt / totalAvecGlob) * 100);
+    return `<div class="global-proba-row"><span style="white-space:nowrap">${cnt} joueur${cnt>1?'s':''}</span><div class="global-proba-bar"><div class="global-proba-fill" style="width:${pct}%"></div></div><span style="white-space:nowrap;color:var(--gold-primary);font-weight:700">${pct}%</span></div>`;
+  }
+  let html = '<div class="section-title" style="margin-top:20px">Pronostics du tournoi</div>';
+  html += GLOBAUX_DEF.map(g => {
+    const val = glob[g.id] || '';
+    const real = allGlobaux[g.id];
+    let result = '';
+    if (real) {
+      const ok = val.trim().toLowerCase() === real.trim().toLowerCase();
+      let ptsGagnes = 0;
+      if (ok) {
+        if (g.liste) { const jj = g.liste.find(x => x.nom.toLowerCase() === val.trim().toLowerCase()); ptsGagnes = jj ? jj.pts : 10; }
+        else if (g.type === 'equipe') { const e = EQUIPES.find(x => x.nom.toLowerCase() === val.trim().toLowerCase()); ptsGagnes = e ? e.pts : 10; }
+        else ptsGagnes = 10;
+      }
+      result = ok
+        ? `<div style="display:flex;align-items:center;gap:8px;margin-top:10px"><span style="color:#22D16B;font-size:18px">✓</span><span style="color:#22D16B;font-weight:700">Correct — <span style="font-family:'Bebas Neue';font-size:18px">+${ptsGagnes} pts</span></span></div>`
+        : `<div style="display:flex;align-items:center;gap:8px;margin-top:10px"><span style="color:#FF4D5A;font-size:18px">✗</span><span style="color:var(--text2);font-size:12px">Réponse : <strong style="color:#FF4D5A">${real}</strong></span></div>`;
+    }
+    const valHtml = `<div style="color:var(--gold-primary);font-weight:600;font-size:15px;padding:4px 0">${val || '<span style="color:var(--text3)">Non renseigné</span>'}</div>${probaBar(val, g.id)}`;
+    const ptsMatch = (g.bonus || '').match(/\d+/);
+    const ptsBadge = ptsMatch ? `<span class="global-pts-badge">jusqu'à +${ptsMatch[0]} pts</span>` : `<span class="global-pts-badge">${g.bonus||''}</span>`;
+    return `<div class="global-card-v2">
+      <div class="global-head-v2"><span class="global-title-v2">${g.label}</span>${ptsBadge}</div>
+      ${valHtml}${result}
+    </div>`;
+  }).join('');
+  if (!hasReal) {
+    html += `<div style="text-align:center;color:var(--text3);font-size:12px;margin-top:14px;padding:12px;background:var(--surface);border:1px dashed var(--border2);border-radius:10px">Les résultats officiels apparaîtront ici dès qu'ils seront saisis. Pour modifier tes pronostics, va dans <strong style="color:var(--gold-primary)">Pronos · Compétition</strong>.</div>`;
+  }
+  gContainer.innerHTML = html;
 }
 
 // ══ CHAT ══
