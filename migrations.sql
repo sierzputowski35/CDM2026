@@ -100,3 +100,25 @@ WHERE badge_id IN (
   'hat_trick', 'clutch_king', 'upset_master', 'exact_10',
   'club_member', 'club_top', 'rival_5'
 );
+
+-- ─────────────────────────────────────────────────────────────────────
+-- Étape 4 — Refonte cartes (pool 528 joueurs, doublons FUT-style)
+-- ─────────────────────────────────────────────────────────────────────
+-- Les cartes sont désormais droppées par les coffres (CARD_DROP_RATES) et
+-- pointent vers un joueur unique de ALL_PLAYERS via `player_id`. Les
+-- doublons (même joueur déjà possédé) sont auto-convertis en coins/gems.
+--
+-- L'ancien schéma stockait une ligne par drop (carte_id = "<pid>_<match>_<ts>"),
+-- ce qui empêchait toute détection de doublon. On nettoie les données de
+-- test, on ajoute les colonnes `player_id` et `equipe` (lecture badges
+-- `album_team` côté checkBadges), puis on pose un index unique
+-- (joueur_id, player_id) pour garantir l'unicité au niveau DB.
+
+DELETE FROM cartes_collection;
+
+ALTER TABLE cartes_collection ADD COLUMN IF NOT EXISTS player_id TEXT;
+ALTER TABLE cartes_collection ADD COLUMN IF NOT EXISTS equipe    TEXT;
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_cartes_unique_player
+  ON cartes_collection(joueur_id, player_id)
+  WHERE player_id IS NOT NULL;

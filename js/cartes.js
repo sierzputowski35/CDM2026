@@ -58,7 +58,12 @@ function pickCardsForMatch(players, adminInputs, accuracy) {
   return cards;
 }
 
+// @deprecated Étape 4 — Les cartes sont désormais droppées en ouvrant les
+// coffres post-match (rollCardFromChest dans index.html). Cette fonction
+// reste pour compat des éventuels anciens appels, mais ne fait plus rien.
 async function distributeCardsForMatch(matchId) {
+  return; // no-op : flow déplacé vers openChest()
+  // eslint-disable-next-line no-unreachable
   const match = MATCHS.find(m => m.id === matchId);
   if (!match) return;
   const code1 = TEAM_COUNTRY_MAP[match.name1] || '';
