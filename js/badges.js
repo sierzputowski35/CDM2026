@@ -402,7 +402,7 @@ function showBadgeUnlockModal(badge) {
   if (rewardEl){ rewardEl.innerHTML = `+${badge.xp||50} XP  +${badge.coins||0} ${window.icon('coin', 14)}`; rewardEl.style.display = ''; }
 
   const rareteLabels = { commun:'COMMUN', rare:'RARE', epique:'ÉPIQUE', legende:'LÉGENDAIRE' };
-  const rareteColors = { commun:'#9CA3AF', rare:'#58C8FA', epique:'#A855F7', legende:'#F4C542' };
+  const rareteColors = { commun:'#9CA3AF', rare:'var(--electric-blue)', epique:'var(--royal-purple)', legende:'var(--gold-primary)' };
   if (rareteEl) {
     rareteEl.textContent = rareteLabels[badge.rarete] || '';
     rareteEl.style.color = rareteColors[badge.rarete] || '#fff';

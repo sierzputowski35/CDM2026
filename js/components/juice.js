@@ -106,7 +106,7 @@
         life: 0,
         rot: Math.random() * Math.PI,
         vr: -0.05 + Math.random() * 0.1,
-        hue: Math.random() > 0.6 ? '#FFE680' : '#F4C542'
+        hue: Math.random() > 0.6 ? '#FFE680' : 'var(--gold-primary)'
       };
     });
 

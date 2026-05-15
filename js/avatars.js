@@ -93,7 +93,7 @@ const AVATAR_FRAMES = [
     unlock: 'Niveau 8',
     unlockType: 'level',
     unlockValue: 8,
-    css: 'border: 3px solid #F4C542; border-radius: 24px; box-shadow: 0 0 14px rgba(244,197,66,0.5)',
+    css: 'border: 3px solid var(--gold-primary); border-radius: 24px; box-shadow: 0 0 14px rgba(244,197,66,0.5)',
   },
   {
     id: 'flame',
@@ -113,7 +113,7 @@ const AVATAR_FRAMES = [
     unlock: 'Ligue Diamant',
     unlockType: 'ligue',
     unlockValue: 'diamant',
-    css: 'border: 3px solid #58C8FA; border-radius: 24px; box-shadow: 0 0 18px rgba(88,200,250,0.5)',
+    css: 'border: 3px solid var(--electric-blue); border-radius: 24px; box-shadow: 0 0 18px rgba(88,200,250,0.5)',
   },
   {
     id: 'legend',
@@ -123,7 +123,7 @@ const AVATAR_FRAMES = [
     unlock: 'Ligue Légende',
     unlockType: 'ligue',
     unlockValue: 'legende',
-    css: 'border: 3px solid #A855F7; border-radius: 24px; box-shadow: 0 0 22px rgba(168,85,247,0.7)',
+    css: 'border: 3px solid var(--royal-purple); border-radius: 24px; box-shadow: 0 0 22px rgba(168,85,247,0.7)',
   },
   {
     id: 'champion',
@@ -132,7 +132,7 @@ const AVATAR_FRAMES = [
     locked: true,
     unlock: 'Vainqueur Saison',
     unlockType: 'season_winner',
-    css: 'border: 3px solid #FF4D5A; border-radius: 24px; box-shadow: 0 0 22px rgba(255,77,90,0.7)',
+    css: 'border: 3px solid var(--crimson); border-radius: 24px; box-shadow: 0 0 22px rgba(255,77,90,0.7)',
   },
   // ── Étape 8 — Cadres commémoratifs CDM 2026 (exclusifs, ne reviennent pas) ──
   {
@@ -143,7 +143,7 @@ const AVATAR_FRAMES = [
     unlock: 'Pack fin Or',
     unlockType: 'badge',
     unlockValue: 'cdm2026_or',
-    css: 'border: 3px solid #F4C542; border-radius: 24px; box-shadow: 0 0 18px rgba(244,197,66,0.6), inset 0 0 6px rgba(244,197,66,0.3)',
+    css: 'border: 3px solid var(--gold-primary); border-radius: 24px; box-shadow: 0 0 18px rgba(244,197,66,0.6), inset 0 0 6px rgba(244,197,66,0.3)',
   },
   {
     id: 'cdm2026_diamant',
@@ -153,7 +153,7 @@ const AVATAR_FRAMES = [
     unlock: 'Pack fin Diamant',
     unlockType: 'badge',
     unlockValue: 'cdm2026_diamant',
-    css: 'border: 3px solid #58C8FA; border-radius: 24px; box-shadow: 0 0 22px rgba(88,200,250,0.65), inset 0 0 8px rgba(88,200,250,0.35)',
+    css: 'border: 3px solid var(--electric-blue); border-radius: 24px; box-shadow: 0 0 22px rgba(88,200,250,0.65), inset 0 0 8px rgba(88,200,250,0.35)',
   },
   {
     id: 'cdm2026_legende',
@@ -163,7 +163,7 @@ const AVATAR_FRAMES = [
     unlock: 'Pack fin Légende',
     unlockType: 'badge',
     unlockValue: 'cdm2026_legende',
-    css: 'border: 3px solid #A855F7; border-radius: 24px; box-shadow: 0 0 28px rgba(168,85,247,0.8), inset 0 0 10px rgba(168,85,247,0.4)',
+    css: 'border: 3px solid var(--royal-purple); border-radius: 24px; box-shadow: 0 0 28px rgba(168,85,247,0.8), inset 0 0 10px rgba(168,85,247,0.4)',
   },
 ];
 
@@ -185,24 +185,24 @@ const AVATAR_TITLES = [
   { id: 'default',  name: 'Joueur CDM',     color: '#8899BB', locked: false, unlock: 'Par défaut' },
   // Étape 9 — Sniper : unlock via badge `sniper` (Étape 6 = 5 scores exacts)
   // par spec §12. Auparavant locked:false (toujours visible) — corrigé.
-  { id: 'sniper',   name: 'Sniper',         color: '#58C8FA', locked: true,  unlock: 'Badge Sniper (5 exacts)', unlockType: 'badge', unlockValue: 'sniper' },
-  { id: 'prophet',  name: 'Prophète',       color: '#F4C542', locked: false, unlock: 'Bonus collection' },
+  { id: 'sniper',   name: 'Sniper',         color: 'var(--electric-blue)', locked: true,  unlock: 'Badge Sniper (5 exacts)', unlockType: 'badge', unlockValue: 'sniper' },
+  { id: 'prophet',  name: 'Prophète',       color: 'var(--gold-primary)', locked: false, unlock: 'Bonus collection' },
   // Étape 5 — titres débloqués par niveau (Bilan v3 §12)
-  { id: 'pro',      name: 'Pro',            color: '#F4C542', locked: true,  unlock: 'Niveau 10', unlockType: 'level', unlockValue: 10 },
-  { id: 'elite',    name: 'Élite',          color: '#58C8FA', locked: true,  unlock: 'Niveau 15', unlockType: 'level', unlockValue: 15 },
+  { id: 'pro',      name: 'Pro',            color: 'var(--gold-primary)', locked: true,  unlock: 'Niveau 10', unlockType: 'level', unlockValue: 10 },
+  { id: 'elite',    name: 'Élite',          color: 'var(--electric-blue)', locked: true,  unlock: 'Niveau 15', unlockType: 'level', unlockValue: 15 },
   { id: 'clutch',   name: 'Clutch King',    color: '#FF8A3D', locked: true,  unlock: 'Streak 7 jours', unlockType: 'streak', unlockValue: 7 },
-  { id: 'legend',   name: 'Légende Vivante',color: '#A855F7', locked: true,  unlock: 'Ligue Légende', unlockType: 'ligue', unlockValue: 'legende' },
-  { id: 'telepath', name: 'Télépathe',      color: '#22D16B', locked: true,  unlock: '95% précision', unlockType: 'precision', unlockValue: 95 },
-  { id: 'champion', name: 'Champion',       color: '#FF4D5A', locked: true,  unlock: 'Vainqueur Saison', unlockType: 'season_winner' },
+  { id: 'legend',   name: 'Légende Vivante',color: 'var(--royal-purple)', locked: true,  unlock: 'Ligue Légende', unlockType: 'ligue', unlockValue: 'legende' },
+  { id: 'telepath', name: 'Télépathe',      color: 'var(--emerald)', locked: true,  unlock: '95% précision', unlockType: 'precision', unlockValue: 95 },
+  { id: 'champion', name: 'Champion',       color: 'var(--crimson)', locked: true,  unlock: 'Vainqueur Saison', unlockType: 'season_winner' },
   // Étape 8 — Titre commémoratif "Légende du Mondial 2026" (pack fin Légende)
-  { id: 'mondial2026', name: 'Légende du Mondial 2026', color: '#F4C542', locked: true, unlock: 'Pack fin Légende CDM 2026', unlockType: 'badge', unlockValue: 'cdm2026_legende' },
+  { id: 'mondial2026', name: 'Légende du Mondial 2026', color: 'var(--gold-primary)', locked: true, unlock: 'Pack fin Légende CDM 2026', unlockType: 'badge', unlockValue: 'cdm2026_legende' },
 ];
 
 const RARITY_COLORS = {
   common:    '#8899BB',
-  rare:      '#22D16B',
-  epic:      '#A855F7',
-  legendary: '#F4C542',
+  rare:      'var(--emerald)',
+  epic:      'var(--royal-purple)',
+  legendary: 'var(--gold-primary)',
 };
 
 // Twemoji — images HD illustrées (standard Discord / Twitter / Slack)
@@ -248,7 +248,7 @@ let pendingAvatarConfig = null;
 
 function getAvatar(joueur) {
   const pseudo = joueur?.pseudo || '?';
-  const colors = ['#F4C542','#22D16B','#58C8FA','#FF4D5A','#A855F7','#FF8A3D','#22D16B','#F472B6'];
+  const colors = ['var(--gold-primary)','var(--emerald)','var(--electric-blue)','var(--crimson)','var(--royal-purple)','#FF8A3D','var(--emerald)','#F472B6'];
   const color = colors[pseudo.charCodeAt(0) % colors.length];
   const initials = pseudo.substring(0, 2).toUpperCase();
 
@@ -518,9 +518,9 @@ function renderAvatarFrameGrid(joueur) {
   grid.innerHTML = AVATAR_FRAMES.map(frame => {
     const unlocked = isAvatarItemUnlocked(frame, joueur);
     const selected = frame.id === pendingAvatarConfig?.frame;
-    const rarityColor = frame.rarity === 'legendary' ? '#F4C542'
-      : frame.rarity === 'epic' ? '#A855F7'
-      : frame.rarity === 'rare' ? '#22D16B' : '#8899BB';
+    const rarityColor = frame.rarity === 'legendary' ? 'var(--gold-primary)'
+      : frame.rarity === 'epic' ? 'var(--royal-purple)'
+      : frame.rarity === 'rare' ? 'var(--emerald)' : '#8899BB';
 
     return `
       <div class="av-frame-item ${selected ? 'selected' : ''}"
@@ -568,7 +568,7 @@ function renderAvatarBgGrid(joueur) {
            style="background:${bg.bg}"
            onclick="${unlocked ? `pickAvatarBg('${bg.id}')` : ''}">
         ${flagLayer}
-        ${selected ? `<div style="position:absolute;top:4px;right:4px;width:16px;height:16px;border-radius:50%;background:#F4C542;display:flex;align-items:center;justify-content:center;color:#050816;z-index:2">${window.icon('check', 10)}</div>` : ''}
+        ${selected ? `<div style="position:absolute;top:4px;right:4px;width:16px;height:16px;border-radius:50%;background:var(--gold-primary);display:flex;align-items:center;justify-content:center;color:#050816;z-index:2">${window.icon('check', 10)}</div>` : ''}
         ${!unlocked ? `<div style="position:absolute;inset:0;background:rgba(5,8,22,0.6);display:flex;align-items:center;justify-content:center;border-radius:14px;z-index:2;color:rgba(255,255,255,0.85)">${window.icon('lock', 16)}</div>` : ''}
         <div style="position:absolute;bottom:0;left:0;right:0;padding:2px 0;background:rgba(0,0,0,0.55);text-align:center;font-size:8px;color:rgba(255,255,255,0.9);font-weight:700;z-index:2">${bg.label}</div>
       </div>
@@ -607,7 +607,7 @@ function renderAvatarTitleGrid(joueur) {
           <div style="font-size:14px;font-weight:700;color:${t.color}">${t.name}</div>
           <div style="font-size:11px;color:var(--text3);margin-top:2px;display:flex;align-items:center;gap:4px">${!unlocked ? window.icon('lock', 11) : window.icon('check', 11)} <span>${t.unlock}</span></div>
         </div>
-        ${selected ? `<div style="color:var(--gold,#F4C542);display:inline-flex;align-items:center">${window.icon('check', 18)}</div>` : ''}
+        ${selected ? `<div style="color:var(--gold-primary);display:inline-flex;align-items:center">${window.icon('check', 18)}</div>` : ''}
       </div>
     `;
   }).join('');
