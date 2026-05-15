@@ -77,7 +77,7 @@
   });
 </script>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
 <!-- MODAL MATCH : qui a pris quoi -->
 <div class="match-modal-overlay hidden" id="match-modal">
@@ -232,11 +232,11 @@
       <div class="login-flags"><span data-flag="us" data-flag-size="xs"></span> USA &nbsp;·&nbsp; <span data-flag="mx" data-flag-size="xs"></span> MEXICO &nbsp;·&nbsp; <span data-flag="ca" data-flag-size="xs"></span> CANADA</div>
       <div class="login-trump">Fuck Donald Trump</div>
       <div class="field">
-        <label>Ton pseudo</label>
+        <label for="login-pseudo">Ton pseudo</label>
         <input type="text" id="login-pseudo" placeholder="Ex : MOH69, GUIJON..." maxlength="20" style="text-transform:uppercase"/>
       </div>
       <div class="field">
-        <label>Ton mot de passe <span style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0">(choisis-le toi-même)</span></label>
+        <label for="login-code">Ton mot de passe <span style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0">(choisis-le toi-même)</span></label>
         <div style="position:relative">
           <input type="password" id="login-code" placeholder="Minimum 4 caractères" maxlength="20" style="padding-right:44px"/>
           <button type="button" onclick="togglePwd('login-code',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;padding:4px;display:inline-flex;align-items:center"><span data-icon="eye" data-icon-size="18"></span></button>
@@ -258,7 +258,7 @@
       <div class="login-title" style="font-size:26px;">ADMIN</div>
       <div style="height:16px;"></div>
       <div class="field">
-        <label>Mot de passe</label>
+        <label for="admin-pwd">Mot de passe</label>
         <input type="password" id="admin-pwd" placeholder="••••••••"/>
       </div>
       <button class="btn-primary btn-gold" onclick="doAdminLogin()">Connexion</button>
