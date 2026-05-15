@@ -811,6 +811,79 @@
   .level-up-btn.cta-ready::after { animation: none; opacity: 0; }
 }
 
+/* ── SPRINT 5 : LEAGUE PROMOTION TAKEOVER ──
+   .takeover = la timeline JS pilote l'apparition (beam, badge spin,
+   reveal stagger). On cache initialement les éléments pour que JS
+   les anime via WAAPI fill:forwards. */
+.league-promo-modal.takeover #lp-badge {
+  opacity: 0;
+  transform: scale(0);
+  will-change: transform, opacity;
+  display: inline-block;
+}
+.league-promo-modal.takeover #lp-title-label,
+.league-promo-modal.takeover #lp-title-name,
+.league-promo-modal.takeover .league-promo-banner {
+  opacity: 0;
+  transform: translateY(8px);
+  will-change: transform, opacity;
+}
+.league-promo-modal.takeover #lp-rewards {
+  opacity: 0;
+  transform: translateY(12px);
+  will-change: transform, opacity;
+}
+.league-promo-modal.takeover #lp-btn {
+  opacity: 0;
+  transform: scale(0.9);
+  will-change: transform, opacity;
+}
+
+#lp-canvas {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+#lp-beam {
+  position: absolute;
+  width: 60px;
+  height: 80vh;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scaleY(0);
+  transform-origin: center;
+  pointer-events: none;
+  filter: blur(3px);
+  z-index: 0;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+.league-promo-modal #lp-card {
+  position: relative;
+  z-index: 2;
+}
+
+#lp-btn.cta-pulse {
+  animation: lp-cta-pulse 1.6s ease-in-out infinite;
+}
+@keyframes lp-cta-pulse {
+  0%, 100% { box-shadow: 0 6px 20px rgba(244, 197, 66, .4); }
+  50%      { box-shadow: 0 8px 32px rgba(244, 197, 66, .75); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .league-promo-modal.takeover #lp-badge,
+  .league-promo-modal.takeover #lp-title-label,
+  .league-promo-modal.takeover #lp-title-name,
+  .league-promo-modal.takeover .league-promo-banner,
+  .league-promo-modal.takeover #lp-rewards,
+  .league-promo-modal.takeover #lp-btn {
+    opacity: 1;
+    transform: none;
+  }
+  #lp-btn.cta-pulse { animation: none; }
+}
+
 /* ── SPRINT 2 : DAILY REWARD MODAL ── */
 .dr-modal-bg {
   position: fixed; inset: 0; z-index: 10001;

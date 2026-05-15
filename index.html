@@ -1049,35 +1049,216 @@ async function broadcastLeaguePromotion(joueurId, pseudo, league) {
   if (error) console.warn('[league-promo] broadcast failed:', error);
 }
 
-// Modal de promotion enrichie — affiche TOUTES les récompenses.
-// Variante cinématique pour la Légende (full screen + délai d'apparition).
+// SPRINT 5 — League Promotion Takeover.
+// Timeline (~4s total) : black overlay 400ms (T+0) → particules ambient
+// (T+200) → beam vertical 200ms (T+800) → badge zoom-spin 360° (T+1000)
+// → beam fade-out 400ms (T+1300) → texte stagger label/name/banner
+// (T+1500) → reward chips slide-up (T+1900) → CTA reveal + pulse (T+2300).
+// Skip différé : autorisé après T+2300 (data-skippable="true").
 function showLeaguePromotionModal(league, rewards) {
+  const reduced = __reducedMotion();
   const isLegend = league.id === 'legende';
+  const color = league.color;
   const rewardsHtml = buildPromotionRewardsHtml(rewards);
+
   const modal = document.createElement('div');
-  modal.className = 'league-promo-modal' + (isLegend ? ' is-legend' : '');
+  modal.className = 'league-promo-modal' + (isLegend ? ' is-legend' : '') + (reduced ? '' : ' takeover');
+  modal.dataset.skippable = reduced ? 'true' : 'false';
   modal.style.cssText = 'position:fixed;inset:0;z-index:10002;display:flex;align-items:center;justify-content:center;background:rgba(5,8,22,' + (isLegend ? '.98' : '.94') + ');backdrop-filter:blur(' + (isLegend ? '16' : '12') + 'px);opacity:0;transition:opacity 400ms';
 
   const cardWidth = isLegend ? '360px' : '320px';
   const titleSize = isLegend ? '58px' : '52px';
   const legendBanner = isLegend
-    ? `<div style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:5px;color:#A855F7;margin-bottom:4px;text-shadow:0 0 12px rgba(168,85,247,.7)">★ LÉGENDE VIVANTE ★</div>`
+    ? `<div class="league-promo-banner" style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:5px;color:#A855F7;margin-bottom:4px;text-shadow:0 0 12px rgba(168,85,247,.7)">★ LÉGENDE VIVANTE ★</div>`
     : '';
 
   modal.innerHTML = `
-    <div style="background:linear-gradient(180deg,var(--bg-elevated),var(--bg-card));border:2px solid ${league.color};border-radius:24px;padding:32px 32px 28px;text-align:center;box-shadow:0 0 ${isLegend ? '120' : '60'}px ${league.color}66;max-width:${cardWidth};width:88%">
-      <div style="line-height:1;margin-bottom:10px;color:${league.color}">${window.icon(league.icon, isLegend ? 92 : 72)}</div>
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:4px;color:var(--text2)">PROMOTION</div>
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:${titleSize};letter-spacing:2px;color:${league.color};line-height:1;margin:4px 0 10px">${league.name.toUpperCase()}</div>
+    <canvas id="lp-canvas"></canvas>
+    <div id="lp-beam" style="background:linear-gradient(180deg, transparent, ${color}cc 45%, ${color}ee 50%, ${color}cc 55%, transparent)"></div>
+    <div id="lp-card" style="background:linear-gradient(180deg,var(--bg-elevated),var(--bg-card));border:2px solid ${color};border-radius:24px;padding:32px 32px 28px;text-align:center;box-shadow:0 0 ${isLegend ? '120' : '60'}px ${color}66;max-width:${cardWidth};width:88%">
+      <div id="lp-badge" style="line-height:1;margin-bottom:10px;color:${color}">${window.icon(league.icon, isLegend ? 92 : 72)}</div>
+      <div id="lp-title-label" style="font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:4px;color:var(--text2)">PROMOTION</div>
+      <div id="lp-title-name" style="font-family:'Bebas Neue',sans-serif;font-size:${titleSize};letter-spacing:2px;color:${color};line-height:1;margin:4px 0 10px">${league.name.toUpperCase()}</div>
       ${legendBanner}
-      <div style="background:${league.color}14;border:1px solid ${league.color}33;border-radius:14px;padding:12px 14px;font-size:13px;color:var(--text);margin:14px 0 22px;display:flex;flex-direction:column;gap:8px">
+      <div id="lp-rewards" style="background:${color}14;border:1px solid ${color}33;border-radius:14px;padding:12px 14px;font-size:13px;color:var(--text);margin:14px 0 22px;display:flex;flex-direction:column;gap:8px">
         ${rewardsHtml}
       </div>
-      <button onclick="this.closest('.league-promo-modal').style.opacity='0';setTimeout(()=>this.closest('.league-promo-modal').remove(),400)" style="width:100%;background:linear-gradient(180deg,var(--gold-light),var(--gold-dark));color:var(--bg-primary);border:none;border-radius:14px;padding:14px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;cursor:pointer;box-shadow:0 6px 20px rgba(244,197,66,.4)">${isLegend ? 'LÉGENDE !' : 'FÉLICITATIONS !'}</button>
+      <button id="lp-btn" onclick="closeLeaguePromotionModal()" style="width:100%;background:linear-gradient(180deg,var(--gold-light),var(--gold-dark));color:var(--bg-primary);border:none;border-radius:14px;padding:14px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;cursor:pointer;box-shadow:0 6px 20px rgba(244,197,66,.4)">${isLegend ? 'LÉGENDE !' : 'FÉLICITATIONS !'}</button>
     </div>`;
   document.body.appendChild(modal);
+
+  // T+0 : Black overlay fade-in (transition CSS)
   requestAnimationFrame(() => { modal.style.opacity = '1'; });
+
+  if (reduced) return; // Fallback : tout visible direct
+
+  const badgeEl   = modal.querySelector('#lp-badge');
+  const beamEl    = modal.querySelector('#lp-beam');
+  const labelEl   = modal.querySelector('#lp-title-label');
+  const nameEl    = modal.querySelector('#lp-title-name');
+  const bannerEl  = modal.querySelector('.league-promo-banner');
+  const rewardsEl = modal.querySelector('#lp-rewards');
+  const btnEl     = modal.querySelector('#lp-btn');
+
+  // T+200 : Particules ambient (couleur ligue, 60 étoiles spirale ascendante)
+  setTimeout(() => startLeagueAmbientStars('lp-canvas', color, isLegend ? 80 : 60), 200);
+
+  // T+800 : Beam de lumière vertical apparait (200ms)
+  setTimeout(() => {
+    beamEl.animate([
+      { transform: 'translate(-50%, -50%) scaleY(0)',   opacity: 0 },
+      { transform: 'translate(-50%, -50%) scaleY(1.1)', opacity: 1, offset: 0.6 },
+      { transform: 'translate(-50%, -50%) scaleY(1)',   opacity: 1 }
+    ], { duration: 200, easing: 'ease-out', fill: 'forwards' });
+  }, 800);
+
+  // T+1000 : Nouveau badge zoom-in spin 360° (700ms spring)
+  setTimeout(() => {
+    badgeEl.animate([
+      { transform: 'scale(0) rotate(0deg)',      opacity: 0 },
+      { transform: 'scale(1.3) rotate(360deg)',  opacity: 1, offset: 0.65 },
+      { transform: 'scale(1) rotate(360deg)',    opacity: 1 }
+    ], { duration: 700, easing: 'cubic-bezier(.34,1.56,.64,1)', fill: 'forwards' });
+    vibrate(isLegend ? [80, 30, 150, 30, 220] : [60, 30, 120, 30, 180]);
+  }, 1000);
+
+  // T+1300 : Beam fade-out (400ms)
+  setTimeout(() => {
+    beamEl.animate([
+      { transform: 'translate(-50%, -50%) scaleY(1)', opacity: 1 },
+      { transform: 'translate(-50%, -50%) scaleY(1)', opacity: 0 }
+    ], { duration: 400, easing: 'ease-out', fill: 'forwards' });
+  }, 1300);
+
+  // T+1500 : Texte "PROMOTION" + nom league reveal stagger (200ms entre)
+  setTimeout(() => {
+    labelEl.animate([
+      { transform: 'translateY(8px)', opacity: 0 },
+      { transform: 'translateY(0)',   opacity: 1 }
+    ], { duration: 300, easing: 'cubic-bezier(.34,1.56,.64,1)', fill: 'forwards' });
+    setTimeout(() => {
+      nameEl.animate([
+        { transform: 'translateY(8px)', opacity: 0 },
+        { transform: 'translateY(0)',   opacity: 1 }
+      ], { duration: 400, easing: 'cubic-bezier(.34,1.56,.64,1)', fill: 'forwards' });
+    }, 200);
+    if (bannerEl) {
+      setTimeout(() => {
+        bannerEl.animate([
+          { transform: 'translateY(8px)', opacity: 0 },
+          { transform: 'translateY(0)',   opacity: 1 }
+        ], { duration: 300, easing: 'cubic-bezier(.34,1.56,.64,1)', fill: 'forwards' });
+      }, 400);
+    }
+  }, 1500);
+
+  // T+1900 : Reward chips slide-up
+  setTimeout(() => {
+    rewardsEl.animate([
+      { transform: 'translateY(12px)', opacity: 0 },
+      { transform: 'translateY(0)',    opacity: 1 }
+    ], { duration: 400, easing: 'cubic-bezier(.34,1.56,.64,1)', fill: 'forwards' });
+  }, 1900);
+
+  // T+2300 : Bouton CTA reveal + pulse permanent. Skip autorisé à partir d'ici.
+  setTimeout(() => {
+    btnEl.animate([
+      { transform: 'scale(0.9)',  opacity: 0 },
+      { transform: 'scale(1.05)', opacity: 1, offset: 0.6 },
+      { transform: 'scale(1)',    opacity: 1 }
+    ], { duration: 300, easing: 'cubic-bezier(.34,1.56,.64,1)', fill: 'forwards' });
+    btnEl.classList.add('cta-pulse');
+    modal.dataset.skippable = 'true';
+  }, 2300);
 }
+
+// SPRINT 5 — Close + stop ambient canvas. Appelé par le bouton CTA et par
+// RewardQueue.skip() pour fermer proprement la modal.
+function closeLeaguePromotionModal() {
+  const modal = document.querySelector('.league-promo-modal');
+  if (!modal) return;
+  stopLeagueAmbientStars();
+  modal.style.opacity = '0';
+  setTimeout(() => modal.remove(), 400);
+}
+
+// SPRINT 5 — Particules ambient : N étoiles colorées qui montent en spirale
+// depuis le bas. Canvas dédié `lp-canvas` au z-index 1 (sous le card 2).
+let _lpStarsRAF = null;
+let _lpStars = [];
+function startLeagueAmbientStars(canvasId, color, count) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const n = Math.max(20, Math.min(100, count || 60));
+  // Parse #RRGGBB -> r,g,b
+  const hex = (color || '#F4C542').replace('#', '');
+  const r = parseInt(hex.substring(0, 2), 16) || 244;
+  const g = parseInt(hex.substring(2, 4), 16) || 197;
+  const b = parseInt(hex.substring(4, 6), 16) || 66;
+  _lpStars = Array.from({ length: n }, () => {
+    const x = Math.random() * canvas.width;
+    return {
+      baseX: x,
+      x: x,
+      y: canvas.height + Math.random() * 200,
+      r: 1.5 + Math.random() * 2.5,
+      vy: 0.6 + Math.random() * 1.4,
+      spiralAmp: 25 + Math.random() * 45,
+      spiralFreq: 0.005 + Math.random() * 0.01,
+      alpha: 0.35 + Math.random() * 0.5,
+      rot: Math.random() * Math.PI * 2,
+      vr: -0.02 + Math.random() * 0.04
+    };
+  });
+  function drawStar(ctx, cx, cy, r, rot) {
+    ctx.beginPath();
+    for (let i = 0; i < 10; i++) {
+      const angle = rot + i * Math.PI / 5;
+      const radius = (i % 2 === 0) ? r : r * 0.4;
+      const px = cx + Math.cos(angle) * radius;
+      const py = cy + Math.sin(angle) * radius;
+      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.closePath();
+    ctx.fill();
+  }
+  let frame = 0;
+  function loop() {
+    if (!_lpStars.length) return;
+    frame++;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.shadowColor = 'rgb(' + r + ',' + g + ',' + b + ')';
+    ctx.shadowBlur = 6;
+    _lpStars.forEach(s => {
+      s.y -= s.vy;
+      s.rot += s.vr;
+      s.x = s.baseX + Math.sin(frame * s.spiralFreq + s.baseX * 0.01) * s.spiralAmp;
+      if (s.y < -10) {
+        s.y = canvas.height + 20;
+        s.baseX = Math.random() * canvas.width;
+        s.x = s.baseX;
+      }
+      ctx.fillStyle = 'rgba(' + r + ',' + g + ',' + b + ',' + s.alpha + ')';
+      drawStar(ctx, s.x, s.y, s.r, s.rot);
+    });
+    _lpStarsRAF = requestAnimationFrame(loop);
+  }
+  loop();
+}
+function stopLeagueAmbientStars() {
+  if (_lpStarsRAF) cancelAnimationFrame(_lpStarsRAF);
+  _lpStarsRAF = null;
+  _lpStars = [];
+  const canvas = document.getElementById('lp-canvas');
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+}
+document.addEventListener('visibilitychange', () => { if (document.hidden) stopLeagueAmbientStars(); });
 
 function buildPromotionRewardsHtml(rewards) {
   // Inline icons via window.icon() — évite les emojis tofu sur les fonts
@@ -2001,8 +2182,14 @@ const RewardQueue = {
         if (typeof closeLevelUpModal === 'function') closeLevelUpModal();
         break;
       case 'league_promotion': {
+        // SPRINT 5 — Skip autorisé seulement après T+2300ms (CTA révélé).
+        // Garantit le moment de cérémonie : badge spin + texte stagger
+        // jouent jusqu'au bout, puis l'user peut tap-skip.
         const m = document.querySelector('.league-promo-modal');
-        if (m) { m.style.opacity = '0'; setTimeout(() => m.remove(), 400); }
+        if (m && m.dataset.skippable === 'true') {
+          if (typeof closeLeaguePromotionModal === 'function') closeLeaguePromotionModal();
+          else { m.style.opacity = '0'; setTimeout(() => m.remove(), 400); }
+        }
         break;
       }
       case 'badge_unlock':
