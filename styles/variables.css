@@ -15,14 +15,17 @@
   --surface2:  #1a2133;
   --surface3:  #1f2840;
 
-  /* Accents */
-  --gold:      #FFD700;
+  /* Accents — V1 (legacy) : aliasés vers V2 pour cohérence globale.
+     Les ~282 usages de var(--gold), var(--red), var(--green), var(--blue),
+     var(--purple) résolvent désormais aux teintes V2 (Supercell-Canal+).
+     --gold2 et --red2 restent inchangés (variantes claires sans équivalent V2). */
+  --gold:      var(--gold-primary);   /* #F4C542 (or chaud) — était #FFD700 */
   --gold2:     #FFA500;
-  --red:       #E5002B;
+  --red:       var(--crimson);        /* #FF4D5A (rouge rosé) — était #E5002B */
   --red2:      #FF1744;
-  --blue:      #00A8FF;
-  --green:     #00E676;
-  --purple:    #7C4DFF;
+  --blue:      var(--electric-blue);  /* #58C8FA (bleu pastel) — était #00A8FF */
+  --green:     var(--emerald);        /* #22D16B (vert profond) — était #00E676 */
+  --purple:    var(--royal-purple);   /* #A855F7 (violet clair) — était #7C4DFF */
 
   /* Text */
   --text:         #FFFFFF;  /* primaire : ratio 19.5:1 sur --bg-primary (AAA) */
