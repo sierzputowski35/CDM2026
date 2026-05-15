@@ -2194,38 +2194,112 @@ function updateXPBar() {
   if (text) updateXPText(text, info.level >= MAX_LEVEL ? 'MAX' : (info.xpInLevel + '/' + info.xpRequired));
 }
 
-// PR #8 (Sprint 3) — Anim fill via transform: scaleX (GPU) 800ms spring.
-// Cas level-up : on remplit jusqu'à 100%, puis reset à 0 sans transition,
-// puis updateXPBar pose la fraction du nouveau niveau.
+// SPRINT 3 — XP BAR PREMIUM
+// Refonte avec shine pass (CSS), particules sur le bord (JS), et milestone
+// pulse à 25/50/75/100%. Le fill smooth est piloté par la transition CSS
+// existante (cubic-bezier spring sur transform, ease-out sur width).
+
+// Spawn une particule dorée à (x, y) qui dérive légèrement vers le haut.
+function spawnXPParticle(x, y) {
+  const p = document.createElement('div');
+  p.style.cssText = 'position:fixed;left:' + x + 'px;top:' + y + 'px;width:5px;height:5px;border-radius:50%;background:#FFE680;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);box-shadow:0 0 8px rgba(244,197,66,.9);will-change:transform,opacity';
+  document.body.appendChild(p);
+  const dx = (Math.random() - 0.3) * 26;
+  const dy = -18 - Math.random() * 22;
+  p.animate([
+    { transform: 'translate(-50%,-50%) scale(1)', opacity: 1 },
+    { transform: 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + dy + 'px)) scale(0)', opacity: 0 }
+  ], { duration: 700, easing: 'cubic-bezier(.25,.46,.45,.94)', fill: 'forwards' }).onfinish = () => p.remove();
+}
+
+// Spawn N particules dorées en suivant le bord droit du fill pendant `duration` ms.
+function scheduleXPParticles(fill, duration, count) {
+  count = count || 4;
+  for (let i = 0; i < count; i++) {
+    setTimeout(() => {
+      if (!fill.isConnected) return;
+      const rect = fill.getBoundingClientRect();
+      // rect.right reflète la position transformée courante (transition CSS en cours).
+      spawnXPParticle(rect.right, rect.top + rect.height / 2);
+    }, (i / count) * duration + 40);
+  }
+}
+
+// Déclenche un pulse milestone (flash + scaleY) sur la barre.
+function pulseXPBar(bar) {
+  if (!bar) return;
+  bar.classList.remove('is-milestone');
+  // Reflow pour que l'animation redémarre si on enchaîne 2 pulses rapprochés.
+  void bar.offsetHeight;
+  bar.classList.add('is-milestone');
+  setTimeout(() => bar.classList.remove('is-milestone'), 340);
+}
+
+// Programme des pulses aux moments où le fill traverse 25/50/75/100%.
+// Interpolation linéaire entre oldPct et newPct sur `duration`.
+function scheduleXPMilestonePulses(bar, oldPct, newPct, duration) {
+  if (!bar || oldPct >= newPct) return;
+  const milestones = [25, 50, 75, 100].filter(m => oldPct < m && m <= newPct);
+  for (const m of milestones) {
+    const t = (m - oldPct) / (newPct - oldPct);
+    setTimeout(() => pulseXPBar(bar), t * duration);
+  }
+}
+
+// Anim XP bar — gère le cas level-up (fill jusqu'à 100% + reset) et le cas
+// même niveau (transition width pilotée par updateXPBar). Dans les deux cas :
+// shine pass actif pendant l'anim + particules sur le bord + milestone pulses.
 function animateXPBar(oldXP, gain, sameLevel) {
-  if (sameLevel) { setTimeout(updateXPBar, 200); return; }
   const fill = document.getElementById('h2-xp-fill');
   if (!fill) { setTimeout(updateXPBar, 200); return; }
-  // Capture l'état visible courant pour démarrer l'anim sans jump.
-  const parent = fill.parentElement;
-  const startRatio = parent && parent.clientWidth
-    ? Math.max(0, Math.min(1, fill.getBoundingClientRect().width / parent.clientWidth))
+  const bar = fill.parentElement;
+  const reduced = __reducedMotion();
+
+  // Capture la fraction visible courante (start), indépendamment du mode width/transform.
+  const startRatio = bar && bar.clientWidth
+    ? Math.max(0, Math.min(1, fill.getBoundingClientRect().width / bar.clientWidth))
     : 0;
-  // Passe la barre en mode scaleX (cf. animations.css). On force la
-  // largeur à 100% et on positionne le transform initial à ratio,
-  // sans transition, avant de relancer la transition sur scaleX(1).
-  fill.classList.add('xp-fill-scale');
-  fill.style.transition = 'none';
-  fill.style.transform = 'scaleX(' + startRatio + ')';
-  // Force reflow puis lance la transition vers 100%.
-  fill.offsetHeight;
-  fill.style.transition = '';
-  fill.style.transform = 'scaleX(1)';
-  setTimeout(() => {
+  const startPct = startRatio * 100;
+
+  if (!sameLevel) {
+    // Cas level-up : on remplit jusqu'à 100% (transform scaleX), puis reset.
+    const FILL_DUR = 800;
+    fill.classList.add('xp-fill-scale');
     fill.style.transition = 'none';
-    fill.style.transform = 'scaleX(0)';
-    requestAnimationFrame(() => {
-      fill.style.transition = '';
-      fill.style.transform = '';
-      fill.classList.remove('xp-fill-scale');
-      setTimeout(updateXPBar, 100);
-    });
-  }, 800);
+    fill.style.transform = 'scaleX(' + startRatio + ')';
+    void fill.offsetHeight;
+    fill.style.transition = '';
+    fill.style.transform = 'scaleX(1)';
+    if (!reduced) {
+      fill.classList.add('is-shining');
+      scheduleXPParticles(fill, FILL_DUR, 5);
+      scheduleXPMilestonePulses(bar, startPct, 100, FILL_DUR);
+    }
+    setTimeout(() => {
+      fill.style.transition = 'none';
+      fill.style.transform = 'scaleX(0)';
+      requestAnimationFrame(() => {
+        fill.style.transition = '';
+        fill.style.transform = '';
+        fill.classList.remove('xp-fill-scale');
+        fill.classList.remove('is-shining');
+        setTimeout(updateXPBar, 100);
+      });
+    }, FILL_DUR);
+    return;
+  }
+
+  // Cas même niveau : on déclenche updateXPBar (transition width CSS, ~600ms)
+  // et on superpose shine + particules + pulses pendant la transition.
+  updateXPBar();
+  if (reduced) return;
+  const joueur = allJoueurs.find(j => j.id === currentUser);
+  const newPct = joueur ? Math.min(100, getLevelInfo(joueur).xpPct) : startPct;
+  const WIDTH_DUR = 600; // doit matcher la transition CSS de .ahv2-xp-fill
+  fill.classList.add('is-shining');
+  setTimeout(() => fill.classList.remove('is-shining'), WIDTH_DUR + 400);
+  scheduleXPParticles(fill, WIDTH_DUR, 4);
+  scheduleXPMilestonePulses(bar, startPct, newPct, WIDTH_DUR);
 }
 
 // Modal Level Up
