@@ -3099,15 +3099,24 @@ function switchTab(tab, btn) {
       };
       target.addEventListener('animationend', handler);
       t.render?.();
+      updateScrollLock();   // après le swap de page (différé 220ms)
     }, 220);
   } else {
     document.querySelectorAll('#app-screen .page').forEach(p => p.classList.remove('active'));
     target?.classList.add('active');
     t.render?.();
+    updateScrollLock();
   }
   document.querySelectorAll('.bottom-nav .nav-tab').forEach(b => b.classList.remove('active'));
   btn?.classList.add('active');
   if (navigator.vibrate) navigator.vibrate(10);
+}
+
+// Verrouille le scroll de la page quand l'accueil est actif (il tient
+// entièrement sur un écran) ; le déverrouille sur les autres pages.
+function updateScrollLock() {
+  const homeActive = !!document.querySelector('#page-home.page.active');
+  document.documentElement.classList.toggle('home-locked', homeActive);
 }
 
 function switchPronosTab(sub, btn) {
@@ -4283,6 +4292,7 @@ function initHomePage() {
   if (typeof renderShopHomeCard === 'function') renderShopHomeCard(); // SPRINT1c — cellule Shop de la grid
   renderHeroCard();
   renderRewardsHome();      // SPRINT1 — zone récompenses (stub fallback badges)
+  updateScrollLock();       // SPRINT1h — accueil = pas de scroll
   // SPRINT1 — blocs legacy retirés de l'accueil. Décommenter pour restaurer
   // (penser aussi à restaurer leur HTML : voir index.html.bak.sprint1) :
   // renderQuickMatches();
