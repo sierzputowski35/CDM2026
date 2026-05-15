@@ -1114,6 +1114,101 @@ let heroCountdownInterval = null;
 
 // ══ V2 HELPERS DOPAMINE ══
 
+// SPRINT 2 — Helpers micro-feedback (count-up, particles tap, vibrate étendu).
+// Toutes les anims respectent prefers-reduced-motion.
+const __reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// Anime un compteur de `from` à `to` en `duration` ms avec easeOutCubic.
+// `format(v)` produit la chaîne affichée (défaut : entier au format fr-FR).
+// Si reduced-motion ou from===to, pose la valeur finale immédiatement.
+function countUp(el, from, to, duration, format) {
+  if (!el) return;
+  format = format || (v => Math.round(v).toLocaleString('fr-FR'));
+  if (from === to) { el.textContent = format(to); return; }
+  if (duration == null) duration = Math.min(800, Math.abs(to - from) * 2);
+  if (__reducedMotion()) { el.textContent = format(to); return; }
+  // Annule un count-up précédent encore en cours sur le même élément.
+  if (el.__countUpRAF) cancelAnimationFrame(el.__countUpRAF);
+  const start = performance.now();
+  const delta = to - from;
+  const tick = now => {
+    const t = Math.min(1, (now - start) / duration);
+    const eased = 1 - Math.pow(1 - t, 3); // easeOutCubic
+    el.textContent = format(from + delta * eased);
+    if (t < 1) el.__countUpRAF = requestAnimationFrame(tick);
+    else el.__countUpRAF = null;
+  };
+  el.__countUpRAF = requestAnimationFrame(tick);
+}
+
+// Met à jour un compteur header (h2-coins, etc.) avec count-up si la nouvelle
+// valeur est numérique et différente de l'ancienne. Sinon assignation directe.
+function updateHeaderCount(el, newValue) {
+  if (!el) return;
+  const newNum = (typeof newValue === 'number') ? newValue : parseInt(String(newValue).replace(/\D/g, ''), 10);
+  const oldNum = parseInt(String(el.textContent || '').replace(/\D/g, ''), 10);
+  if (isNaN(newNum) || isNaN(oldNum) || newNum === oldNum) {
+    el.textContent = String(newValue);
+    return;
+  }
+  countUp(el, oldNum, newNum);
+}
+
+// Met à jour h2-xp-text "x/y" en n'animant que le 1er nombre (le total reste fixe).
+function updateXPText(el, text) {
+  if (!el) return;
+  if (text === 'MAX') { el.textContent = text; return; }
+  const m = String(text).match(/^(\d+)\/(\d+)$/);
+  if (!m) { el.textContent = String(text); return; }
+  const newCur = parseInt(m[1], 10);
+  const total = m[2];
+  const oldM = String(el.textContent || '').match(/^(\d+)\/(\d+)$/);
+  const oldCur = oldM ? parseInt(oldM[1], 10) : 0;
+  if (oldCur === newCur) { el.textContent = text; return; }
+  countUp(el, oldCur, newCur, undefined, v => Math.round(v) + '/' + total);
+}
+
+// Explosion radiale de 6-12 dots dorés depuis (x, y) — transform GPU only.
+function spawnTapParticles(x, y, count) {
+  if (__reducedMotion()) return;
+  count = count || 8;
+  for (let i = 0; i < count; i++) {
+    const p = document.createElement('div');
+    p.style.cssText = `position:fixed;left:${x}px;top:${y}px;width:6px;height:6px;border-radius:50%;background:${Math.random() > .5 ? '#F4C542' : '#FFE680'};pointer-events:none;z-index:9999;transform:translate(-50%,-50%);box-shadow:0 0 6px rgba(244,197,66,.7);will-change:transform,opacity`;
+    document.body.appendChild(p);
+    const angle = (i / count) * Math.PI * 2 + Math.random() * 0.4;
+    const dist = 40 + Math.random() * 50;
+    const dx = Math.cos(angle) * dist;
+    const dy = Math.sin(angle) * dist;
+    p.animate([
+      { transform: 'translate(-50%,-50%) scale(1)', opacity: 1 },
+      { transform: `translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px)) scale(0)`, opacity: 0 }
+    ], { duration: 600, easing: 'cubic-bezier(.25,.46,.45,.94)', fill: 'forwards' }).onfinish = () => p.remove();
+  }
+}
+
+// Wrapper navigator.vibrate avec garde reduced-motion (cohérent avec le reste).
+function vibrate(pattern) {
+  if (__reducedMotion()) return;
+  if (navigator.vibrate) navigator.vibrate(pattern);
+}
+
+// Helper inline pour onclick : juicyTap(event) + une vibration courte.
+// Usage : onclick="juicyTap(event); fonctionMetier()"
+function juicyTap(e, vibrateMs) {
+  const x = e && e.clientX != null ? e.clientX : (e && e.target && e.target.getBoundingClientRect ? e.target.getBoundingClientRect().left + e.target.offsetWidth / 2 : window.innerWidth / 2);
+  const y = e && e.clientY != null ? e.clientY : (e && e.target && e.target.getBoundingClientRect ? e.target.getBoundingClientRect().top + e.target.offsetHeight / 2 : window.innerHeight / 2);
+  spawnTapParticles(x, y, 10);
+  vibrate(vibrateMs == null ? 15 : vibrateMs);
+}
+
+window.countUp = countUp;
+window.updateHeaderCount = updateHeaderCount;
+window.updateXPText = updateXPText;
+window.spawnTapParticles = spawnTapParticles;
+window.vibrate = vibrate;
+window.juicyTap = juicyTap;
+
 // Drapeaux premium flagcdn — utiliser PARTOUT à la place des emojis
 function flagImg(country, size) {
   size = size || 'md';
@@ -2095,7 +2190,8 @@ function updateXPBar() {
   const text = document.getElementById('h2-xp-text');
   if (fill) fill.style.width = pct + '%';
   if (badge) badge.textContent = info.level;
-  if (text) text.textContent = info.level >= MAX_LEVEL ? 'MAX' : (info.xpInLevel + '/' + info.xpRequired);
+  // SPRINT 2 — count-up sur "x/y" (anime juste le 1er nombre).
+  if (text) updateXPText(text, info.level >= MAX_LEVEL ? 'MAX' : (info.xpInLevel + '/' + info.xpRequired));
 }
 
 // PR #8 (Sprint 3) — Anim fill via transform: scaleX (GPU) 800ms spring.
@@ -2512,12 +2608,15 @@ function updateHeaderUser(){
   if(h2xpf) h2xpf.style.width=xpPct+'%';
 
   const h2xpt=document.getElementById('h2-xp-text');
-  if(h2xpt) h2xpt.textContent=info.level>=MAX_LEVEL?'MAX':(info.xpInLevel+'/'+info.xpRequired);
+  // SPRINT 2 — count-up sur "x/y" (anime juste le 1er nombre, /total fixe).
+  if(h2xpt) updateXPText(h2xpt, info.level>=MAX_LEVEL?'MAX':(info.xpInLevel+'/'+info.xpRequired));
 
   const h2coins=document.getElementById('h2-coins');
-  if(h2coins) h2coins.textContent=(joueur.coins??pts).toLocaleString('fr-FR');
+  // SPRINT 2 — count-up sur le compteur coins du header.
+  if(h2coins) updateHeaderCount(h2coins, (joueur.coins??pts));
 
   const h2gems=document.getElementById('h2-gems');
+  // SPRINT 2 — h2-gems affiche actuellement le rank (#5) — assignation directe car non-numérique pur.
   if(h2gems) h2gems.textContent=rank?'#'+rank:'—';
 
   // Notif badge
@@ -3018,7 +3117,7 @@ function showDailyRewardModal(reward, streak) {
           <div class="dr-reward-sub">Récompense du jour ${dayInCycle}</div>
         </div>
       </div>
-      <button class="dr-claim-btn" onclick="closeDailyRewardModal()">RÉCUPÉRÉ !</button>
+      <button class="dr-claim-btn" onclick="juicyTap(event, 25); closeDailyRewardModal()">RÉCUPÉRÉ !</button>
     </div>`;
 
   document.body.appendChild(modal);
@@ -3325,7 +3424,7 @@ function showCoffresModal() {
     <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;color:var(--gold-primary);margin-bottom:4px">MES COFFRES</div>
     <div style="font-size:12px;color:var(--text2);margin-bottom:12px">${pending.length} coffre${pending.length > 1 ? 's' : ''} à ouvrir</div>
     ${pending.map(c => `
-      <div style="width:100%;max-width:360px;background:var(--bg-elevated);border:2px solid ${CHEST_COLORS[c.type]}44;border-radius:18px;padding:18px;display:flex;align-items:center;gap:14px;cursor:pointer" onclick="openChest(${c.id})">
+      <div style="width:100%;max-width:360px;background:var(--bg-elevated);border:2px solid ${CHEST_COLORS[c.type]}44;border-radius:18px;padding:18px;display:flex;align-items:center;gap:14px;cursor:pointer" onclick="juicyTap(event, 25); openChest(${c.id})">
         <div style="font-size:40px">${CHEST_EMOJIS[c.type]}</div>
         <div style="flex:1">
           <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:${CHEST_COLORS[c.type]};letter-spacing:1px">Coffre ${CHEST_NAMES[c.type]}</div>
