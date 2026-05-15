@@ -364,7 +364,7 @@ async function renderMissionsCard() {
       const pct = Math.min(100, Math.round((progress / target) * 100));
       const claimed = !!row.claimed;
       const claimBtn = (done && !claimed)
-        ? `<button class="mission-claim-btn" onclick="claimMission(${row.id})">Réclamer +${def.xp} XP</button>`
+        ? `<button class="mission-claim-btn" onclick="juicyTap(event, 20); claimMission(${row.id})">Réclamer +${def.xp} XP</button>`
         : claimed
           ? `<div class="mission-claimed">✓ Réclamée</div>`
           : `<div class="mission-xp-pending">+${def.xp} XP</div>`;
