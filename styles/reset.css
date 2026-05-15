@@ -77,9 +77,6 @@
 .btn-primary:focus-visible,
 .btn-hero:focus-visible,
 .btn-primary.btn-gold:focus-visible,
-.hero-cta:focus-visible,
-.daily-claim-btn:focus-visible,
-.av-save-btn:focus-visible,
 .nav-tab.active:focus-visible {
   outline-color: #fff;
 }

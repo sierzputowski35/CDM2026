@@ -88,7 +88,7 @@
         <div class="match-modal-score" id="mm-score"></div>
         <div style="font-size:11px;color:var(--text3)" id="mm-date"></div>
       </div>
-      <button onclick="closeMatchModal()" style="background:var(--surface);border:1px solid var(--border2);color:var(--text2);font-size:16px;width:36px;height:36px;border-radius:50%;cursor:pointer;flex-shrink:0">✕</button>
+      <button class="btn-icon" onclick="closeMatchModal()" aria-label="Fermer">✕</button>
     </div>
     <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:5px"><span data-icon="bullseye" data-icon-size="12"></span>Pronostics des joueurs</div>
     <div id="mm-players"></div>
@@ -108,7 +108,7 @@
           <div style="background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:4px 10px;font-size:13px;font-weight:700;color:var(--electric-blue);display:flex;align-items:center;gap:5px">
             <span data-icon="gem" data-icon-size="14"></span><span id="av-gems-count">0</span>
           </div>
-          <button onclick="closeAvatarModal()" style="background:var(--surface);border:1px solid var(--border2);color:var(--text2);font-size:16px;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+          <button class="btn-icon" onclick="closeAvatarModal()" aria-label="Fermer">✕</button>
         </div>
       </div>
     </div>
@@ -190,7 +190,7 @@
             <div id="profil-stats-summary" style="font-size:12px;color:var(--text3);margin-top:2px"></div>
           </div>
         </div>
-        <button onclick="closeProfil()" style="background:var(--surface);border:1px solid var(--border2);color:var(--text2);font-size:16px;width:36px;height:36px;border-radius:50%;cursor:pointer;flex-shrink:0">✕</button>
+        <button class="btn-icon" onclick="closeProfil()" aria-label="Fermer">✕</button>
       </div>
       <div id="profil-badges" style="display:flex;gap:6px;flex-wrap:wrap"></div>
     </div>
@@ -361,7 +361,7 @@
             </svg>
             <span id="hero-venue-text">—</span>
           </div>
-          <button class="hero-cta" id="hero-cta-btn"
+          <button class="btn-primary" id="hero-cta-btn"
                   onclick="switchTab('pronos',document.getElementById('tab-pronos'))">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
@@ -4766,14 +4766,14 @@ function renderMatchs(){
       if (hasSaved) {
         footer = `
         <div class="edit-mode-hint">✏️ Tu modifies ton pronostic — n'oublie pas de sauvegarder</div>
-        <button class="save-btn-v2 modifier-btn" id="sbtn-${m.id}" onclick="enterEditMode(${m.id})">
+        <button class="btn-primary btn-platform save-btn-v2 modifier-btn" id="sbtn-${m.id}" onclick="enterEditMode(${m.id})">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
           Modifier mon pronostic
         </button>
         <div class="cancel-edit-link" onclick="exitEditMode(${m.id}, true)">Annuler les modifications</div>`;
       } else {
         footer = `
-        <button class="save-btn-v2" id="sbtn-${m.id}" onclick="savePronostic(${m.id})">
+        <button class="btn-primary btn-platform save-btn-v2" id="sbtn-${m.id}" onclick="savePronostic(${m.id})">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="#050816" stroke="#050816" stroke-width="0"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> ENREGISTRER MON PRONOSTIC
         </button>`;
       }
