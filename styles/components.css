@@ -1933,6 +1933,178 @@ button[aria-disabled="true"] {
 .stat-badge-val { font-family: 'Bebas Neue', sans-serif; font-size: 28px; line-height: 1; }
 .stat-badge-lbl { font-size: 9px; color: var(--text3); margin-top: 4px; text-align: center; text-transform: uppercase; letter-spacing: .06em; }
 
+/* ── ARÈNE V3 · 1.1 — Toggle Ligues / Classements ── */
+.arena-seg {
+  position: relative; display: flex;
+  background: var(--bg-card); border: 1px solid var(--border2);
+  border-radius: 12px; padding: 4px; margin-bottom: 14px;
+}
+.arena-seg__pill {
+  position: absolute; top: 4px; left: 4px;
+  width: calc(50% - 4px); height: calc(100% - 8px);
+  background: linear-gradient(135deg, var(--gold-primary), var(--gold-light));
+  border-radius: 9px; box-shadow: 0 3px 12px rgba(240,160,32,.35);
+  transition: transform .22s cubic-bezier(.34,1.2,.64,1);
+  will-change: transform;
+}
+.arena-seg.mode-classements .arena-seg__pill { transform: translateX(100%); }
+.arena-seg__tab {
+  position: relative; z-index: 1; flex: 1;
+  padding: 11px 8px; border: none; background: none; cursor: pointer;
+  font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 800;
+  letter-spacing: .04em; text-transform: uppercase; color: var(--text3);
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  transition: color .18s; -webkit-tap-highlight-color: transparent;
+}
+.arena-seg__tab.is-active { color: var(--bg-primary); }
+.arena-seg__ico { font-size: 14px; line-height: 1; }
+.arena-panel { animation: arenaFade .22s ease; }
+@keyframes arenaFade {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .arena-seg__pill { transition: none; }
+  .arena-panel { animation: none; }
+}
+
+/* ── ARÈNE V3 · 1.2 — Hero Ligue (fond teinté couleur de ligue) ──
+   La carte porte --lg (couleur ligue) + --lg-rgb (composantes RGB). */
+.hero-ligue {
+  position: relative; overflow: hidden;
+  border-radius: 18px; margin-bottom: 14px;
+  background:
+    linear-gradient(135deg, rgba(var(--lg-rgb),.26), rgba(var(--lg-rgb),.05)),
+    var(--bg-card);
+  border: 1px solid rgba(var(--lg-rgb),.32);
+  box-shadow: 0 6px 24px rgba(0,0,0,.4);
+}
+.hero-ligue::before {
+  content: ""; position: absolute; top: -44px; left: -32px;
+  width: 170px; height: 170px; pointer-events: none;
+  background: radial-gradient(circle, rgba(var(--lg-rgb),.22), transparent 70%);
+}
+.hl-season {
+  display: flex; align-items: center; gap: 8px; padding: 9px 14px;
+  border-bottom: 1px solid rgba(var(--lg-rgb),.18);
+  background: rgba(var(--lg-rgb),.08);
+}
+.hl-season__lbl {
+  font-size: 9.5px; font-weight: 800; letter-spacing: .09em;
+  text-transform: uppercase; color: var(--lg); white-space: nowrap;
+}
+.hl-cd { display: flex; gap: 5px; margin-left: auto; }
+.hl-cd__unit {
+  display: flex; flex-direction: column; align-items: center;
+  background: rgba(0,0,0,.28); border: 1px solid rgba(var(--lg-rgb),.22);
+  border-radius: 7px; padding: 3px 7px; min-width: 34px;
+}
+.hl-cd__num {
+  font-family: 'Bebas Neue', 'Oswald', sans-serif; font-size: 17px; line-height: 1;
+  color: var(--text); font-variant-numeric: tabular-nums;
+}
+.hl-cd__num.tick { animation: arenaCdTick .4s ease; }
+@keyframes arenaCdTick {
+  0%   { transform: translateY(-3px); opacity: .4; }
+  100% { transform: none; opacity: 1; }
+}
+.hl-cd__lbl {
+  font-size: 7.5px; font-weight: 700; letter-spacing: .05em;
+  color: var(--text3); margin-top: 2px;
+}
+.hl-body { display: flex; align-items: center; gap: 14px; padding: 16px 14px 8px; }
+.hl-icon {
+  width: 62px; height: 62px; flex-shrink: 0; border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(var(--lg-rgb),.16); border: 1.5px solid rgba(var(--lg-rgb),.5);
+  box-shadow: inset 0 0 18px rgba(var(--lg-rgb),.2);
+}
+.hl-details { flex: 1; min-width: 0; }
+.hl-name {
+  font-family: 'Bebas Neue', 'Oswald', sans-serif; font-size: 24px;
+  letter-spacing: 1.5px; line-height: 1; color: var(--lg);
+}
+.hl-meta { font-size: 11.5px; color: var(--text2); margin-top: 5px; }
+.hl-meta b { color: var(--text); }
+.hl-prog { padding: 4px 14px 16px; }
+.hl-bar { height: 8px; background: rgba(0,0,0,.3); border-radius: 4px; overflow: hidden; }
+.hl-bar__fill {
+  height: 100%; border-radius: 4px;
+  background: linear-gradient(90deg, rgba(var(--lg-rgb),.5), var(--lg));
+  transition: width .8s cubic-bezier(.4,0,.2,1);
+}
+.hl-prog__lbl {
+  display: flex; justify-content: space-between; margin-top: 7px;
+  font-size: 10.5px; color: var(--text3);
+}
+.hl-prog__lbl .next { color: var(--lg); font-weight: 700; }
+@media (prefers-reduced-motion: reduce) {
+  .hl-cd__num.tick { animation: none; }
+  .hl-bar__fill { transition: none; }
+}
+
+/* ── ARÈNE V3 · 1.3 — Récompenses de promotion ──
+   Chaque tuile porte --c-rgb (couleur du type de récompense). */
+.promo-rewards {
+  background: var(--bg-card); border: 1px solid var(--border2);
+  border-radius: 16px; padding: 14px;
+}
+.pr-head { display: flex; align-items: center; gap: 7px; margin-bottom: 12px; }
+.pr-head__ico { display: inline-flex; line-height: 1; color: var(--gold-primary); }
+.pr-head__title {
+  font-family: 'Oswald', sans-serif; font-size: 13px; font-weight: 700;
+  letter-spacing: .05em; text-transform: uppercase; color: var(--text); white-space: nowrap;
+}
+.pr-head__league {
+  margin-left: auto; font-size: 10px; font-weight: 800; letter-spacing: .04em;
+  text-transform: uppercase; padding: 4px 10px; border-radius: 20px; white-space: nowrap;
+  color: var(--nl); background: rgba(var(--nl-rgb),.14); border: 1px solid rgba(var(--nl-rgb),.35);
+}
+.pr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.pr-tile {
+  background: var(--surface); border: 1px solid var(--border2); border-radius: 12px;
+  padding: 12px 8px; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  transition: transform .14s ease;
+}
+.pr-tile:active { transform: scale(.97); }
+.pr-tile__ico {
+  width: 38px; height: 38px; border-radius: 10px; margin-bottom: 3px;
+  display: flex; align-items: center; justify-content: center; color: rgb(var(--c-rgb));
+  background: rgba(var(--c-rgb),.16); border: 1px solid rgba(var(--c-rgb),.32);
+}
+.pr-tile__val {
+  font-family: 'Bebas Neue', 'Oswald', sans-serif; font-size: 22px; line-height: 1; color: var(--text);
+}
+.pr-tile__lbl {
+  font-size: 9px; font-weight: 700; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--text3);
+}
+.pr-tile--wide {
+  grid-column: 1 / -1; flex-direction: row; justify-content: center; gap: 10px; padding: 11px 12px;
+}
+.pr-tile--wide .pr-tile__ico { margin-bottom: 0; }
+.pr-tile--wide .pr-tile__txt {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+}
+.pr-cosmetic {
+  grid-column: 1 / -1; display: flex; align-items: center; gap: 11px;
+  background: linear-gradient(135deg, rgba(var(--c-rgb),.18), rgba(var(--c-rgb),.04)), var(--surface);
+  border: 1px solid rgba(var(--c-rgb),.4); border-radius: 12px; padding: 10px 12px;
+}
+.pr-cosmetic__ico {
+  width: 40px; height: 40px; flex-shrink: 0; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center; color: rgb(var(--c-rgb));
+  background: rgba(var(--c-rgb),.2); border: 1px solid rgba(var(--c-rgb),.45);
+}
+.pr-cosmetic__name { font-size: 13px; font-weight: 700; color: var(--text); }
+.pr-cosmetic__sub {
+  font-size: 9.5px; color: rgb(var(--c-rgb)); font-weight: 700;
+  letter-spacing: .05em; text-transform: uppercase; margin-top: 2px;
+}
+.promo-rewards--max {
+  text-align: center; color: var(--text3); font-size: 12px; padding: 22px 14px;
+}
+
 /* ── PHASE 6 : CLASSEMENT V2 ── */
 .ligue-header-v2 { background:linear-gradient(135deg,var(--bg-card),var(--bg-elevated)); border:1px solid rgba(244,197,66,.2); border-radius:16px; padding:16px; margin-bottom:14px; display:flex; align-items:center; gap:14px; }
 .ligue-icon-v2 { width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:22px;flex-shrink:0; }

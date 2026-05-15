@@ -422,16 +422,44 @@
     <div id="page-classement" class="page">
       <div class="stripe"></div>
       <div class="section-sub" id="classement-sub"></div>
-      <div class="stats-grid" id="stats-grid"></div>
-      <!-- PODIUM TOP 3 -->
-      <div id="podium-wrap" class="podium-wrap" style="display:none"></div>
-      <!-- CLASSEMENT COMPLET -->
-      <div id="ranking-list"></div>
-      <!-- FEED SOCIAL -->
-      <div id="feed-section" style="margin-top:16px;display:none">
-        <div style="font-family:'Oswald',sans-serif;font-size:14px;font-weight:600;letter-spacing:1px;color:var(--text2);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px"><span data-icon="flame" data-icon-size="14" style="color:#FF8A3D"></span>Activité récente</div>
-        <div class="card" style="padding:12px 14px">
-          <div id="feed-list"></div>
+
+      <!-- ═══ ARÈNE V3 · 1.1 — Toggle Ligues / Classements ═══ -->
+      <div class="arena-seg mode-classements" id="arena-seg" role="tablist" aria-label="Mode Arène">
+        <div class="arena-seg__pill" aria-hidden="true"></div>
+        <button class="arena-seg__tab" id="arena-tab-ligues" type="button"
+                role="tab" aria-selected="false" aria-controls="arena-panel-ligues"
+                onclick="switchArenaMode('ligues')">
+          <span class="arena-seg__ico" aria-hidden="true">🏆</span>Ligues
+        </button>
+        <button class="arena-seg__tab is-active" id="arena-tab-classements" type="button"
+                role="tab" aria-selected="true" aria-controls="arena-panel-classements"
+                onclick="switchArenaMode('classements')">
+          <span class="arena-seg__ico" aria-hidden="true">📊</span>Classements
+        </button>
+      </div>
+
+      <!-- MODE LIGUES — rempli aux tâches 1.2 / 1.3 -->
+      <div id="arena-panel-ligues" class="arena-panel" role="tabpanel"
+           aria-labelledby="arena-tab-ligues" style="display:none">
+        <div style="text-align:center;color:var(--text3);padding:48px 16px;font-size:13px">
+          Hero Ligue &amp; récompenses de promotion — bientôt
+        </div>
+      </div>
+
+      <!-- MODE CLASSEMENTS -->
+      <div id="arena-panel-classements" class="arena-panel" role="tabpanel"
+           aria-labelledby="arena-tab-classements">
+        <div class="stats-grid" id="stats-grid" style="grid-template-columns:repeat(3,1fr)"></div>
+        <!-- PODIUM TOP 3 -->
+        <div id="podium-wrap" class="podium-wrap" style="display:none"></div>
+        <!-- CLASSEMENT COMPLET -->
+        <div id="ranking-list"></div>
+        <!-- FEED SOCIAL -->
+        <div id="feed-section" style="margin-top:16px;display:none">
+          <div style="font-family:'Oswald',sans-serif;font-size:14px;font-weight:600;letter-spacing:1px;color:var(--text2);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px"><span data-icon="flame" data-icon-size="14" style="color:#FF8A3D"></span>Activité récente</div>
+          <div class="card" style="padding:12px 14px">
+            <div id="feed-list"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -3287,10 +3315,12 @@ function startHeroCountdown(match) {
 document.addEventListener('visibilitychange', function() {
   if (document.hidden) {
     clearInterval(heroCountdownInterval);
+    clearInterval(seasonCountdownInterval);
     if (_upcomingCountdownInterval) { clearInterval(_upcomingCountdownInterval); _upcomingCountdownInterval = null; }
   } else {
     const match = getHeroMatch();
     if (match) startHeroCountdown(match);
+    if (document.getElementById('arena-cd-s')) startSeasonCountdown();
   }
 });
 
@@ -4532,6 +4562,145 @@ function getAwards(joueur){
   return awards;
 }
 
+// ARÈNE V3 · 1.1 — bascule Ligues / Classements (aucun reload).
+function switchArenaMode(mode){
+  const seg=document.getElementById('arena-seg');
+  const panelLig=document.getElementById('arena-panel-ligues');
+  const panelCla=document.getElementById('arena-panel-classements');
+  const tabLig=document.getElementById('arena-tab-ligues');
+  const tabCla=document.getElementById('arena-tab-classements');
+  if(!seg||!panelLig||!panelCla||!tabLig||!tabCla) return;
+  const isLigues=mode==='ligues';
+  seg.classList.toggle('mode-classements',!isLigues);
+  tabLig.classList.toggle('is-active',isLigues);
+  tabCla.classList.toggle('is-active',!isLigues);
+  tabLig.setAttribute('aria-selected',String(isLigues));
+  tabCla.setAttribute('aria-selected',String(!isLigues));
+  panelLig.style.display=isLigues?'':'none';
+  panelCla.style.display=isLigues?'none':'';
+}
+
+// ARÈNE V3 · 1.2 — Hero Ligue + countdown saison.
+// Fin de saison = finale CDM 2026, 20 juil. 2026 à 00 h 30 (heure locale).
+const SEASON_END = new Date(2026, 6, 20, 0, 30, 0).getTime();
+// Composantes RGB par ligue, pour le fond teinté (rgba(var(--lg-rgb),…)).
+const LEAGUE_HERO_RGB = {
+  bronze: '205,127,50', argent: '192,192,192', or: '240,160,32',
+  diamant: '88,200,250', legende: '168,85,247',
+};
+let seasonCountdownInterval = null;
+
+function startSeasonCountdown(){
+  clearInterval(seasonCountdownInterval);
+  const pad = n => String(n).padStart(2,'0');
+  function tick(){
+    const cd = formatCountdown(SEASON_END);
+    const map = {
+      'arena-cd-d': String(cd.d), 'arena-cd-h': pad(cd.h),
+      'arena-cd-m': pad(cd.m), 'arena-cd-s': pad(cd.s),
+    };
+    let alive = false;
+    for (const id in map){
+      const el = document.getElementById(id);
+      if (!el) continue;
+      alive = true;
+      if (el.textContent !== map[id]){
+        el.textContent = map[id];
+        el.classList.remove('tick'); void el.offsetWidth; el.classList.add('tick');
+      }
+    }
+    if (!alive) clearInterval(seasonCountdownInterval); // hero retiré du DOM
+  }
+  tick();
+  seasonCountdownInterval = setInterval(tick, 1000);
+}
+
+// Peuple #arena-panel-ligues avec la carte Hero Ligue. Appelé en fin de renderClassement.
+function renderArenaLigues(){
+  const panel = document.getElementById('arena-panel-ligues');
+  if (!panel) return;
+  const board = getLeaderboard();
+  const meBoard = board.find(p=>p.id===currentUser);
+  const mePts = meBoard?.pts || 0;
+  const meRank = board.findIndex(p=>p.id===currentUser) + 1;
+  const myLig = getLeagueForPoints(mePts);
+  const nextLig = LEAGUES[LEAGUES.indexOf(myLig)+1] || null;
+  const ligPct = nextLig ? Math.round(Math.min(100,(mePts-myLig.min)/(nextLig.min-myLig.min)*100)) : 100;
+  const ligGap = nextLig ? nextLig.min - mePts : 0;
+  const rgb = LEAGUE_HERO_RGB[myLig.id] || '240,160,32';
+  panel.innerHTML = `
+    <div class="hero-ligue" style="--lg:${myLig.color};--lg-rgb:${rgb}">
+      <div class="hl-season">
+        <span class="hl-season__lbl">⏱ Fin de saison dans</span>
+        <div class="hl-cd">
+          <div class="hl-cd__unit"><span class="hl-cd__num" id="arena-cd-d">--</span><span class="hl-cd__lbl">JOURS</span></div>
+          <div class="hl-cd__unit"><span class="hl-cd__num" id="arena-cd-h">--</span><span class="hl-cd__lbl">HEURES</span></div>
+          <div class="hl-cd__unit"><span class="hl-cd__num" id="arena-cd-m">--</span><span class="hl-cd__lbl">MIN</span></div>
+          <div class="hl-cd__unit"><span class="hl-cd__num" id="arena-cd-s">--</span><span class="hl-cd__lbl">SEC</span></div>
+        </div>
+      </div>
+      <div class="hl-body">
+        <div class="hl-icon">${window.icon(myLig.icon, 34)}</div>
+        <div class="hl-details">
+          <div class="hl-name">LIGUE ${myLig.name.toUpperCase()}</div>
+          <div class="hl-meta"><b>#${meRank}</b> sur ${board.length} · <b>${mePts} pts</b></div>
+        </div>
+      </div>
+      <div class="hl-prog">
+        <div class="hl-bar"><div class="hl-bar__fill" style="width:${ligPct}%"></div></div>
+        <div class="hl-prog__lbl">
+          <span>${nextLig ? ligPct+' % du palier' : 'Rang maximum'}</span>
+          <span class="next">${nextLig ? 'encore '+ligGap+' pts → '+nextLig.name : '★ Sommet atteint'}</span>
+        </div>
+      </div>
+    </div>`
+    + buildPromoRewardsHtml(nextLig);
+  startSeasonCountdown();
+}
+
+// ARÈNE V3 · 1.3 — HTML des récompenses du prochain palier de ligue.
+function buildPromoRewardsHtml(nextLig){
+  const cap = s => { s = String(s); return s.charAt(0).toUpperCase() + s.slice(1); };
+  if (!nextLig){
+    return `<div class="promo-rewards promo-rewards--max">★ Sommet atteint — tu es au rang maximum</div>`;
+  }
+  const r = LEAGUE_PROMOTION_REWARDS[nextLig.id];
+  if (!r) return '';
+  const nlRgb = LEAGUE_HERO_RGB[nextLig.id] || '240,160,32';
+  // Tuiles de base (XP, Coins, Gems si >0, Coffre)
+  const base = [];
+  if (r.xp)    base.push({ico:'zap',  rgb:'240,160,32', val:'+'+r.xp,    lbl:'XP'});
+  if (r.coins) base.push({ico:'coin', rgb:'240,160,32', val:'+'+r.coins, lbl:'Coins'});
+  if (r.gems)  base.push({ico:'gem',  rgb:'88,200,250', val:'+'+r.gems,  lbl:'Gems'});
+  if (r.chest) base.push({ico:'gift', rgb:'168,85,247', val:'×1',   lbl:'Coffre '+cap(r.chest)});
+  const baseHtml = base.map((t,i)=>{
+    const ico = `<div class="pr-tile__ico">${window.icon(t.ico, 20)}</div>`;
+    // tuile orpheline (nombre impair) → bandeau horizontal pleine largeur
+    if (base.length % 2 === 1 && i === base.length - 1){
+      return `<div class="pr-tile pr-tile--wide" style="--c-rgb:${t.rgb}">${ico}`
+        + `<div class="pr-tile__txt"><div class="pr-tile__val">${t.val}</div>`
+        + `<div class="pr-tile__lbl">${t.lbl}</div></div></div>`;
+    }
+    return `<div class="pr-tile" style="--c-rgb:${t.rgb}">${ico}`
+      + `<div class="pr-tile__val">${t.val}</div><div class="pr-tile__lbl">${t.lbl}</div></div>`;
+  }).join('');
+  // Bandeaux cosmétiques (avatar / cadre / titre)
+  const cos = [];
+  if (r.avatar) cos.push({ico:'users',      rgb:'88,200,250', name:'Avatar « '+cap(r.avatar)+' »'});
+  if (r.frame)  cos.push({ico:'shield',     rgb:'168,85,247', name:'Cadre « '+cap(r.frame)+' »'});
+  if (r.title)  cos.push({ico:'gold-medal', rgb:'240,160,32', name:'Titre « '+r.title+' »'});
+  const cosHtml = cos.map(c=>`<div class="pr-cosmetic" style="--c-rgb:${c.rgb}">`
+    + `<div class="pr-cosmetic__ico">${window.icon(c.ico, 21)}</div>`
+    + `<div><div class="pr-cosmetic__name">${c.name}</div>`
+    + `<div class="pr-cosmetic__sub">Cosmétique exclusif débloqué</div></div></div>`).join('');
+  return `<div class="promo-rewards" style="--nl:${nextLig.color};--nl-rgb:${nlRgb}">`
+    + `<div class="pr-head">`
+    + `<span class="pr-head__ico">${window.icon('gift', 15)}</span>`
+    + `<span class="pr-head__title">Récompenses</span>`
+    + `<span class="pr-head__league">→ Ligue ${nextLig.name}</span></div>`
+    + `<div class="pr-grid">${baseHtml}${cosHtml}</div></div>`;
+}
+
 function renderClassement(){
   // SPRINT 7.4 — Skeleton tant que les données joueurs ne sont pas chargées.
   // Évite d'afficher une page vide avant la 1ère réponse Supabase.
@@ -4550,24 +4719,12 @@ function renderClassement(){
 
   document.getElementById('classement-sub').textContent=allJoueurs.length+' participant(s) · '+matchsJoues+' match(s) joué(s) · Temps réel';
 
-  // ── LIGUE HEADER V2 ──
+  // ── Ma position (conservé pour le sticky bas de page) ──
   const meBoard=board.find(p=>p.id===currentUser);
   const mePts=meBoard?.pts||0;
   const meRank=board.findIndex(p=>p.id===currentUser)+1;
-  const myLig=getLeagueForPoints(mePts);
-  const nextLigIdx=LEAGUES.indexOf(myLig)+1;
-  const nextLig=LEAGUES[nextLigIdx]||null;
-  const ligPct=nextLig?Math.round(Math.min(100,(mePts-myLig.min)/(nextLig.min-myLig.min)*100)):100;
-  const ligGap=nextLig?nextLig.min-mePts:0;
+  // Le bloc ligue est désormais porté par le Hero Ligue du mode « Ligues ».
   document.getElementById('stats-grid').innerHTML=`
-    <div class="ligue-header-v2">
-      <div class="ligue-icon-v2" style="background:${myLig.bg};color:${myLig.color};border:1px solid ${myLig.color}44;display:inline-flex;align-items:center;justify-content:center">${window.icon(myLig.icon, 32)}</div>
-      <div class="ligue-details-v2">
-        <div class="ligue-name-v2" style="color:${myLig.color}">LIGUE ${myLig.name.toUpperCase()} <span style="font-size:14px;color:var(--text2)">· #${meRank}</span></div>
-        <div class="ligue-pts-v2">${mePts} pts${nextLig?` · encore ${ligGap} pts pour ${nextLig.name}`:' · Rang maximum !'}</div>
-        <div class="ligue-bar-v2"><div class="ligue-bar-fill-v2" style="width:${ligPct}%;background:${myLig.color}"></div></div>
-      </div>
-    </div>
     <div class="stat-card"><div class="stat-val">${allJoueurs.length}</div><div class="stat-lbl">Joueurs</div></div>
     <div class="stat-card"><div class="stat-val">${matchsJoues}</div><div class="stat-lbl">Matchs joués</div></div>
     <div class="stat-card"><div class="stat-val">${board.length?board[0].pts:0}</div><div class="stat-lbl">Record</div></div>`;
@@ -4643,6 +4800,7 @@ function renderClassement(){
 
   renderFeed(board);
   updateHeaderUser();
+  renderArenaLigues(); // ARÈNE V3 · 1.2 — peuple le panneau Ligues
 }
 
 function renderFeed(board){
