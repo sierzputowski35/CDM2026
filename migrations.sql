@@ -218,3 +218,12 @@ ALTER TABLE joueurs ADD COLUMN IF NOT EXISTS shop_purchases JSONB DEFAULT '[]'::
 ALTER TABLE joueurs ADD COLUMN IF NOT EXISTS boost_double_xp_until    TIMESTAMP;
 ALTER TABLE joueurs ADD COLUMN IF NOT EXISTS boost_double_coins_until TIMESTAMP;
 ALTER TABLE joueurs ADD COLUMN IF NOT EXISTS boost_streak_until       TIMESTAMP;
+
+-- ════════════════════════════════════════════════════════════
+-- Validation admin des buteurs / paris bonus
+-- Ces 2 colonnes manquaient sur scores_reels : sans elles,
+-- toggleAdminButeur() / setAdminBonus() échouaient silencieusement
+-- (« Erreur ») et la validation buteurs/bonus était impossible.
+-- ════════════════════════════════════════════════════════════
+ALTER TABLE scores_reels ADD COLUMN IF NOT EXISTS buteurs_reels JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE scores_reels ADD COLUMN IF NOT EXISTS bonus_realise TEXT;
