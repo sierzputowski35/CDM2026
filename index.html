@@ -443,10 +443,10 @@
     </div>
     <div id="page-matchs" class="page">
       <div class="stripe"></div>
-      <div class="sub-tabs">
-        <button class="sub-tab active" onclick="switchPronosTab('matchs',this)">Matchs</button>
-        <button class="sub-tab" onclick="switchPronosTab('globaux',this)">Compétition</button>
-      </div>
+      <nav class="tab-bar tab-bar--filled">
+        <button class="tab-bar__tab is-active" onclick="switchPronosTab('matchs',this)">Matchs</button>
+        <button class="tab-bar__tab" onclick="switchPronosTab('globaux',this)">Compétition</button>
+      </nav>
       <!-- SOUS-ONGLET MATCHS -->
       <div id="pronos-matchs">
         <div class="section-sub">Saisissez votre score avant le coup d'envoi · 0 pt si non rempli</div>
@@ -545,10 +545,10 @@
 
     <div id="page-groupes" class="page">
       <div class="stripe"></div>
-      <div class="sub-tabs">
-        <button class="sub-tab active" onclick="switchResultatsTab('groupes',this)">Groupes</button>
-        <button class="sub-tab" onclick="switchResultatsTab('competition',this)">Compétition</button>
-      </div>
+      <nav class="tab-bar tab-bar--filled">
+        <button class="tab-bar__tab is-active" onclick="switchResultatsTab('groupes',this)">Groupes</button>
+        <button class="tab-bar__tab" onclick="switchResultatsTab('competition',this)">Compétition</button>
+      </nav>
       <div id="resultats-groupes">
       <!-- FILTRE GROUPES -->
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">
@@ -658,13 +658,13 @@
     </div>
     <button class="btn-sm" onclick="logout()">Déconnexion</button>
   </div>
-  <div class="nav" style="display:flex;overflow-x:auto;flex-wrap:nowrap;border-bottom:1px solid var(--border)">
-    <button class="nav-btn active" onclick="showAdminPage('admin-matchs',this)">Scores</button>
-    <button class="nav-btn" onclick="showAdminPage('admin-globaux',this)">Globaux</button>
-    <button class="nav-btn" onclick="showAdminPage('admin-cagnotte',this)">Cagnotte</button>
-    <button class="nav-btn" onclick="showAdminPage('admin-joueurs',this)">Joueurs</button>
-    <button class="nav-btn" onclick="showAdminPage('admin-cotes',this)"><span style="display:inline-flex;align-items:center;gap:6px"><span data-icon="dice" data-icon-size="14"></span>Cotes</span></button>
-  </div>
+  <nav class="tab-bar tab-bar--underline" style="overflow-x:auto;flex-wrap:nowrap">
+    <button class="tab-bar__tab is-active" onclick="showAdminPage('admin-matchs',this)">Scores</button>
+    <button class="tab-bar__tab" onclick="showAdminPage('admin-globaux',this)">Globaux</button>
+    <button class="tab-bar__tab" onclick="showAdminPage('admin-cagnotte',this)">Cagnotte</button>
+    <button class="tab-bar__tab" onclick="showAdminPage('admin-joueurs',this)">Joueurs</button>
+    <button class="tab-bar__tab" onclick="showAdminPage('admin-cotes',this)"><span style="display:inline-flex;align-items:center;gap:6px"><span data-icon="dice" data-icon-size="14"></span>Cotes</span></button>
+  </nav>
   <div class="main">
     <div id="page-admin-matchs" class="page active">
       <div class="admin-bar"><div class="admin-dot"></div><span class="admin-label">Mode organisateur — validation des scores officiels</span></div>
@@ -3121,8 +3121,8 @@ function switchTab(tab, btn) {
 function switchPronosTab(sub, btn) {
   document.getElementById('pronos-matchs').style.display = sub === 'matchs' ? '' : 'none';
   document.getElementById('pronos-globaux').style.display = sub === 'globaux' ? '' : 'none';
-  btn.parentElement.querySelectorAll('.sub-tab').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+  btn.parentElement.querySelectorAll('.tab-bar__tab').forEach(b => b.classList.remove('is-active'));
+  btn.classList.add('is-active');
   if (sub === 'matchs') renderMatchs();
   else renderGlobaux();
 }
@@ -3130,8 +3130,8 @@ function switchPronosTab(sub, btn) {
 function switchResultatsTab(sub, btn) {
   document.getElementById('resultats-groupes').style.display = sub === 'groupes' ? '' : 'none';
   document.getElementById('resultats-competition').style.display = sub === 'competition' ? '' : 'none';
-  btn.parentElement.querySelectorAll('.sub-tab').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+  btn.parentElement.querySelectorAll('.tab-bar__tab').forEach(b => b.classList.remove('is-active'));
+  btn.classList.add('is-active');
   if (sub === 'groupes') renderGroupes();
   else renderCompetition();
 }
@@ -4128,11 +4128,11 @@ function renderProfilPage() {
       '</div>' +
     '</div>' +
     '<div class="card" style="margin-top:10px;padding:16px">' +
-      '<div class="profil-tabs">' +
-        '<div class="profil-tab active" id="ptab-stats" onclick="switchProfilTab(\'stats\')"><span style="display:inline-flex;align-items:center;gap:5px">' + window.icon('trending-up', 14) + 'Stats</span></div>' +
-        '<div class="profil-tab" id="ptab-badges" onclick="switchProfilTab(\'badges\')"><span style="display:inline-flex;align-items:center;gap:5px">' + window.icon('gold-medal', 14) + 'Badges</span></div>' +
-        '<div class="profil-tab" id="ptab-collection" onclick="switchProfilTab(\'collection\')"><span style="display:inline-flex;align-items:center;gap:5px">' + window.icon('card', 14) + 'Cartes</span></div>' +
-      '</div>' +
+      '<nav class="tab-bar tab-bar--underline">' +
+        '<button class="tab-bar__tab is-active" id="ptab-stats" onclick="switchProfilTab(\'stats\')"><span style="display:inline-flex;align-items:center;gap:5px">' + window.icon('trending-up', 14) + 'Stats</span></button>' +
+        '<button class="tab-bar__tab" id="ptab-badges" onclick="switchProfilTab(\'badges\')"><span style="display:inline-flex;align-items:center;gap:5px">' + window.icon('gold-medal', 14) + 'Badges</span></button>' +
+        '<button class="tab-bar__tab" id="ptab-collection" onclick="switchProfilTab(\'collection\')"><span style="display:inline-flex;align-items:center;gap:5px">' + window.icon('card', 14) + 'Cartes</span></button>' +
+      '</nav>' +
       '<div id="profil-tab-content"></div>' +
     '</div>';
 
@@ -4140,9 +4140,9 @@ function renderProfilPage() {
 }
 
 function switchProfilTab(tab, joueurArg, statsArg, streakArg) {
-  document.querySelectorAll('.profil-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('#ptab-stats, #ptab-badges, #ptab-collection').forEach(t => t.classList.remove('is-active'));
   const tabEl = document.getElementById('ptab-' + tab);
-  if (tabEl) tabEl.classList.add('active');
+  if (tabEl) tabEl.classList.add('is-active');
 
   const joueur = joueurArg || allJoueurs.find(j => j.id === currentUser);
   const stats   = statsArg  || calcPlayerStats(joueur);
@@ -4230,9 +4230,9 @@ async function renderProfilCollection(container, joueur) {
 function showPage(id, btn) { switchTab(id, btn); }
 function showAdminPage(id,btn){
   document.querySelectorAll('#admin-app-screen .page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('#admin-app-screen .nav-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('#admin-app-screen .tab-bar__tab').forEach(b=>b.classList.remove('is-active'));
   document.getElementById('page-'+id).classList.add('active');
-  btn?.classList.add('active');
+  btn?.classList.add('is-active');
   ({'admin-matchs':renderAdminMatchs,'admin-globaux':renderAdminGlobaux,'admin-cagnotte':renderAdminCagnotte,'admin-joueurs':renderAdminJoueurs,'admin-codes':renderAdminCodes,'admin-cotes':renderAdminCotes})[id]?.();
 }
 
