@@ -319,7 +319,10 @@ async function claimMission(missionRowId) {
   showToast(`🎯 ${def.desc} · +${def.xp} XP`);
 
   // Re-render et recheck badges (5 badges missions de l'Étape 6 dépendent de ça)
-  if (typeof renderMissionsCard === 'function') await renderMissionsCard();
+  // Sprint 1b — refreshMissionsViews rafraîchit le résumé accueil ET la modale
+  // ouverte ; fallback sur renderMissionsCard si la fonction n'existe pas.
+  if (typeof refreshMissionsViews === 'function') await refreshMissionsViews();
+  else if (typeof renderMissionsCard === 'function') await renderMissionsCard();
   if (typeof checkBadges === 'function') setTimeout(() => checkBadges(), 600);
 }
 
@@ -343,8 +346,11 @@ async function getClaimedMissionsCount(joueurId) {
 
 // ── RENDER ───────────────────────────────────────────────────
 
-async function renderMissionsCard() {
-  const container = document.getElementById('mission-home');
+// Sprint 1b — containerId optionnel : l'accueil affiche un résumé compact
+// (cf. renderMissionsHomeSummary) et le détail complet vit dans une modale
+// (#missions-modal-body). Défaut 'mission-home' = rétrocompatible.
+async function renderMissionsCard(containerId) {
+  const container = document.getElementById(containerId || 'mission-home');
   if (!container) return;
   const joueur = (typeof allJoueurs !== 'undefined' ? allJoueurs : []).find(j => j.id === currentUser);
   if (!joueur || !sb) { container.innerHTML = ''; return; }
@@ -408,4 +414,29 @@ async function renderMissionsCard() {
       ${buildSection('weekly',     'Hebdomadaires', '📅')}
       ${buildSection('tournament', 'Tournoi',       '🏆')}
     </div>`;
+}
+
+// Sprint 1b — Résumé chiffré pour le bloc Missions de l'accueil.
+// Renvoie { total, active, claimable, claimed }. Le détail complet
+// reste rendu par renderMissionsCard() dans la modale.
+async function getMissionsSummary() {
+  const joueur = (typeof allJoueurs !== 'undefined' ? allJoueurs : []).find(j => j.id === currentUser);
+  if (!joueur || !sb) return { total: 0, active: 0, claimable: 0, claimed: 0 };
+  try {
+    await ensureActiveMissions(joueur.id);
+    const { data } = await sb.from('missions_progress')
+      .select('*').eq('joueur_id', joueur.id);
+    const rows = data || [];
+    const stats = (typeof computePlayerStats === 'function') ? computePlayerStats(joueur) : {};
+    let claimable = 0, claimed = 0;
+    for (const row of rows) {
+      if (row.claimed) { claimed++; continue; }
+      const def = getMissionById(row.mission_id);
+      if (!def) continue;
+      if (_computeProgress(def, joueur, { stats }) >= _missionTarget(def)) claimable++;
+    }
+    return { total: rows.length, active: rows.length - claimed, claimable, claimed };
+  } catch(_) {
+    return { total: 0, active: 0, claimable: 0, claimed: 0 };
+  }
 }

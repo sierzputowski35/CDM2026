@@ -266,8 +266,11 @@
     <!-- Ligne 1 : Logo + actions -->
     <div class="ahv2-top">
       <div class="ahv2-logo">
-        <img src="icon-192.png" alt="" class="ahv2-logo-icon" onerror="this.outerHTML='⚽'">
-        <div class="ahv2-logo-text shimmer-gold">UNITED 2026</div>
+        <!-- Logo United 2026 — déposer le fichier dans assets/logo-united-2026.png.
+             Fallback automatique sur le texte si le fichier est absent. -->
+        <img src="assets/logo-united-2026.png" alt="United 2026" class="ahv2-logo-img"
+             onerror="this.style.display='none';this.nextElementSibling.style.display=''">
+        <div class="ahv2-logo-text shimmer-gold" style="display:none">UNITED 2026</div>
       </div>
       <div class="ahv2-actions">
         <span class="sync-dot" style="margin-right:2px"></span>
@@ -275,46 +278,81 @@
         <button class="btn-sm" onclick="logout()" aria-label="Déconnexion" style="margin-left:8px">⇲</button>
       </div>
     </div>
-    <!-- Ligne 2 : Identité joueur -->
-    <div class="ahv2-identity">
-      <div class="ahv2-avatar-wrap" onclick="openAvatarModal()" style="cursor:pointer">
-        <div class="ahv2-avatar" id="h2-avatar">⚽</div>
-        <div class="ahv2-level" id="h2-level">1</div>
-      </div>
-      <div class="ahv2-info">
-        <div class="ahv2-name-row">
-          <span class="ahv2-name" id="h2-pseudo">Joueur</span>
-          <span class="ahv2-rank" id="h2-rank-text">#1 BRONZE</span>
-        </div>
-        <div class="ahv2-xp-row">
-          <div class="ahv2-xp-bar">
-            <div class="ahv2-xp-fill" id="h2-xp-fill"></div>
-          </div>
-          <span class="ahv2-xp-text" id="h2-xp-text">0/1000</span>
-        </div>
-      </div>
-      <div class="ahv2-currencies">
-        <div class="ahv2-curr ahv2-curr--coins">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="var(--gold-primary)"><polygon points="12,2 15,9 22,9 17,14 19,21 12,17 5,21 7,14 2,9 9,9"/></svg>
-          <span id="h2-coins">0</span>
-        </div>
-        <div class="ahv2-curr ahv2-curr--gems">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="var(--royal-purple)"><path d="M6 2L2 8l10 13L22 8l-4-6z"/></svg>
-          <span id="h2-gems">—</span>
-        </div>
-      </div>
-    </div>
+    <!-- Ligne 2 (identité joueur) retirée : doublon avec le Hero Profil de
+         l'accueil. updateHeaderUser/updateXPBar gardent leurs gardes if(el). -->
   </div>
   <div class="main">
     <div id="page-home" class="page active">
 
-      <!-- 1. DAILY REWARD + MISSION (V2 dopamine) -->
-      <div id="daily-reward-home"></div>
-      <div id="mission-home"></div>
-      <div id="coffres-home"></div>
-      <div id="shop-home"></div>
+      <!-- ═══════════════════════════════════════════════════════
+           PAGE ACCUEIL — refonte Sprint 1 (mise en page)
+           Layout : 1.Hero Profil · 2.Hero Card Match · 3.Grid 2×2
+                    [Missions | Récompenses] / [Coupe du Monde | Shop]
+           Blocs masqués (DOM conservé, JS ne plante pas) :
+                    #daily-reward-home, #coffres-home
+           Blocs legacy RETIRÉS de l'accueil : Matchs du Jour, Streak card,
+           League card, Actus. Pour restaurer : index.html.bak.sprint1,
+           ou « git revert » du commit Sprint 1, puis décommenter les 4
+           appels render*() marqués SPRINT1 dans initHomePage().
+      ═══════════════════════════════════════════════════════════ -->
 
-      <!-- 2. HERO CARD MATCH DU JOUR -->
+      <!-- Conteneurs JS conservés mais masqués (renderDailyRewardCard / renderCoffresCard) -->
+      <div id="daily-reward-home" style="display:none"></div>
+      <div id="coffres-home" style="display:none"></div>
+
+      <!-- ═══ 1. HEADER HERO PROFIL ═══ -->
+      <!-- 2 jauges distinctes : Niveau (XP, jauge or) + Ligue (points, jauge
+           couleur de ligue). Rempli par renderHomeProfil(). -->
+      <section id="home-hero-profil" class="home-section home-section--hero-profil">
+        <div class="hero-profil-row">
+          <div class="hero-profil-avatar" id="home-avatar" onclick="openAvatarModal()" style="cursor:pointer"></div>
+          <div class="hero-profil-id">
+            <div class="hero-profil-name" id="home-username">—</div>
+          </div>
+          <div class="hero-profil-wallet">
+            <span class="hero-wallet-item hero-wallet-item--coins"><span class="hero-wallet-ico">🪙</span><b id="home-wallet-coins">0</b></span>
+            <span class="hero-wallet-item hero-wallet-item--gems"><span class="hero-wallet-ico">💎</span><b id="home-wallet-gems">0</b></span>
+          </div>
+        </div>
+
+        <div class="hero-gauges">
+          <!-- Jauge NIVEAU -->
+          <div class="hero-gauge hero-gauge--level">
+            <div class="hero-gauge-head">
+              <span class="hero-gauge-label"><span class="hero-gauge-ico">⭐</span>NIVEAU&nbsp;<b id="home-level-num">—</b></span>
+              <span class="hero-gauge-val" id="home-level-val">—</span>
+            </div>
+            <div class="hero-gauge-track"><div class="hero-gauge-fill hero-gauge-fill--level" id="home-level-fill"></div></div>
+            <div class="hero-gauge-next" id="home-level-next">—</div>
+          </div>
+          <!-- Jauge LIGUE -->
+          <div class="hero-gauge hero-gauge--league">
+            <div class="hero-gauge-head">
+              <span class="hero-gauge-label"><span class="hero-gauge-ico">🏆</span>LIGUE&nbsp;<b id="home-league-num">—</b></span>
+              <span class="hero-gauge-val" id="home-league-val">—</span>
+            </div>
+            <div class="hero-gauge-track"><div class="hero-gauge-fill" id="home-league-fill"></div></div>
+            <div class="hero-gauge-next" id="home-league-next">—</div>
+          </div>
+        </div>
+
+        <div class="hero-profil-stats">
+          <div class="hero-profil-stat">
+            <span class="hero-profil-stat-label">POINTS</span>
+            <span class="hero-profil-stat-value" id="home-coins">—</span>
+          </div>
+          <div class="hero-profil-stat">
+            <span class="hero-profil-stat-label">RANG</span>
+            <span class="hero-profil-stat-value" id="home-gems">—</span>
+          </div>
+          <div class="hero-profil-stat">
+            <span class="hero-profil-stat-label">SÉRIE</span>
+            <span class="hero-profil-stat-value" id="home-streak">—</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══ 2. HERO CARD MATCH DU JOUR ═══ -->
       <div class="hero-card" id="home-hero-card">
         <div class="hero-card__glow"></div>
         <div class="hero-card__body">
@@ -365,64 +403,20 @@
         </div>
       </div>
 
-      <!-- 3. MATCHS RAPIDES -->
-      <div class="section-header-home">
-        <h2 class="section-title-home">Matchs du Jour</h2>
-        <button class="section-link-home" onclick="switchTab('pronos',document.getElementById('tab-pronos'))">
-          Voir tous
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-            <path d="M9 18l6-6-6-6"/>
-          </svg>
+      <!-- ═══ 3. GRID 2×2 — Missions · Récompenses / Coupe du Monde · Shop ═══ -->
+      <!-- 4 cellules .home-grid-card. Le JS injecte le contenu compact dans
+           #mission-home, #rewards-home et #shop-home ; la cellule Coupe du
+           Monde est statique. Ordre = ligne par ligne. -->
+      <section class="home-grid-2">
+        <button id="mission-home" class="home-grid-card" onclick="openMissionsModal()" aria-label="Voir les missions"></button>
+        <button id="rewards-home" class="home-grid-card" onclick="openRewardsModal()" aria-label="Voir les récompenses : argent, coffres et badges"></button>
+        <button id="home-wc-card" class="home-grid-card" onclick="switchTab('resultats')" aria-label="Voir les résultats de la Coupe du Monde">
+          <img class="hgc-logo" src="icon-192.png" alt="" onerror="this.style.display='none'">
+          <span class="hgc-title">COUPE DU MONDE</span>
+          <span class="hgc-sub">Résultats &amp; classements</span>
         </button>
-      </div>
-      <div class="quick-matches" id="home-quick-matches"></div>
-
-      <!-- 4. STREAK CARD -->
-      <div class="streak-card-home" id="home-streak-card">
-        <div class="streak-card-home__glow"></div>
-        <div class="streak-card-home__top">
-          <div class="streak-card-home__label">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="#FF8A3D">
-              <path d="M12 2C9 7 4 8 4 14a8 8 0 0016 0c0-5-5-8-8-12z"/>
-            </svg>
-            <span>Serie en cours</span>
-          </div>
-          <div class="streak-flames" id="streak-flames"></div>
-        </div>
-        <div class="streak-card-home__body">
-          <div class="streak-num-home" id="streak-num">0</div>
-          <div>
-            <span class="streak-desc-home">pronostics corrects d'affilee</span>
-            <div class="streak-bonus-home" id="streak-bonus">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="#FF8A3D">
-                <polygon points="12,2 15,9 22,9 17,14 19,21 12,17 5,21 7,14 2,9 9,9"/>
-              </svg>
-              <span id="streak-bonus-text">Bonus +50% XP</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 5. LIGUE ACTUELLE -->
-      <div class="league-card-home" id="home-league-card"
-           onclick="switchTab('arene',document.getElementById('tab-arene'))">
-        <div class="league-card-home__icon" id="league-icon"></div>
-        <div style="flex:1">
-          <div class="league-name-home" id="league-name">Bronze</div>
-          <div class="league-rank-home" id="league-rank">Rang #— · — pts</div>
-          <div class="league-bar-home">
-            <div class="league-bar-home__fill" id="league-bar-fill"></div>
-          </div>
-          <div class="league-pts-next-home" id="league-pts-next">— pts pour la ligue suivante</div>
-        </div>
-      </div>
-
-      <!-- 6. NEWS FEED -->
-      <div class="section-header-home">
-        <h2 class="section-title-home">Actus</h2>
-      </div>
-      <div class="home-news" id="home-news-feed"></div>
+        <button id="shop-home" class="home-grid-card" onclick="openShop()" aria-label="Ouvrir la boutique"></button>
+      </section>
 
     </div>
     <div id="page-classement" class="page">
@@ -622,14 +616,8 @@
       </div>
       <span>Arène</span>
     </button>
-    <button class="nav-tab" onclick="switchTab('resultats',this)" id="tab-resultats" aria-label="Résultats">
-      <div class="nav-icon-wrap">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
-        </svg>
-      </div>
-      <span>Résultats</span>
-    </button>
+    <!-- Onglet Résultats retiré de la bottom-nav (accessible via le bloc
+         Coupe du Monde sur l'accueil). Route 'resultats' conservée dans TAB_MAP. -->
     <button class="nav-tab" onclick="switchTab('club',this)" id="tab-club" aria-label="Club">
       <div class="nav-icon-wrap">
         <span class="nav-icon" data-icon="nav-club" data-icon-size="24"></span>
@@ -3059,6 +3047,10 @@ function updateHeaderUser(){
   // Notif badge
   updateNotifBadge();
   if (typeof updateClubBadge === 'function') updateClubBadge();
+
+  // SPRINT1f — garder le Hero Profil de l'accueil synchronisé après
+  // tout changement de données (XP, points, ligue, série).
+  if (typeof renderHomeProfil === 'function') renderHomeProfil();
 }
 function openAdminApp(){
   ['login-screen','admin-login-screen','app-screen'].forEach(hide);show('admin-app-screen');
@@ -3165,34 +3157,59 @@ function getMatchCountdown(match) {
   return { h:fmt(Math.floor(total/3600)), m:fmt(Math.floor((total%3600)/60)), s:fmt(total%60), live:false };
 }
 
-function initHomeHeader() {
+// Hero Profil de l'accueil : avatar, nom, 2 jauges distinctes
+// (Niveau = XP / Ligue = points), et les 3 stats POINTS/RANG/SÉRIE.
+// Remplace l'ancien initHomeHeader + renderHomeLeagueChip + renderHomeStreak.
+function renderHomeProfil() {
   if (!currentUser) return;
   const joueur = allJoueurs.find(j => j.id === currentUser);
   if (!joueur) return;
+  const $ = id => document.getElementById(id);
+  const txt = (id, v) => { const e = $(id); if (e) e.textContent = v; };
+  const setW = (id, pct) => { const e = $(id); if (e) e.style.width = Math.max(0, Math.min(100, pct)) + '%'; };
 
-  const nameEl = document.getElementById('home-username');
-  if (nameEl) nameEl.textContent = joueur.pseudo || joueur.id;
-
-  const avEl = document.getElementById('home-avatar');
-  if (avEl) avEl.innerHTML = renderAvatarEl(joueur, 38, 11);
+  const avEl = $('home-avatar');
+  if (avEl) avEl.innerHTML = renderAvatarEl(joueur, 48, 14);
+  txt('home-username', joueur.pseudo || joueur.id);
 
   const pts = calcPoints(joueur);
-  const info = getLevelInfo(joueur);
-  const pct = Math.min(100, info.xpPct);
-  const fillEl = document.getElementById('home-xp-fill');
-  const labelEl = document.getElementById('home-xp-label');
-  if (fillEl) fillEl.style.width = pct + '%';
-  if (labelEl) labelEl.textContent = info.level >= MAX_LEVEL
-    ? 'Niv.' + info.level + ' · MAX'
-    : 'Niv.' + info.level + ' · ' + info.xpInLevel + '/' + info.xpRequired + ' XP';
-
-  const coinsEl = document.getElementById('home-coins');
-  if (coinsEl) coinsEl.textContent = pts.toLocaleString('fr-FR');
-
   const board = getLeaderboard();
   const rank = board.findIndex(p => p.id === currentUser) + 1;
-  const gemsEl = document.getElementById('home-gems');
-  if (gemsEl) gemsEl.textContent = rank > 0 ? '#' + rank : '—';
+
+  // ── Jauge NIVEAU (progression XP dans le niveau courant) ──
+  const info = getLevelInfo(joueur);
+  const maxed = info.level >= MAX_LEVEL;
+  txt('home-level-num', info.level);
+  txt('home-level-val', maxed ? 'MAX' : info.xpInLevel + ' / ' + info.xpRequired + ' XP');
+  setW('home-level-fill', maxed ? 100 : info.xpPct);
+  txt('home-level-next', maxed
+    ? 'Niveau maximum atteint 🎉'
+    : 'Encore ' + (info.xpRequired - info.xpInLevel) + ' XP pour le niveau ' + (info.level + 1));
+
+  // ── Jauge LIGUE (progression de points vers la ligue suivante) ──
+  const lig = getLeagueForPoints(pts);
+  const next = LEAGUES[LEAGUES.indexOf(lig) + 1];
+  const ligPct = next ? ((pts - lig.min) / (next.min - lig.min)) * 100 : 100;
+  txt('home-league-num', lig.name.toUpperCase());
+  txt('home-league-val', next ? pts + ' / ' + next.min + ' pts' : pts + ' pts');
+  setW('home-league-fill', ligPct);
+  txt('home-league-next', next
+    ? 'Encore ' + (next.min - pts) + ' pts pour la ligue ' + next.name
+    : 'Ligue maximum atteinte 👑');
+  const ligFill = $('home-league-fill');
+  if (ligFill) ligFill.style.background = lig.color;
+  const ligNum = $('home-league-num');
+  if (ligNum) ligNum.style.color = lig.color;
+
+  // ── Porte-monnaie (or + gemmes) ──
+  txt('home-wallet-coins', (joueur.coins || 0).toLocaleString('fr-FR'));
+  txt('home-wallet-gems', (joueur.gems || 0).toLocaleString('fr-FR'));
+
+  // ── Stats POINTS / RANG / SÉRIE ──
+  txt('home-coins', pts.toLocaleString('fr-FR'));
+  txt('home-gems', rank > 0 ? '#' + rank : '—');
+  const streak = getStreak(joueur);
+  txt('home-streak', streak > 0 ? streak + 'J 🔥' : '—');
 }
 
 function renderHeroCard() {
@@ -4082,23 +4099,196 @@ function closeCoffresModal() {
 
 // ── MISSIONS ──
 // Étape 7 — Le rendu détaillé (3 daily + 3 weekly + 5 tournament) vit
-// dans js/missions.js (renderMissionsCard). On garde un wrapper local
-// pour la compatibilité avec les appels existants d'initHomePage.
-function renderMissionCard() {
-  if (typeof renderMissionsCard === 'function') renderMissionsCard();
+// dans js/missions.js (renderMissionsCard).
+// Sprint 1b — l'accueil n'affiche plus la liste complète (trop haute pour
+// tenir sur un écran) : un bloc résumé chiffré, cliquable, ouvre une modale
+// avec le détail. renderMissionCard reste comme alias rétrocompatible.
+function renderMissionCard() { renderMissionsHomeSummary(); }
+
+// Cellule Missions de la grid d'accueil (#mission-home — un <button>).
+// Affiche un résumé chiffré ; le clic (onclick HTML) ouvre la modale détail.
+async function renderMissionsHomeSummary() {
+  const container = document.getElementById('mission-home');
+  if (!container) return;
+  let s = null;
+  if (typeof getMissionsSummary === 'function') {
+    try { s = await getMissionsSummary(); } catch(_) {}
+  }
+  s = s || { active: 0, claimable: 0 };
+  const active = s.active || 0;
+  const claimable = s.claimable || 0;
+  const sub = active > 0
+    ? active + ' en cours' + (claimable > 0 ? ' · ' + claimable + ' à réclamer' : '')
+    : 'Aucune mission active';
+  container.innerHTML = `
+    <span class="hgc-icon">🎯</span>
+    <span class="hgc-title">MISSIONS</span>
+    <span class="hgc-sub">${sub}</span>
+    ${claimable > 0 ? `<span class="hgc-badge">${claimable}</span>` : ''}`;
+}
+
+// Modale détail des missions (liste complète scrollable)
+function openMissionsModal() {
+  let modal = document.getElementById('missions-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'missions-modal';
+    modal.className = 'missions-modal';
+    modal.innerHTML = `
+      <div class="missions-modal-card" role="dialog" aria-modal="true" aria-label="Missions">
+        <div class="missions-modal-head">
+          <span class="missions-modal-title">MISSIONS</span>
+          <button class="missions-modal-close" onclick="closeMissionsModal()" aria-label="Fermer">✕</button>
+        </div>
+        <div class="missions-modal-body" id="missions-modal-body"></div>
+      </div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', e => { if (e.target === modal) closeMissionsModal(); });
+  }
+  modal.classList.remove('hidden');
+  const body = document.getElementById('missions-modal-body');
+  if (body) body.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text3);font-size:13px">Chargement…</div>';
+  if (typeof renderMissionsCard === 'function') renderMissionsCard('missions-modal-body');
+  if (window.A11yModal) A11yModal.open(modal, { onClose: closeMissionsModal });
+}
+
+function closeMissionsModal() {
+  const modal = document.getElementById('missions-modal');
+  if (!modal) return;
+  if (window.A11yModal) A11yModal.close(modal);
+  modal.classList.add('hidden');
+}
+
+// Rafraîchit le résumé accueil + la modale si elle est ouverte
+// (appelé par claimMission dans js/missions.js après une réclamation).
+async function refreshMissionsViews() {
+  await renderMissionsHomeSummary();
+  const modal = document.getElementById('missions-modal');
+  if (modal && !modal.classList.contains('hidden') && typeof renderMissionsCard === 'function') {
+    await renderMissionsCard('missions-modal-body');
+  }
+}
+
+// ══ Sprint 1 — Accueil refonte : nouveaux blocs (mise en page) ══
+
+// Cellule Récompenses de la grid d'accueil (#rewards-home — un <button>).
+// Affiche un résumé (coffres à ouvrir en priorité, sinon nb de badges) ;
+// le clic (onclick HTML) ouvre la modale Récompenses détaillée.
+async function renderRewardsHome() {
+  const container = document.getElementById('rewards-home');
+  if (!container) return;
+  let badgeCount = 0;
+  try {
+    const ids = await getEarnedBadgeIds(currentUser);
+    badgeCount = (ids && typeof ids.size === 'number') ? ids.size : 0;
+  } catch (_) {}
+  const chests = (typeof allCoffres !== 'undefined') ? allCoffres.filter(c => !c.ouvert).length : 0;
+  const sub = chests > 0
+    ? chests + ' coffre' + (chests > 1 ? 's' : '') + ' à ouvrir'
+    : (badgeCount > 0 ? badgeCount + ' badge' + (badgeCount > 1 ? 's' : '') + ' débloqué' + (badgeCount > 1 ? 's' : '')
+                      : 'Rien pour l\'instant');
+  container.innerHTML = `
+    <span class="hgc-icon">🎁</span>
+    <span class="hgc-title">RÉCOMPENSES</span>
+    <span class="hgc-sub">${sub}</span>
+    ${chests > 0 ? `<span class="hgc-badge">${chests}</span>` : ''}`;
+}
+
+// ── Modale Récompenses : argent + coffres à ouvrir + badges débloqués ──
+function openRewardsModal() {
+  let modal = document.getElementById('rewards-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'rewards-modal';
+    modal.className = 'rewards-modal';
+    modal.innerHTML = `
+      <div class="rewards-modal-card" role="dialog" aria-modal="true" aria-label="Récompenses">
+        <div class="rewards-modal-head">
+          <span class="rewards-modal-title">RÉCOMPENSES</span>
+          <button class="rewards-modal-close" onclick="closeRewardsModal()" aria-label="Fermer">✕</button>
+        </div>
+        <div class="rewards-modal-body" id="rewards-modal-body"></div>
+      </div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', e => { if (e.target === modal) closeRewardsModal(); });
+  }
+  modal.classList.remove('hidden');
+  renderRewardsModalBody();
+  if (window.A11yModal) A11yModal.open(modal, { onClose: closeRewardsModal });
+}
+
+function closeRewardsModal() {
+  const modal = document.getElementById('rewards-modal');
+  if (!modal) return;
+  if (window.A11yModal) A11yModal.close(modal);
+  modal.classList.add('hidden');
+  renderRewardsHome(); // resynchronise la cellule (coffres ouverts entre-temps)
+}
+
+async function renderRewardsModalBody() {
+  const body = document.getElementById('rewards-modal-body');
+  if (!body) return;
+  const joueur = allJoueurs.find(j => j.id === currentUser);
+  const coins = (joueur && joueur.coins) || 0;
+  const gems  = (joueur && joueur.gems)  || 0;
+
+  // Coffres à ouvrir
+  const chests = (typeof allCoffres !== 'undefined') ? allCoffres.filter(c => !c.ouvert) : [];
+  const CHEST_EMOJIS = { bronze:'📦', argent:'🥈', or:'🎁', diamant:'💎', legende:'👑' };
+  const CHEST_NAMES  = { bronze:'Bronze', argent:'Argent', or:'Or', diamant:'Diamant', legende:'Légende' };
+  const chestsHtml = chests.length
+    ? chests.map(c => `
+        <button class="rw-chest" onclick="juicyTap(event,25); openChest(${c.id}); setTimeout(renderRewardsModalBody,450)">
+          <span class="rw-chest-emo">${CHEST_EMOJIS[c.type] || '📦'}</span>
+          <span class="rw-chest-name">${CHEST_NAMES[c.type] || 'Coffre'}</span>
+        </button>`).join('')
+    : '<div class="rw-empty">Aucun coffre à ouvrir pour l\'instant</div>';
+
+  // Badges débloqués
+  let earnedIds = new Set();
+  try { earnedIds = await getEarnedBadgeIds(currentUser); } catch (_) {}
+  const defs = (typeof BADGES !== 'undefined') ? BADGES : [];
+  const earned = defs.filter(b => earnedIds.has(b.id));
+  const badgesHtml = earned.length
+    ? earned.map(b => `
+        <div class="rw-badge rarete-${b.rarete}">
+          <span class="rw-badge-ico">${window.icon ? window.icon(b.icon || 'gold-medal', 22) : '🏅'}</span>
+          <span class="rw-badge-name">${b.name}</span>
+        </div>`).join('')
+    : '<div class="rw-empty">Aucun badge débloqué — gagne ton premier pronostic !</div>';
+
+  body.innerHTML = `
+    <div class="rw-section">
+      <div class="rw-section-title">MON ARGENT</div>
+      <div class="rw-money">
+        <span class="rw-money-item">🪙 <b>${coins.toLocaleString('fr-FR')}</b><br>pièces</span>
+        <span class="rw-money-item">💎 <b>${gems}</b><br>gemmes</span>
+      </div>
+    </div>
+    <div class="rw-section">
+      <div class="rw-section-title">COFFRES À OUVRIR <span class="rw-count">${chests.length}</span></div>
+      <div class="rw-chests">${chestsHtml}</div>
+    </div>
+    <div class="rw-section">
+      <div class="rw-section-title">BADGES DÉBLOQUÉS <span class="rw-count">${earned.length}</span></div>
+      <div class="rw-badges">${badgesHtml}</div>
+    </div>`;
 }
 
 function initHomePage() {
-  initHomeHeader();
+  renderHomeProfil();       // SPRINT1f — hero profil : avatar, nom, 2 jauges, stats
   renderDailyRewardCard();
-  renderMissionCard();
+  renderMissionCard();      // SPRINT1c — cellule Missions de la grid
   renderCoffresCard();
-  if (typeof renderShopHomeCard === 'function') renderShopHomeCard();
+  if (typeof renderShopHomeCard === 'function') renderShopHomeCard(); // SPRINT1c — cellule Shop de la grid
   renderHeroCard();
-  renderQuickMatches();
-  renderStreakCard();
-  renderLeagueCard();
-  renderNewsFeed();
+  renderRewardsHome();      // SPRINT1 — zone récompenses (stub fallback badges)
+  // SPRINT1 — blocs legacy retirés de l'accueil. Décommenter pour restaurer
+  // (penser aussi à restaurer leur HTML : voir index.html.bak.sprint1) :
+  // renderQuickMatches();
+  // renderStreakCard();
+  // renderLeagueCard();
+  // renderNewsFeed();
 }
 
 function renderHomePage() { initHomePage(); }

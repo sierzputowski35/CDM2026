@@ -66,6 +66,8 @@
 }
 .ahv2-logo { display: flex; align-items: center; gap: 8px; }
 .ahv2-logo-icon { width: 26px; height: 26px; border-radius: 7px; display: block; }
+/* Logo image United 2026 (bannière transparente) — hauteur calée sur le header */
+.ahv2-logo-img { height: 34px; width: auto; display: block; }
 .ahv2-logo-text {
   font-family: 'Bebas Neue', sans-serif;
   font-size: 18px; letter-spacing: 2.5px;

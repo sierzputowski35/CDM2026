@@ -11,9 +11,11 @@
 // PR #8 (Sprint 3) : bump v7 — juice (XP toast, hex pulse, badge particles)
 // PR #9 (Sprint 3) : bump v8 — motion.js + countdown tabular-nums
 // Sprint 3 follow-up : bump v9 — couverture reveal (daily, mission, coffres, groupes)
+// Sprint 1 (refonte accueil) : bump v10 — nouveau layout home (hero profil,
+// grid 2 cols, zone récompenses)
 // (force le refresh du cache pour que les clients existants récupèrent
 // la nouvelle structure de chargement)
-const CACHE = 'cdm2026-v9';
+const CACHE = 'cdm2026-v10';
 
 // FIX #8 : Les polices Google Fonts sont maintenant mises en cache
 // pour que l'app reste belle en mode hors-ligne.
@@ -25,6 +27,7 @@ const STATIC_ASSETS = [
   '/index.html',
   '/icon-192.png',
   '/icon-512.png',
+  '/assets/logo-united-2026.png',
   // PR #2 : feuilles de style séparées
   '/styles/variables.css',
   '/styles/reset.css',
