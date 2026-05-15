@@ -7,13 +7,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;600;700;800&display=swap');
 
 :root {
-  /* Palette Supercell x Canal+ Sport */
-  --bg:        #06080f;
-  --bg2:       #0b0f1a;
-  --bg3:       #101520;
-  --surface:   #141926;
-  --surface2:  #1a2133;
-  --surface3:  #1f2840;
+  /* Palette Supercell x Canal+ Sport
+     Proposition éclaircie : fond bleu nuit / ardoise (au lieu du quasi-noir),
+     les paliers bg→surface gardent les mêmes écarts → hiérarchie préservée. */
+  --bg:        #151b2d;
+  --bg2:       #1c2338;
+  --bg3:       #232c44;
+  --surface:   #28324c;
+  --surface2:  #303b59;
+  --surface3:  #3b4870;
 
   /* Accents — variantes claires legacy conservées (pas d'équivalent V2 strict,
      utilisées dans certains gradients en combinaison avec --gold-primary / --crimson). */
@@ -40,11 +42,11 @@
   --radius-lg: 20px;
   --radius-xl: 26px;
 
-  /* ── V2 PALETTE DOPAMINE ── */
-  --bg-primary:   #050816;
-  --bg-secondary: #0B1020;
-  --bg-card:      #111827;
-  --bg-elevated:  #1A2235;
+  /* ── V2 PALETTE DOPAMINE ── (éclaircie : voir note plus haut) */
+  --bg-primary:   #141a2d;
+  --bg-secondary: #1c2339;
+  --bg-card:      #222b43;
+  --bg-elevated:  #2c3654;
   --gold-primary: #F0A020;  /* or royal orange (Test 1) — était #F4C542 */
   --gold-light:   #FFC04F;  /* clair assorti — était #FFCC33 */
   --gold-dark:    #B8780A;  /* foncé assorti — était #C99812 */

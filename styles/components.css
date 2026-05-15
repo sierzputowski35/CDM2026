@@ -54,7 +54,7 @@
 /* ── APP HEADER V2 ── */
 .app-header-v2 {
   position: sticky; top: 0; z-index: 200;
-  background: linear-gradient(180deg, rgba(6,8,15,.98) 0%, rgba(11,16,32,.94) 100%);
+  background: linear-gradient(180deg, rgba(21,27,45,.98) 0%, rgba(28,35,57,.94) 100%);
   backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
   border-bottom: 1px solid rgba(244,197,66,.15);
   padding: 10px 16px 12px;
@@ -528,7 +528,7 @@
   position: fixed;
   bottom: 0; left: 0; right: 0;
   z-index: 1000;
-  background: rgba(6,8,15,.96);
+  background: rgba(21,27,45,.96);
   border-top: 1px solid rgba(244,197,66,.15);
   backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
   display: flex;
@@ -1076,31 +1076,19 @@
    MATCH CARDS
 ══════════════════════════════════ */
 /* ── MATCH CARD PREMIUM ───────────────────────────────────── */
+/* Carte de match — alignée sur le style des cartes de l'accueil
+   (.home-section / .home-grid-card) : fond var(--bg-card), bordure
+   var(--border2), pas de stripe tricolore ni de glow. */
 .match-card {
   position: relative;
-  background: linear-gradient(145deg, #141926 0%, #1A2235 100%);
-  border: 1px solid rgba(255,215,0,.18);
+  background: var(--bg-card);
+  border: 1px solid var(--border2);
   border-radius: 20px;
   padding: 16px;
   margin-bottom: 10px;
   overflow: hidden;
-  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
-  box-shadow:
-    0 4px 24px rgba(0,0,0,.45),
-    0 0 0 1px rgba(255,255,255,.03),
-    inset 0 1px 0 rgba(255,255,255,.05);
-}
-.match-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0; height: 3px;
-  background: linear-gradient(90deg, var(--crimson) 0%, var(--crimson) 33%, var(--gold-primary) 33%, var(--gold-primary) 66%, #003189 66%, #003189 100%);
-  border-radius: 20px 20px 0 0;
-}
-.match-card::after {
-  content: '';
-  position: absolute; inset: 0; border-radius: 20px; pointer-events: none;
-  background: radial-gradient(ellipse at 50% 0%, rgba(255,215,0,.06), transparent 65%);
+  transition: transform .2s ease, border-color .2s ease;
+  box-shadow: 0 4px 16px rgba(0,0,0,.25);
 }
 .match-card:hover, .match-card:focus-within {
   transform: translateY(-3px);
