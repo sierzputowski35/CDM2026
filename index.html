@@ -310,8 +310,8 @@
 
       <!-- ═══════════════════════════════════════════════════════
            PAGE ACCUEIL — refonte Sprint 1 (mise en page)
-           Layout : 1.Hero Profil · 2.Hero Card Match · 3.Grid Ligue+Série
-                    4.Missions · 5.Récompenses · 6.Boutique
+           Layout : 1.Hero Profil · 2.Hero Card Match
+                    3.Grid [Missions | Shop] · 4.Récompenses
            Blocs masqués (DOM conservé, JS ne plante pas) :
                     #daily-reward-home, #coffres-home
            Blocs legacy RETIRÉS de l'accueil : Matchs du Jour, Streak card,
@@ -406,20 +406,16 @@
         </div>
       </div>
 
-      <!-- ═══ 3. GRID MA LIGUE + SÉRIE ═══ -->
+      <!-- ═══ 3. GRID MISSIONS + SHOP ═══ -->
+      <!-- Les 2 cellules SONT #mission-home et #shop-home : le JS
+           (renderMissionsHomeSummary / renderShopHomeCard) y injecte
+           directement le contenu compact. Clic missions → modale détail. -->
       <section class="home-grid-2">
-        <div id="home-card-ligue" class="home-mini-card home-mini-card--ligue">
-          <div class="home-mini-card-label">MA LIGUE</div>
-        </div>
-        <div id="home-card-streak" class="home-mini-card home-mini-card--streak">
-          <div class="home-mini-card-label">SÉRIE</div>
-        </div>
+        <button id="mission-home" class="home-grid-card" onclick="openMissionsModal()" aria-label="Voir les missions"></button>
+        <button id="shop-home" class="home-grid-card" onclick="openShop()" aria-label="Ouvrir la boutique"></button>
       </section>
 
-      <!-- ═══ 4. MISSIONS DU JOUR ═══ -->
-      <div id="mission-home"></div>
-
-      <!-- ═══ 5. RÉCOMPENSES À RÉCUPÉRER (fallback badges si vide) ═══ -->
+      <!-- ═══ 4. RÉCOMPENSES À RÉCUPÉRER (fallback badges si vide) ═══ -->
       <section class="home-section home-section--rewards">
         <div class="home-section-head">
           <span class="home-section-title" id="rewards-title">RÉCOMPENSES À RÉCUPÉRER</span>
@@ -428,9 +424,6 @@
         </div>
         <div class="home-rewards-scroll" id="rewards-home"></div>
       </section>
-
-      <!-- ═══ 6. BOUTIQUE ═══ -->
-      <div id="shop-home"></div>
 
     </div>
     <div id="page-classement" class="page">
@@ -4096,7 +4089,8 @@ function closeCoffresModal() {
 // avec le détail. renderMissionCard reste comme alias rétrocompatible.
 function renderMissionCard() { renderMissionsHomeSummary(); }
 
-// Bloc résumé compact dans #mission-home (accueil)
+// Cellule Missions de la grid d'accueil (#mission-home — un <button>).
+// Affiche un résumé chiffré ; le clic (onclick HTML) ouvre la modale détail.
 async function renderMissionsHomeSummary() {
   const container = document.getElementById('mission-home');
   if (!container) return;
@@ -4111,15 +4105,10 @@ async function renderMissionsHomeSummary() {
     ? active + ' en cours' + (claimable > 0 ? ' · ' + claimable + ' à réclamer' : '')
     : 'Aucune mission active';
   container.innerHTML = `
-    <button class="home-missions-summary" onclick="openMissionsModal()" aria-label="Voir le détail des missions">
-      <span class="hms-icon">🎯</span>
-      <span class="hms-info">
-        <span class="hms-title">MISSIONS</span>
-        <span class="hms-sub">${sub}</span>
-      </span>
-      ${claimable > 0 ? `<span class="hms-badge">${claimable}</span>` : ''}
-      <span class="hms-chevron">›</span>
-    </button>`;
+    <span class="hgc-icon">🎯</span>
+    <span class="hgc-title">MISSIONS</span>
+    <span class="hgc-sub">${sub}</span>
+    ${claimable > 0 ? `<span class="hgc-badge">${claimable}</span>` : ''}`;
 }
 
 // Modale détail des missions (liste complète scrollable)
@@ -4198,42 +4187,10 @@ function renderHomeStreak() {
   el.style.color = streak >= 3 ? '#FF8A3D' : 'var(--text)';
 }
 
-// 7c — Card « Ma Ligue » (grid gauche)
-function renderHomeLigueCard() {
-  const container = document.getElementById('home-card-ligue');
-  if (!container) return;
-  const joueur = allJoueurs.find(j => j.id === currentUser);
-  if (!joueur) return;
-  const board = getLeaderboard();
-  const rank = board.findIndex(p => p.id === currentUser) + 1;
-  const pts = calcPoints(joueur);
-  const lig = getLeagueForPoints(pts);
-  const nextIdx = LEAGUES.indexOf(lig) + 1;
-  const next = LEAGUES[nextIdx];
-  const pct = next ? Math.min(100, ((pts - lig.min) / (next.min - lig.min)) * 100) : 100;
-  container.innerHTML = `
-    <div class="home-mini-card-label">MA LIGUE</div>
-    <div class="home-mini-card-content">
-      <div class="home-mini-card-title" style="color:${lig.color}">${lig.name.toUpperCase()}</div>
-      <div class="home-mini-card-sub">${rank > 0 ? '#' + rank : '—'} · ${pts} pts</div>
-      <div class="home-mini-card-bar"><div class="home-mini-card-bar-fill" style="width:${pct}%;background:${lig.color}"></div></div>
-    </div>`;
-}
-
-// 7d — Card « Série » (grid droite)
-function renderHomeStreakCard() {
-  const container = document.getElementById('home-card-streak');
-  if (!container) return;
-  const joueur = allJoueurs.find(j => j.id === currentUser);
-  if (!joueur) return;
-  const streak = getStreak(joueur);
-  container.innerHTML = `
-    <div class="home-mini-card-label">SÉRIE</div>
-    <div class="home-mini-card-content">
-      <div class="home-mini-card-big" style="color:#FF8A3D">${streak}J 🔥</div>
-      <div class="home-mini-card-sub">${streak >= 5 ? 'Continue ta lancée !' : 'Pronostique pour grimper'}</div>
-    </div>`;
-}
+// Note Sprint 1c — les cards « Ma Ligue » et « Série » de la grid ont été
+// retirées : la grid 2 colonnes accueille désormais Missions + Shop.
+// L'info ligue reste visible via le chip du hero profil (renderHomeLeagueChip)
+// et la série via la stat du hero profil (renderHomeStreak).
 
 // 7e — Zone récompenses (STUB Sprint 1 : toujours fallback badges).
 // La vraie détection des récompenses à récupérer arrivera au sprint dédié.
@@ -4283,12 +4240,10 @@ function initHomePage() {
   initHomeHeader();
   renderHomeLeagueChip();   // SPRINT1 — chip ligue (hero profil)
   renderHomeStreak();       // SPRINT1 — stat série (hero profil)
-  renderHomeLigueCard();    // SPRINT1 — card Ma Ligue (grid)
-  renderHomeStreakCard();   // SPRINT1 — card Série (grid)
   renderDailyRewardCard();
-  renderMissionCard();
+  renderMissionCard();      // SPRINT1c — cellule Missions de la grid
   renderCoffresCard();
-  if (typeof renderShopHomeCard === 'function') renderShopHomeCard();
+  if (typeof renderShopHomeCard === 'function') renderShopHomeCard(); // SPRINT1c — cellule Shop de la grid
   renderHeroCard();
   renderRewardsHome();      // SPRINT1 — zone récompenses (stub fallback badges)
   // SPRINT1 — blocs legacy retirés de l'accueil. Décommenter pour restaurer

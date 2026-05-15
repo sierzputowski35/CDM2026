@@ -1667,41 +1667,51 @@
 #page-home .home-mini-card-big { font-size: 26px; }
 
 /* ══════════════════════════════════
-   SPRINT 1b — BLOC MISSIONS RÉSUMÉ + MODALE DÉTAIL
-   L'accueil n'affiche qu'un résumé chiffré cliquable ; la liste
-   complète des missions vit dans une modale scrollable.
+   SPRINT 1c — GRID [MISSIONS | SHOP] + MODALE MISSIONS
+   La grid 2 colonnes accueille les cellules Missions et Shop.
+   Chaque cellule (#mission-home / #shop-home) est un <button>
+   .home-grid-card ; le JS y injecte le contenu compact (.hgc-*).
 ══════════════════════════════════ */
 
-/* bloc résumé (accueil) */
-.home-missions-summary {
-  display: flex; align-items: center; gap: 12px;
-  width: calc(100% - 32px); margin: 0 16px 8px;
+/* cellule cliquable de la grid */
+.home-grid-card {
+  display: flex; flex-direction: column;
+  align-items: flex-start; justify-content: center;
+  gap: 4px;
+  min-height: 84px;
   padding: 12px 14px;
   background: var(--bg-card);
   border: 1px solid var(--border2);
   border-radius: 18px;
   cursor: pointer;
   font-family: inherit; text-align: left;
-  transition: transform .12s ease;
+  position: relative;
+  transition: transform .12s ease, border-color .2s ease;
 }
-.home-missions-summary:active { transform: scale(.98); }
-.hms-icon { font-size: 20px; flex-shrink: 0; line-height: 1; }
-.hms-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.hms-title {
-  font-family: 'Inter', sans-serif;
-  font-size: 9px; font-weight: 700; letter-spacing: 1.5px;
-  color: var(--royal-purple);
+.home-grid-card:active { transform: scale(.97); }
+.hgc-icon { font-size: 22px; line-height: 1; }
+.hgc-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 17px; letter-spacing: 1px;
+  color: var(--text);
 }
-.hms-sub { font-size: 12px; color: var(--text2); font-weight: 600; }
-.hms-badge {
-  flex-shrink: 0;
+.hgc-sub {
+  font-size: 11px; color: var(--text2); font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.hgc-badge {
+  position: absolute; top: 9px; right: 9px;
   min-width: 20px; height: 20px; padding: 0 6px;
   border-radius: 10px;
   background: #FF4D5A; color: #fff;
   font-size: 11px; font-weight: 700;
   display: flex; align-items: center; justify-content: center;
 }
-.hms-chevron { flex-shrink: 0; color: var(--text3); font-size: 18px; line-height: 1; }
+/* accents par cellule */
+#mission-home.home-grid-card { border-color: rgba(168,85,247,.28); }
+#mission-home .hgc-title { color: var(--royal-purple); }
+#shop-home.home-grid-card { border-color: rgba(244,197,66,.30); }
+#shop-home .hgc-title { color: var(--gold-primary); }
 
 /* modale détail */
 .missions-modal {

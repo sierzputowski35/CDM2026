@@ -327,22 +327,20 @@ async function renderShop() {
 }
 
 // ── HOME CARD : point d'entrée vers le shop ──────────────────
+// Sprint 1c — #shop-home est désormais une cellule de la grid d'accueil
+// (un <button class="home-grid-card"> avec onclick="openShop()"). On y
+// injecte uniquement le contenu compact (.hgc-*), pas de wrapper de carte.
 function renderShopHomeCard() {
   const container = document.getElementById('shop-home');
   if (!container) return;
   const joueur = (typeof allJoueurs !== 'undefined' ? allJoueurs : []).find(j => j.id === currentUser);
   if (!joueur) { container.innerHTML = ''; return; }
-  // Petits indicateurs : boosters actifs + nb d'items abordables
+  // Petits indicateurs : boosters actifs
   const activeBoosts = ['boost_double_xp_until','boost_double_coins_until','boost_streak_until']
     .filter(f => joueur[f] && new Date(joueur[f]).getTime() > Date.now()).length;
   container.innerHTML = `
-    <div class="shop-home-card" onclick="openShop()">
-      <div class="shop-home-icon">🏪</div>
-      <div class="shop-home-info">
-        <div class="shop-home-title">Shop</div>
-        <div class="shop-home-sub">${joueur.coins || 0} 🪙 · ${joueur.gems || 0} 💎${activeBoosts > 0 ? ` · ⚡ ${activeBoosts} actif${activeBoosts > 1 ? 's' : ''}` : ''}</div>
-      </div>
-      <div class="shop-home-arrow">›</div>
-    </div>`;
+    <span class="hgc-icon">🏪</span>
+    <span class="hgc-title">SHOP</span>
+    <span class="hgc-sub">${joueur.coins || 0} 🪙 · ${joueur.gems || 0} 💎${activeBoosts > 0 ? ` · ⚡${activeBoosts}` : ''}</span>`;
 }
 
