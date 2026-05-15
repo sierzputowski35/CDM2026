@@ -310,8 +310,8 @@
 
       <!-- ═══════════════════════════════════════════════════════
            PAGE ACCUEIL — refonte Sprint 1 (mise en page)
-           Layout : 1.Hero Profil · 2.Hero Card Match
-                    3.Grid [Missions | Shop] · 4.Récompenses
+           Layout : 1.Hero Profil · 2.Hero Card Match · 3.Grid 2×2
+                    [Missions | Récompenses] / [Coupe du Monde | Shop]
            Blocs masqués (DOM conservé, JS ne plante pas) :
                     #daily-reward-home, #coffres-home
            Blocs legacy RETIRÉS de l'accueil : Matchs du Jour, Streak card,
@@ -406,36 +406,20 @@
         </div>
       </div>
 
-      <!-- ═══ 3. GRID MISSIONS + SHOP ═══ -->
-      <!-- Les 2 cellules SONT #mission-home et #shop-home : le JS
-           (renderMissionsHomeSummary / renderShopHomeCard) y injecte
-           directement le contenu compact. Clic missions → modale détail. -->
+      <!-- ═══ 3. GRID 2×2 — Missions · Récompenses / Coupe du Monde · Shop ═══ -->
+      <!-- 4 cellules .home-grid-card. Le JS injecte le contenu compact dans
+           #mission-home, #rewards-home et #shop-home ; la cellule Coupe du
+           Monde est statique. Ordre = ligne par ligne. -->
       <section class="home-grid-2">
         <button id="mission-home" class="home-grid-card" onclick="openMissionsModal()" aria-label="Voir les missions"></button>
+        <button id="rewards-home" class="home-grid-card" onclick="switchTab('profil')" aria-label="Voir les récompenses et badges"></button>
+        <button id="home-wc-card" class="home-grid-card" onclick="switchTab('resultats')" aria-label="Voir les résultats de la Coupe du Monde">
+          <img class="hgc-logo" src="icon-192.png" alt="" onerror="this.style.display='none'">
+          <span class="hgc-title">COUPE DU MONDE</span>
+          <span class="hgc-sub">Résultats &amp; classements</span>
+        </button>
         <button id="shop-home" class="home-grid-card" onclick="openShop()" aria-label="Ouvrir la boutique"></button>
       </section>
-
-      <!-- ═══ 4. RÉCOMPENSES À RÉCUPÉRER (fallback badges si vide) ═══ -->
-      <section class="home-section home-section--rewards">
-        <div class="home-section-head">
-          <span class="home-section-title" id="rewards-title">RÉCOMPENSES À RÉCUPÉRER</span>
-          <span class="home-section-badge" id="rewards-count">0</span>
-          <button class="home-section-link" id="rewards-link" onclick="claimAllRewards()">TOUT RÉCUPÉRER ›</button>
-        </div>
-        <div class="home-rewards-scroll" id="rewards-home"></div>
-      </section>
-
-      <!-- ═══ 5. COUPE DU MONDE → RÉSULTATS ═══ -->
-      <!-- Point d'entrée vers la page Résultats (#page-groupes) depuis que
-           l'onglet Résultats a été retiré de la bottom-nav. -->
-      <button class="home-wc-block" onclick="switchTab('resultats')" aria-label="Voir les résultats de la Coupe du Monde">
-        <img class="home-wc-logo" src="icon-192.png" alt="" onerror="this.style.display='none'">
-        <span class="home-wc-info">
-          <span class="home-wc-title">COUPE DU MONDE 2026</span>
-          <span class="home-wc-sub">Résultats, groupes &amp; phases finales</span>
-        </span>
-        <span class="home-wc-chevron">›</span>
-      </button>
 
     </div>
     <div id="page-classement" class="page">
@@ -4198,48 +4182,25 @@ function renderHomeStreak() {
 // L'info ligue reste visible via le chip du hero profil (renderHomeLeagueChip)
 // et la série via la stat du hero profil (renderHomeStreak).
 
-// 7e — Zone récompenses (STUB Sprint 1 : toujours fallback badges).
-// La vraie détection des récompenses à récupérer arrivera au sprint dédié.
-function renderRewardsHome() {
+// Cellule Récompenses de la grid d'accueil (#rewards-home — un <button>).
+// STUB Sprint 1 : pas encore de vraie récompense à récupérer → on affiche
+// le nombre de badges obtenus ; le clic (onclick HTML) mène à l'onglet
+// Profil où vivent les badges. La vraie logique arrivera au sprint dédié.
+async function renderRewardsHome() {
   const container = document.getElementById('rewards-home');
-  const titleEl   = document.getElementById('rewards-title');
-  const countEl   = document.getElementById('rewards-count');
-  const linkEl    = document.getElementById('rewards-link');
   if (!container) return;
-
-  const pendingRewards = []; // STUB — vide pour ce sprint
-
-  if (pendingRewards.length > 0) {
-    if (titleEl) titleEl.textContent = 'RÉCOMPENSES À RÉCUPÉRER';
-    if (countEl) { countEl.textContent = pendingRewards.length; countEl.classList.remove('hidden'); }
-    if (linkEl) linkEl.style.display = '';
-    // renderRewardCards(container, pendingRewards) — sprint suivant
-  } else {
-    if (titleEl) titleEl.textContent = 'MES BADGES';
-    if (countEl) countEl.classList.add('hidden');
-    if (linkEl) {
-      linkEl.textContent = 'VOIR PLUS ›';
-      linkEl.onclick = () => switchTab('profil', document.getElementById('tab-profil'));
-    }
-    renderHomeBadgesFallback(container);
-  }
-}
-
-async function renderHomeBadgesFallback(container) {
-  let earnedIds;
-  try { earnedIds = await getEarnedBadgeIds(currentUser); }
-  catch (_) { earnedIds = new Set(); }
-  const defs = (typeof BADGES !== 'undefined') ? BADGES : [];
-  const earned = defs.filter(b => earnedIds.has(b.id)).slice(0, 5);
-  if (earned.length === 0) {
-    container.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:8px 0">Aucun badge encore — gagne ton premier pronostic !</div>';
-    return;
-  }
-  container.innerHTML = earned.map(b => `
-    <div class="home-badge-item rarete-${b.rarete}">
-      <div class="home-badge-icon">${window.icon ? window.icon(b.icon || 'gold-medal', 24) : ''}</div>
-      <div class="home-badge-name">${b.name}</div>
-    </div>`).join('');
+  let earnedCount = 0;
+  try {
+    const ids = await getEarnedBadgeIds(currentUser);
+    earnedCount = (ids && typeof ids.size === 'number') ? ids.size : 0;
+  } catch (_) {}
+  const sub = earnedCount > 0
+    ? earnedCount + ' badge' + (earnedCount > 1 ? 's' : '') + ' obtenu' + (earnedCount > 1 ? 's' : '')
+    : 'Aucun badge pour l\'instant';
+  container.innerHTML = `
+    <span class="hgc-icon">🎖️</span>
+    <span class="hgc-title">RÉCOMPENSES</span>
+    <span class="hgc-sub">${sub}</span>`;
 }
 
 function initHomePage() {
