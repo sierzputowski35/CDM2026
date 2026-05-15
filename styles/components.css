@@ -1464,6 +1464,76 @@
 .btn-sm:active { background: rgba(255,255,255,.10); }
 
 /* ══════════════════════════════════
+   SPRINT 7.2 — BUTTON FEEDBACK UNIVERSEL
+   - Press scale 0.96 (override seulement si pas de :active custom plus
+     spécifique, ex: .level-up-btn:active garde son scale 0.95).
+   - Disabled : grayscale + opacity réduite + cursor not-allowed.
+   - Ripple : span injecté en JS au pointerdown (cf. index.html).
+   - Shine pass permanent sur les boutons CTA "valider" / "buy" / "take".
+══════════════════════════════════ */
+button:not(:disabled) {
+  transition: transform 120ms cubic-bezier(.34, 1.56, .64, 1), filter 200ms;
+}
+button:not(:disabled):active {
+  transform: scale(0.96);
+}
+button:disabled,
+button[aria-disabled="true"] {
+  filter: grayscale(0.65) opacity(0.55);
+  cursor: not-allowed;
+}
+
+.btn-ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .4);
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0);
+  will-change: transform, opacity;
+  z-index: 1;
+}
+
+/* Shine pass permanent sur les CTA primaires (les boutons "action" majeurs).
+   Loop 3s. overflow:hidden + position:relative pour clip le ::after. */
+.save-btn-v2:not(:disabled),
+.dr-claim-btn:not(:disabled),
+.shop-buy-btn:not(:disabled),
+.eos-take-btn:not(:disabled) {
+  position: relative;
+  overflow: hidden;
+}
+.save-btn-v2:not(:disabled)::after,
+.dr-claim-btn:not(:disabled)::after,
+.shop-buy-btn:not(:disabled)::after,
+.eos-take-btn:not(:disabled)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg,
+    transparent 35%,
+    rgba(255, 255, 255, .38) 50%,
+    transparent 65%);
+  animation: btn-cta-shine 3s ease-in-out infinite;
+  pointer-events: none;
+  will-change: transform;
+  z-index: 0;
+}
+@keyframes btn-cta-shine {
+  0%   { transform: translateX(-110%); }
+  100% { transform: translateX(210%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button:not(:disabled) { transition: none; }
+  button:not(:disabled):active { transform: none; }
+  .btn-ripple { display: none; }
+  .save-btn-v2::after,
+  .dr-claim-btn::after,
+  .shop-buy-btn::after,
+  .eos-take-btn::after { animation: none; opacity: 0; }
+}
+
+/* ══════════════════════════════════
    TOAST — SPRINT 7.5
    Slide-in depuis le haut, icône + couleur selon type
    (success/info/danger/warning), barre de progression auto-dismiss 3s.

@@ -1457,6 +1457,44 @@ function spawnFloatingNumber(x, y, label, color) {
 
 window.spawnFloatingNumber = spawnFloatingNumber;
 
+// SPRINT 7.2 — Ripple universel sur les boutons critiques au pointerdown.
+// Skip : nav-tab/nav-btn/sub-tab (ont leur propre style discret), boutons
+// disabled, et si reduced-motion. Le span est injecté à la position du tap
+// puis auto-supprimé après l'anim. Capture phase pour fire avant
+// d'éventuels stopPropagation par les handlers métiers.
+document.addEventListener('pointerdown', e => {
+  if (__reducedMotion()) return;
+  const btn = e.target.closest('button');
+  if (!btn || btn.disabled) return;
+  if (btn.classList.contains('nav-tab') ||
+      btn.classList.contains('nav-btn') ||
+      btn.classList.contains('sub-tab')) return;
+  const x = e.clientX != null ? e.clientX : (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+  const y = e.clientY != null ? e.clientY : (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+  spawnBtnRipple(btn, x, y);
+}, true);
+
+function spawnBtnRipple(btn, x, y) {
+  const rect = btn.getBoundingClientRect();
+  // S'assurer que le button peut héberger un span absolute.
+  // overflow:hidden ne clip pas box-shadow (extérieur au box) → safe.
+  const cs = getComputedStyle(btn);
+  if (cs.position === 'static') btn.style.position = 'relative';
+  if (cs.overflow !== 'hidden') btn.style.overflow = 'hidden';
+  const size = Math.max(rect.width, rect.height) * 2.4;
+  const ripple = document.createElement('span');
+  ripple.className = 'btn-ripple';
+  ripple.style.left   = (x - rect.left) + 'px';
+  ripple.style.top    = (y - rect.top)  + 'px';
+  ripple.style.width  = size + 'px';
+  ripple.style.height = size + 'px';
+  btn.appendChild(ripple);
+  ripple.animate([
+    { transform: 'translate(-50%,-50%) scale(0)', opacity: .5 },
+    { transform: 'translate(-50%,-50%) scale(1)', opacity: 0 }
+  ], { duration: 500, easing: 'cubic-bezier(.4,0,.2,1)', fill: 'forwards' }).onfinish = () => ripple.remove();
+}
+
 // Drapeaux premium flagcdn — utiliser PARTOUT à la place des emojis
 function flagImg(country, size) {
   size = size || 'md';
