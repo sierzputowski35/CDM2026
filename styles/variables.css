@@ -25,9 +25,10 @@
   --purple:    #7C4DFF;
 
   /* Text */
-  --text:      #FFFFFF;  /* primaire : ratio 19.5:1 sur --bg-primary (AAA) */
-  --text2:     #8B9DC3;  /* secondaire : ratio ~7:1 (AAA) */
-  --text3:     #7388A8;  /* tertiaire : ratio 4.6:1 sur --bg-primary (WCAG AA) — corrigé depuis #3D4F6E (2.1:1) */
+  --text:         #FFFFFF;  /* primaire : ratio 19.5:1 sur --bg-primary (AAA) */
+  --text2:        #8B9DC3;  /* secondaire : ratio ~7:1 (AAA) */
+  --text3:        #7388A8;  /* tertiaire : ratio 4.6:1 sur --bg-primary (WCAG AA) — corrigé depuis #3D4F6E (2.1:1) */
+  --text-on-card: #9AAFD0;  /* tertiaire sur surfaces élevées : 4.6:1 sur --bg-elevated, 5.0:1 sur --bg-card */
 
   /* Borders */
   --border:    rgba(255,255,255,0.05);

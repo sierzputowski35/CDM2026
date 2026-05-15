@@ -657,6 +657,21 @@
    - .card-hero      : gradient or + glow doré + ombre 30px
    - border-radius : 20px minimum partout
 ══════════════════════════════════ */
+
+/* ── A11y : contraste --text3 sur surfaces élevées ──
+   Inside ces conteneurs, --text3 résout à --text-on-card (#9AAFD0)
+   pour passer WCAG AA (4.5:1+) sur bg-card/bg-elevated/surface*.
+   L'héritage CSS auto-upgrade les ~25 usages de var(--text3) à
+   l'intérieur — aucune migration ligne par ligne nécessaire. */
+.card, .card-elevated, .card-hero,
+.card-daily-reward, .card-mission, .card-missions,
+.stat-card, .ranking-row,
+.match-modal-box, .pwa-modal-box, .notif-sheet,
+.match-card, .global-card,
+.chat-bubble.other, .phase-mult, .locked-badge {
+  --text3: var(--text-on-card);
+}
+
 .card {
   background: var(--bg-card);
   border: 1px solid rgba(255,255,255,.05);
