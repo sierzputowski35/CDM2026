@@ -947,6 +947,148 @@
 }
 .chest-take-btn.show { opacity: 1; }
 
+/* ── SPRINT 6 : CHEST OPENING AAA ──
+   Timeline 5 phases : buildup → crack of light → rarity reveal →
+   items parade → CTA. Le JS pilote l'enchaînement via setTimeout ;
+   le CSS fournit les keyframes individuels. */
+.chest-cinematic .chest-stage {
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; min-height: 280px;
+}
+.chest-emoji.chest-enter {
+  animation: chest-slide-up 600ms cubic-bezier(.34, 1.56, .64, 1);
+  will-change: transform, opacity;
+}
+@keyframes chest-slide-up {
+  0%   { transform: translateY(80px) scale(0.85); opacity: 0; }
+  100% { transform: translateY(0)    scale(1);    opacity: 1; }
+}
+.chest-glow-ring.chest-ring-pulse {
+  animation: chest-ring-pulse 900ms ease-in-out infinite;
+}
+@keyframes chest-ring-pulse {
+  0%, 100% { transform: scale(.85); opacity: .35; }
+  50%      { transform: scale(1.15); opacity: .85; }
+}
+
+.chest-shake-3x { animation: chest-tremble-3x 700ms ease-in-out; }
+@keyframes chest-tremble-3x {
+  0%   { transform: rotate(0deg) scale(1); }
+  10%  { transform: rotate(-6deg) scale(1.08); }
+  20%  { transform: rotate(0deg)  scale(1.02); }
+  35%  { transform: rotate(6deg)  scale(1.1); }
+  45%  { transform: rotate(0deg)  scale(1.04); }
+  60%  { transform: rotate(-8deg) scale(1.14); }
+  72%  { transform: rotate(0deg)  scale(1.06); }
+  100% { transform: rotate(0deg)  scale(1); }
+}
+
+.chest-beam {
+  position: absolute;
+  width: 60px; height: 100%;
+  transform: scaleY(0);
+  transform-origin: center;
+  opacity: 0;
+  pointer-events: none;
+  filter: blur(3px);
+  will-change: transform, opacity;
+}
+.chest-beam.is-active {
+  animation: chest-beam-burst 700ms ease-out forwards;
+}
+@keyframes chest-beam-burst {
+  0%   { transform: scaleY(0);   opacity: 0; }
+  30%  { transform: scaleY(1.2); opacity: 1; }
+  100% { transform: scaleY(1);   opacity: .8; }
+}
+
+/* Fissure horizontale lumineuse sur le chest */
+.chest-emoji.chest-cracked {
+  position: relative;
+}
+.chest-emoji.chest-cracked::after {
+  content: '';
+  position: absolute;
+  left: -12%; right: -12%;
+  top: 50%; height: 4px;
+  transform-origin: center;
+  background: linear-gradient(90deg, transparent, #FFE680, white, #FFE680, transparent);
+  box-shadow: 0 0 12px white, 0 0 24px rgba(244, 197, 66, .9);
+  animation: chest-crack-flash 700ms ease-out;
+  pointer-events: none;
+}
+@keyframes chest-crack-flash {
+  0%   { opacity: 0; transform: scaleX(0); }
+  35%  { opacity: 1; transform: scaleX(1); }
+  100% { opacity: 0; transform: scaleX(1.05); }
+}
+
+.chest-rarity-text {
+  position: absolute;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 56px;
+  letter-spacing: 6px;
+  opacity: 0;
+  pointer-events: none;
+  text-shadow: 0 0 16px currentColor, 0 0 32px currentColor;
+  will-change: transform, opacity;
+  white-space: nowrap;
+}
+.chest-rarity-text.reveal {
+  animation: chest-rarity-in 500ms cubic-bezier(.34, 1.56, .64, 1) forwards;
+}
+@keyframes chest-rarity-in {
+  0%   { transform: scale(0.3); opacity: 0; }
+  60%  { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1);   opacity: 1; }
+}
+.chest-rarity-text.fadeout {
+  animation: chest-rarity-out 300ms ease-out forwards;
+}
+@keyframes chest-rarity-out {
+  to { transform: scale(0.85); opacity: 0; }
+}
+
+/* CTA shimmer permanent une fois révélé. Pulse subtle + shine gold. */
+.chest-take-btn.cta-shimmer {
+  position: relative;
+  overflow: hidden;
+  animation: chest-cta-pulse 1.6s ease-in-out infinite;
+}
+.chest-take-btn.cta-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg,
+    transparent 35%,
+    rgba(255, 255, 255, .55) 50%,
+    transparent 65%);
+  animation: chest-cta-shimmer 2.2s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes chest-cta-pulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.05); }
+}
+@keyframes chest-cta-shimmer {
+  0%   { transform: translateX(-110%); }
+  100% { transform: translateX(210%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chest-emoji.chest-enter,
+  .chest-glow-ring.chest-ring-pulse,
+  .chest-shake-3x,
+  .chest-beam.is-active,
+  .chest-emoji.chest-cracked::after,
+  .chest-rarity-text.reveal,
+  .chest-rarity-text.fadeout,
+  .chest-take-btn.cta-shimmer,
+  .chest-take-btn.cta-shimmer::after { animation: none; }
+  .chest-rarity-text.reveal { opacity: 1; }
+}
+
 /* ── FUT PLAYER CARDS ── */
 .player-card {
   width: 120px;

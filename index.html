@@ -2008,10 +2008,15 @@ const RewardQueue = {
       case 'badge_unlock':
         if (typeof closeBadgeUnlock === 'function') closeBadgeUnlock();
         break;
-      case 'chest_opened':
-        // Skip différé jusqu'au Sprint 6 (chest opening AAA). Le bouton
-        // « TOUT PRENDRE » de l'anim actuelle clôt déjà la séquence.
+      case 'chest_opened': {
+        // SPRINT 6 — Skip autorisé seulement après T+2000ms (Phase 3+).
+        // Avant, le tap est ignoré (laisse le buildup faire son effet).
+        const bgEl = document.querySelector('.chest-anim-bg');
+        if (bgEl && bgEl.dataset.skippable === 'true' && typeof closeChestAnimation === 'function') {
+          closeChestAnimation();
+        }
         break;
+      }
     }
   },
 };
@@ -3484,32 +3489,56 @@ async function openChest(coffreId) {
   setTimeout(() => checkBadges(), 1500);
 }
 
+// SPRINT 6 — Chest Opening AAA, timeline 5 phases.
+// Phase 1 Buildup (0-1500)  : slide-up + glow ring pulse + vibrate crescendo + tremble 3x
+// Phase 2 Crack of Light (1500-2000) : flash blanc + crack horizontal + beam vertical
+// Phase 3 Rarity Reveal (2000-2700) : texte rarity zoom-in (+ shake/particules si épique+)
+// Phase 4 Items Parade (2700+) : poof chest + items reveal stagger 300ms + count-up amount
+// Phase 5 CTA (après items) : bouton TOUT PRENDRE pulse + shimmer gold
+//
+// Skip : tap ignoré avant T+2000, autorisé après (dataset.skippable = "true").
 function showChestOpenAnimation(type, loot, cardResult) {
-  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const CHEST_EMOJIS = { bronze: '📦', argent: '🥈', or: '🎁', diamant: '💎', legende: '👑' };
-  const CHEST_COLORS = { bronze: '#CD7F32', argent: '#C0C0C0', or: '#F4C542', diamant: '#58C8FA', legende: '#A855F7' };
-  const RARETE_COLORS = { bronze: '#CD7F32', argent: '#C0C0C0', or: '#F4C542', diamant: '#58C8FA', legende: '#A855F7' };
+  const reduced = __reducedMotion();
+  const CHEST_EMOJIS  = { bronze: '📦', argent: '🥈', or: '🎁', diamant: '💎', legende: '👑' };
+  const CHEST_COLORS  = { bronze: '#CD7F32', argent: '#C0C0C0', or: '#F4C542', diamant: '#58C8FA', legende: '#A855F7' };
+  const RARETE_COLORS = { commun: '#9CA3AF', rare: '#58C8FA', epique: '#A855F7', legende: '#F4C542',
+                          bronze: '#CD7F32', argent: '#C0C0C0', or: '#F4C542', diamant: '#58C8FA' };
+  const RARITY_LABELS = { commun: 'COMMUN', rare: 'RARE', epique: 'ÉPIQUE', legende: 'LÉGENDAIRE' };
+  const RARITY_ORDER  = ['commun', 'rare', 'epique', 'legende'];
+  const CHEST_TO_RARITY = { bronze: 'commun', argent: 'commun', or: 'rare', diamant: 'epique', legende: 'legende' };
+
   const color = CHEST_COLORS[type] || '#F4C542';
   const emoji = CHEST_EMOJIS[type] || '📦';
+  const chestRarity = CHEST_TO_RARITY[type] || 'commun';
+  const cardRarity  = (cardResult && cardResult.card && cardResult.card.rarete) || 'commun';
+  const maxRarity   = RARITY_ORDER.indexOf(cardRarity) > RARITY_ORDER.indexOf(chestRarity) ? cardRarity : chestRarity;
+  const isEpicPlus  = maxRarity === 'epique' || maxRarity === 'legende';
+  const rarityColor = RARETE_COLORS[maxRarity] || color;
 
   const bg = document.createElement('div');
-  bg.className = 'chest-anim-bg';
+  bg.className = 'chest-anim-bg chest-cinematic';
+  bg.dataset.skippable = 'false';
   bg.innerHTML = `
-    <div style="position:relative;display:flex;align-items:center;justify-content:center">
-      <div class="chest-glow-ring" style="background:radial-gradient(circle,${color}44,transparent 70%)"></div>
-      <div class="chest-emoji" id="chest-main-emoji">${emoji}</div>
+    <div class="chest-stage">
+      <div class="chest-glow-ring chest-ring-pulse" style="background:radial-gradient(circle,${color}66,transparent 70%)"></div>
+      <div class="chest-beam" style="background:linear-gradient(180deg, transparent, ${rarityColor}, transparent)"></div>
+      <div class="chest-emoji chest-enter" id="chest-main-emoji">${emoji}</div>
+      <div class="chest-rarity-text" id="chest-rarity-text" style="color:${rarityColor}"></div>
     </div>
     <div class="chest-loot-row" id="chest-loot-row"></div>
     <button class="chest-take-btn" id="chest-take-btn" onclick="closeChestAnimation()">TOUT PRENDRE !</button>
   `;
   document.body.appendChild(bg);
 
-  const LOOT_ICONS = { coins: '🪙', xp: '⭐', gems: '💎' };
+  const LOOT_ICONS  = { coins: '🪙', xp: '⭐', gems: '💎' };
   const LOOT_LABELS = { coins: 'Coins', xp: 'XP', gems: 'Gemmes' };
-  const lootRow = bg.querySelector('#chest-loot-row');
-  const takeBtn = bg.querySelector('#chest-take-btn');
+  const lootRow  = bg.querySelector('#chest-loot-row');
+  const takeBtn  = bg.querySelector('#chest-take-btn');
+  const chestEl  = bg.querySelector('#chest-main-emoji');
+  const beamEl   = bg.querySelector('.chest-beam');
+  const rarityEl = bg.querySelector('#chest-rarity-text');
+  const ringEl   = bg.querySelector('.chest-glow-ring');
 
-  // Étape 4 — Tuile spéciale pour la carte droppée (toujours en premier).
   const buildCardTile = () => {
     if (!cardResult || !cardResult.card) return null;
     const c = cardResult.card;
@@ -3528,7 +3557,9 @@ function showChestOpenAnimation(type, loot, cardResult) {
     return el;
   };
 
+  // ── Reduced-motion : fallback simple (existant), tout révélé d'un coup ──
   if (reduced) {
+    bg.dataset.skippable = 'true';
     const cardTile = buildCardTile();
     if (cardTile) { cardTile.classList.add('reveal'); lootRow.appendChild(cardTile); }
     loot.forEach(item => {
@@ -3541,31 +3572,104 @@ function showChestOpenAnimation(type, loot, cardResult) {
     return;
   }
 
-  const chestEl = bg.querySelector('#chest-main-emoji');
-  setTimeout(() => {
-    chestEl.classList.add('chest-shake');
-    if (navigator.vibrate) navigator.vibrate([40, 30, 80, 30, 120]);
-  }, 300);
+  // ── Helper : reveal d'un item avec zoom + rotate 360° + glow ──
+  const revealLootItem = (el, delay) => {
+    setTimeout(() => {
+      if (!el.isConnected) return;
+      el.classList.add('reveal');
+      el.animate([
+        { transform: 'scale(0.3) rotate(0deg)   translateY(20px)', opacity: 0,
+          filter: 'drop-shadow(0 0 0 transparent)' },
+        { transform: 'scale(1.15) rotate(360deg) translateY(-4px)', opacity: 1, offset: 0.7,
+          filter: 'drop-shadow(0 0 12px rgba(244,197,66,.8))' },
+        { transform: 'scale(1) rotate(360deg) translateY(0)', opacity: 1,
+          filter: 'drop-shadow(0 0 0 transparent)' }
+      ], { duration: 700, easing: 'cubic-bezier(.34,1.56,.64,1)', fill: 'forwards' });
+    }, delay);
+  };
 
+  // ═══ PHASE 1 — BUILDUP (0-1500) ═══
+  // T+0 : slide-up (CSS .chest-enter) + glow ring pulse (CSS auto)
+  // T+100 : vibration crescendo
+  setTimeout(() => vibrate([30, 20, 60, 40, 100, 50, 150]), 100);
+  // T+700 : tremble 3 fois (CSS .chest-shake-3x)
+  setTimeout(() => chestEl.classList.add('chest-shake-3x'), 700);
+
+  // ═══ PHASE 2 — CRACK OF LIGHT (1500-2000) ═══
   setTimeout(() => {
+    flashOverlay('rgba(255,255,255,0.85)', 220);
+    chestEl.classList.add('chest-cracked');
+    beamEl.classList.add('is-active');
+  }, 1500);
+
+  // ═══ PHASE 3 — RARITY REVEAL (2000-2700) ═══
+  setTimeout(() => {
+    rarityEl.textContent = RARITY_LABELS[maxRarity] || '';
+    rarityEl.classList.add('reveal');
+    vibrate([60, 30, 120]);
+    bg.dataset.skippable = 'true'; // skip autorisé à partir d'ici
+    if (isEpicPlus) {
+      // Intensité ×3 sur épique/légende : screen shake + explosion particules
+      screenShake(12, 400);
+      const rect = chestEl.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top  + rect.height / 2;
+      spawnTapParticles(cx, cy, 18);
+      // Légendaire : 2 vagues de particules
+      if (maxRarity === 'legende') {
+        setTimeout(() => spawnTapParticles(cx, cy, 16), 180);
+      }
+    }
+  }, 2000);
+
+  // ═══ PHASE 4 — ITEMS PARADE (2700+) ═══
+  setTimeout(() => {
+    // Poof : particules + chest fade-out + ring/beam fade
+    const rect = chestEl.getBoundingClientRect();
+    spawnTapParticles(rect.left + rect.width / 2, rect.top + rect.height / 2, 14);
+    chestEl.style.transition = 'opacity 250ms ease-out, transform 350ms ease-out';
+    chestEl.style.opacity = '0';
+    chestEl.style.transform = 'scale(0.3)';
+    ringEl.style.transition = 'opacity 300ms';
+    ringEl.style.opacity = '0';
+    beamEl.style.transition = 'opacity 300ms';
+    beamEl.style.opacity = '0';
+    rarityEl.classList.remove('reveal');
+    rarityEl.classList.add('fadeout');
+
+    // Items reveal stagger 300ms
     let idx = 0;
     const cardTile = buildCardTile();
     if (cardTile) {
       lootRow.appendChild(cardTile);
-      setTimeout(() => cardTile.classList.add('reveal'), idx * 220);
+      revealLootItem(cardTile, idx * 300);
       idx++;
     }
-    loot.forEach((item) => {
+    loot.forEach(item => {
       const el = document.createElement('div');
       el.className = 'chest-loot-item';
-      el.innerHTML = `<div class="chest-loot-icon">${LOOT_ICONS[item.type] || '🎁'}</div><div class="chest-loot-amount">+${item.amount}</div><div class="chest-loot-label">${LOOT_LABELS[item.type] || item.type}</div>`;
+      el.innerHTML = `<div class="chest-loot-icon">${LOOT_ICONS[item.type] || '🎁'}</div><div class="chest-loot-amount">+0</div><div class="chest-loot-label">${LOOT_LABELS[item.type] || item.type}</div>`;
       lootRow.appendChild(el);
-      setTimeout(() => el.classList.add('reveal'), idx * 220);
+      revealLootItem(el, idx * 300);
+      // Count-up sur l'amount, démarré après le reveal
+      const amountEl = el.querySelector('.chest-loot-amount');
+      setTimeout(() => {
+        if (window.countUp && amountEl.isConnected) {
+          countUp(amountEl, 0, item.amount, 500, v => '+' + Math.round(v));
+        } else {
+          amountEl.textContent = '+' + item.amount;
+        }
+      }, idx * 300 + 250);
       idx++;
     });
-    const delay = idx * 220 + 400;
-    setTimeout(() => takeBtn.classList.add('show'), delay);
-  }, 1300);
+
+    // ═══ PHASE 5 — CTA ═══
+    const ctaDelay = idx * 300 + 350;
+    setTimeout(() => {
+      takeBtn.classList.add('show');
+      takeBtn.classList.add('cta-shimmer');
+    }, ctaDelay);
+  }, 2700);
 }
 
 function closeChestAnimation() {
