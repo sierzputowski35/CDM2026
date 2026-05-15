@@ -3265,11 +3265,66 @@ function startHeroCountdown(match) {
 document.addEventListener('visibilitychange', function() {
   if (document.hidden) {
     clearInterval(heroCountdownInterval);
+    if (_upcomingCountdownInterval) { clearInterval(_upcomingCountdownInterval); _upcomingCountdownInterval = null; }
   } else {
     const match = getHeroMatch();
     if (match) startHeroCountdown(match);
   }
 });
+
+// SPRINT 7.3 — Countdown live (JJ HH MM SS) vers un match upcoming,
+// affiché dans #upcoming-countdown-wrap. Pose .digit-tick sur chaque digit
+// qui change pour déclencher l'anim CSS cd-tick.
+let _upcomingCountdownInterval = null;
+function startUpcomingCountdown(match) {
+  if (_upcomingCountdownInterval) { clearInterval(_upcomingCountdownInterval); _upcomingCountdownInterval = null; }
+  const wrap = document.getElementById('upcoming-countdown-wrap');
+  if (!wrap || !match) return;
+  const fmt = n => String(n).padStart(2, '0');
+  const getCD = () => {
+    const diff = parseMatchDate(match.date) - Date.now();
+    if (diff <= 0) return null;
+    const total = Math.floor(diff / 1000);
+    return {
+      d: Math.floor(total / 86400),
+      h: Math.floor((total % 86400) / 3600),
+      m: Math.floor((total % 3600) / 60),
+      s: total % 60
+    };
+  };
+  const initial = getCD();
+  if (!initial) return;
+  const units = [
+    { key: 'd', label: 'JOURS' },
+    { key: 'h', label: 'HEURES' },
+    { key: 'm', label: 'MIN' },
+    { key: 's', label: 'SEC' }
+  ];
+  wrap.innerHTML = '<div class="countdown-digits">'
+    + units.map(u => '<div class="cd-unit"><span class="cd-num" data-cd="' + u.key + '">' + fmt(initial[u.key]) + '</span><span class="cd-label">' + u.label + '</span></div>').join('')
+    + '</div>';
+  function tick() {
+    const cd = getCD();
+    if (!cd) {
+      clearInterval(_upcomingCountdownInterval);
+      _upcomingCountdownInterval = null;
+      return;
+    }
+    units.forEach(u => {
+      const el = wrap.querySelector('[data-cd="' + u.key + '"]');
+      if (!el) return;
+      const newVal = fmt(cd[u.key]);
+      if (el.textContent !== newVal) {
+        el.textContent = newVal;
+        el.classList.remove('digit-tick');
+        // Reflow pour relancer l'animation si déjà appliquée.
+        void el.offsetHeight;
+        el.classList.add('digit-tick');
+      }
+    });
+  }
+  _upcomingCountdownInterval = setInterval(tick, 1000);
+}
 
 function renderQuickMatches() {
   const container = document.getElementById('home-quick-matches');
@@ -3284,11 +3339,20 @@ function renderQuickMatches() {
   if (!todayMatches.length) {
     const upcoming = MATCHS.filter(m => !allScores[m.id]).slice(0, 3);
     if (!upcoming.length) {
-      container.innerHTML = '<div style="padding:12px 4px;font-size:12px;color:#718096">Tournoi terminé</div>';
+      // SPRINT 7.3 — Empty state "Tournoi terminé" plus chaleureux que la ligne grise.
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">🏆</div>
+          <div class="empty-state-msg">Tournoi terminé</div>
+          <div class="empty-state-sub">Merci d'avoir joué la CDM 2026 !</div>
+        </div>`;
       return;
     }
+    // SPRINT 7.3 — Countdown digits vers le prochain match (avec tick d'anim
+    // sur le changement de SS chaque seconde). Démarré via startUpcomingCountdown.
     const nextDate = upcoming[0].date.split('·')[0].trim();
     container.innerHTML = '<div style="padding:4px 0 8px;font-size:11px;color:var(--text3);font-family:Oswald,sans-serif;letter-spacing:.5px">PROCHAINS MATCHS · ' + nextDate.toUpperCase() + '</div>'
+      + '<div id="upcoming-countdown-wrap" style="display:flex;justify-content:center;padding:6px 0 14px"></div>'
       + upcoming.map(function(m) {
         const code1 = FLAG_CODES[m.name1] ?? 'un';
         const code2 = FLAG_CODES[m.name2] ?? 'un';
@@ -3301,6 +3365,8 @@ function renderQuickMatches() {
           + '<div class="qmc-team"><div class="qmc-flag"><img src="https://flagcdn.com/w40/' + code2 + '.png" alt="' + m.name2 + '" loading="lazy" onerror="this.style.display=\'none\'"/></div><span>' + m.name2 + '</span></div>'
           + '</div><div class="qmc-badge qmc-badge--xp"><span>x' + multi + ' XP</span></div></div>';
       }).join('');
+    // SPRINT 7.3 — Lance le countdown live vers le 1er match upcoming.
+    startUpcomingCountdown(upcoming[0]);
     return;
   }
 
@@ -3956,7 +4022,17 @@ function renderCoffresCard() {
   const container = document.getElementById('coffres-home');
   if (!container) return;
   const pending = allCoffres.filter(c => !c.ouvert);
-  if (pending.length === 0) { container.innerHTML = ''; return; }
+  // SPRINT 7.3 — Empty state : icône qui flotte + message chaleureux
+  // au lieu d'un blank quand le user n'a pas encore de coffre.
+  if (pending.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">🎁</div>
+        <div class="empty-state-msg">Aucun coffre à ouvrir</div>
+        <div class="empty-state-sub">Pronostique un match pour gagner ton premier coffre</div>
+      </div>`;
+    return;
+  }
   const typeLabels = { bronze: 'Bronze', argent: 'Argent', or: 'Or', diamant: 'Diamant', legende: 'Légende' };
   const preview = pending.slice(0, 3).map(c => {
     const CHEST_EMOJIS = { bronze: '📦', argent: '🥈', or: '🎁', diamant: '💎', legende: '👑' };
