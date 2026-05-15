@@ -65,6 +65,31 @@ Le module `js/utils/haptic.js` attache automatiquement un `navigator.vibrate(10)
 
 Désactiver ponctuellement avec `data-no-haptic`. Appeler manuellement avec `haptic(25)` (ms) ou `haptic([50, 30, 50])` (pattern).
 
+## Tabs vs Dock
+
+L'app distingue deux composants navigation :
+
+- **Dock** (`.nav-tab`, bottom nav) — navigation principale persistante. Riche en feedback : icône qui rebondit + glow doré + dot indicateur + badges notifs (style Supercell / iOS UITabBar). **Reste à part**, ne pas le forcer dans `.tab-bar`.
+- **Tabs** (`.tab-bar`) — onglets contextuels dans une vue (filtres, sous-sections). Simples : texte qui change de couleur ou un peu plus.
+
+### Composant `.tab-bar` (2 variantes)
+
+Un seul composant remplace les 4 systèmes legacy de tabs (`.sub-tab`, `.nav-btn`, `.av-tab-btn`/`.av-cat-pill`, `.profil-tab`). Variante via modificateur, état actif via `.is-active` (et non `.active`, pour éviter collision avec `.page.active`).
+
+```html
+<nav class="tab-bar tab-bar--pill">
+  <button class="tab-bar__tab is-active">Avatars</button>
+  <button class="tab-bar__tab">Cadres</button>
+</nav>
+```
+
+| Modificateur            | Usage                                          | Look                                              |
+| ----------------------- | ---------------------------------------------- | ------------------------------------------------- |
+| `.tab-bar--pill`        | Filtres scrollables (modal avatar, catégories) | Pilule 20px radius, actif = bg or                 |
+| `.tab-bar--underline`   | Sub-section (profil tabs, paris filtres)       | Texte 11px caps, actif = underline + color or     |
+
+Tous : couleur inactive `--text3`, transition .2s, état actif via `.is-active`. Couleur active = `--gold-primary`.
+
 ## Cartes (3 niveaux)
 
 ```html

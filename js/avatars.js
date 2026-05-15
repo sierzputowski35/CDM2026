@@ -383,7 +383,7 @@ function openAvatarModal() {
   renderAvatarBgGrid(joueur);
   renderAvatarTitleGrid(joueur);
 
-  switchAvatarTab('emoji', document.querySelector('.av-tab-btn'));
+  switchAvatarTab('emoji', document.querySelector('#av-tabs-nav .tab-bar__tab'));
 
   const am = document.getElementById('avatar-modal');
   am.classList.remove('hidden');
@@ -443,9 +443,9 @@ function applyAvatarPreview() {
 
 // ── Navigation par onglet ──
 function switchAvatarTab(tab, btn) {
-  document.querySelectorAll('.av-tab-btn').forEach(b => b.classList.remove('av-tab-active'));
+  document.querySelectorAll('#av-tabs-nav .tab-bar__tab').forEach(b => b.classList.remove('is-active'));
   document.querySelectorAll('.av-tab-content').forEach(t => t.style.display = 'none');
-  if (btn) btn.classList.add('av-tab-active');
+  if (btn) btn.classList.add('is-active');
   const el = document.getElementById('av-tab-' + tab);
   if (el) el.style.display = 'block';
 }
