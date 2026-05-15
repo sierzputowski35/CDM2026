@@ -1464,6 +1464,86 @@
 .btn-sm:active { background: rgba(255,255,255,.10); }
 
 /* ══════════════════════════════════
+   SPRINT 7.3 — EMPTY STATES ANIMÉS
+   Icône qui flotte + message chaleureux + countdown digits qui pulsent
+   sur les empty states (coffres, prochains matchs). Plus de blank.
+══════════════════════════════════ */
+.empty-state {
+  margin: 10px 14px;
+  padding: 22px 16px 20px;
+  border: 1px dashed rgba(255, 255, 255, .12);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .02), transparent);
+  text-align: center;
+  color: var(--text2);
+}
+.empty-state-icon {
+  display: inline-block;
+  font-size: 40px;
+  line-height: 1;
+  margin-bottom: 8px;
+  animation: empty-float 2.4s ease-in-out infinite;
+  will-change: transform;
+}
+.empty-state-msg {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.empty-state-sub {
+  font-size: 11px;
+  color: var(--text3);
+  margin-top: 4px;
+}
+@keyframes empty-float {
+  0%, 100% { transform: translateY(0)    rotate(0deg); }
+  50%      { transform: translateY(-8px) rotate(-3deg); }
+}
+
+/* Countdown digits — mini-pulse à chaque tick (anim sur changement texte
+   via classe .digit-tick posée par JS). */
+.countdown-digits {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: 1px;
+  color: var(--gold-primary);
+  font-variant-numeric: tabular-nums;
+}
+.countdown-digits .cd-unit {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 32px;
+}
+.countdown-digits .cd-num {
+  display: inline-block;
+  line-height: 1;
+}
+.countdown-digits .cd-label {
+  font-size: 9px;
+  color: var(--text3);
+  letter-spacing: 2px;
+  margin-top: 2px;
+  font-family: 'Oswald', sans-serif;
+}
+.countdown-digits .cd-num.digit-tick {
+  animation: cd-tick 320ms cubic-bezier(.34, 1.56, .64, 1);
+}
+@keyframes cd-tick {
+  0%   { transform: translateY(0)    scale(1); }
+  40%  { transform: translateY(-3px) scale(1.15); }
+  100% { transform: translateY(0)    scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .empty-state-icon { animation: none; }
+  .countdown-digits .cd-num.digit-tick { animation: none; }
+}
+
+/* ══════════════════════════════════
    SPRINT 7.2 — BUTTON FEEDBACK UNIVERSEL
    - Press scale 0.96 (override seulement si pas de :active custom plus
      spécifique, ex: .level-up-btn:active garde son scale 0.95).
