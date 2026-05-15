@@ -385,11 +385,17 @@ function openAvatarModal() {
 
   switchAvatarTab('emoji', document.querySelector('.av-tab-btn'));
 
-  document.getElementById('avatar-modal').classList.remove('hidden');
+  const am = document.getElementById('avatar-modal');
+  am.classList.remove('hidden');
+  am.setAttribute('aria-hidden', 'false');
+  if (window.A11yModal) A11yModal.open(am, { onClose: closeAvatarModal });
 }
 
 function closeAvatarModal() {
-  document.getElementById('avatar-modal').classList.add('hidden');
+  const am = document.getElementById('avatar-modal');
+  if (window.A11yModal) A11yModal.close(am);
+  am.classList.add('hidden');
+  am.setAttribute('aria-hidden', 'true');
   pendingAvatarConfig = null;
 }
 

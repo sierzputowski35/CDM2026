@@ -80,7 +80,7 @@
 <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
 <!-- MODAL MATCH : qui a pris quoi -->
-<div class="match-modal-overlay hidden" id="match-modal">
+<div class="match-modal-overlay hidden" id="match-modal" role="dialog" aria-modal="true" aria-labelledby="mm-teams" aria-hidden="true">
   <div class="match-modal-box">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
       <div>
@@ -96,14 +96,14 @@
 </div>
 
 <!-- MODAL AVATAR AAA -->
-<div class="match-modal-overlay hidden" id="avatar-modal" style="z-index:1100">
+<div class="match-modal-overlay hidden" id="avatar-modal" role="dialog" aria-modal="true" aria-labelledby="avatar-modal-title" aria-hidden="true" style="z-index:1100">
   <div class="match-modal-box" style="padding:0;border-radius:24px 24px 0 0;max-height:90vh;overflow:hidden;display:flex;flex-direction:column">
 
     <!-- Handle + Header -->
     <div style="flex-shrink:0;padding:12px 20px 0">
       <div style="width:40px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 16px"></div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-        <div style="font-family:'Oswald',sans-serif;font-size:18px;font-weight:700;letter-spacing:1.5px;color:var(--gold)">MON AVATAR</div>
+        <div id="avatar-modal-title" style="font-family:'Oswald',sans-serif;font-size:18px;font-weight:700;letter-spacing:1.5px;color:var(--gold)">MON AVATAR</div>
         <div style="display:flex;align-items:center;gap:8px">
           <div style="background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:4px 10px;font-size:13px;font-weight:700;color:#58C8FA;display:flex;align-items:center;gap:5px">
             <span data-icon="gem" data-icon-size="14"></span><span id="av-gems-count">0</span>
@@ -178,7 +178,7 @@
 </div>
 
 <!-- MODAL PROFIL JOUEUR -->
-<div class="pwa-modal hidden" id="profil-modal" style="z-index:400">
+<div class="pwa-modal hidden" id="profil-modal" role="dialog" aria-modal="true" aria-labelledby="profil-pseudo" aria-hidden="true" style="z-index:400">
   <div class="pwa-modal-box" style="max-height:88vh;overflow-y:auto;border-radius:20px 20px 0 0;padding:0 0 40px">
     <div style="position:sticky;top:0;background:var(--bg2);border-radius:20px 20px 0 0;padding:16px 16px 12px;border-bottom:1px solid var(--border);z-index:10">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
@@ -738,6 +738,7 @@
 <script src="js/utils/haptic.js"></script>
 <script src="js/utils/motion.js"></script>
 <script src="js/utils/scroll-reveal.js"></script>
+<script src="js/utils/modal.js"></script>
 <script src="js/components/skeleton.js"></script>
 <script src="js/components/juice.js"></script>
 <script src="js/supabase.js"></script>
@@ -4875,9 +4876,17 @@ function openMatchModal(matchId){
     </div>`;
   }).join('');
   document.getElementById('mm-players').innerHTML=rows||'<div style="text-align:center;color:var(--text3);padding:20px">Aucun joueur</div>';
-  document.getElementById('match-modal').classList.remove('hidden');
+  const mm=document.getElementById('match-modal');
+  mm.classList.remove('hidden');
+  mm.setAttribute('aria-hidden','false');
+  if(window.A11yModal) A11yModal.open(mm,{onClose:closeMatchModal});
 }
-function closeMatchModal(){document.getElementById('match-modal').classList.add('hidden');}
+function closeMatchModal(){
+  const mm=document.getElementById('match-modal');
+  if(window.A11yModal) A11yModal.close(mm);
+  mm.classList.add('hidden');
+  mm.setAttribute('aria-hidden','true');
+}
 
 async function savePronostic(id){
   const s1=document.getElementById('s1-'+id).value,s2=document.getElementById('s2-'+id).value;
@@ -6289,10 +6298,19 @@ function openProfil(id){
       }
     }
   }
-  const pm=document.getElementById('profil-modal');if(pm)pm.classList.remove('hidden');
+  const pm=document.getElementById('profil-modal');
+  if(pm){
+    pm.classList.remove('hidden');
+    pm.setAttribute('aria-hidden','false');
+    if(window.A11yModal) A11yModal.open(pm,{onClose:closeProfil});
+  }
 }
 function closeProfil(){
-  const pm2=document.getElementById('profil-modal');if(pm2)pm2.classList.add('hidden');
+  const pm2=document.getElementById('profil-modal');
+  if(!pm2) return;
+  if(window.A11yModal) A11yModal.close(pm2);
+  pm2.classList.add('hidden');
+  pm2.setAttribute('aria-hidden','true');
 }
 
 // ══ TOAST — SPRINT 7.5 ══
