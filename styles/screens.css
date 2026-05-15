@@ -1754,3 +1754,31 @@
 /* en-tête « MISSIONS » interne de .card-missions redondant avec le titre
    de la modale → masqué quand la carte est rendue dans la modale */
 .missions-modal-body .missions-head { display: none; }
+
+/* ══════════════════════════════════
+   SPRINT 1d — BLOC COUPE DU MONDE (accueil → page Résultats)
+══════════════════════════════════ */
+.home-wc-block {
+  display: flex; align-items: center; gap: 14px;
+  width: calc(100% - 32px); margin: 0 16px 16px;
+  padding: 14px;
+  background: linear-gradient(135deg, rgba(244,197,66,.12), rgba(168,85,247,.08));
+  border: 1px solid rgba(244,197,66,.30);
+  border-radius: 18px;
+  cursor: pointer;
+  font-family: inherit; text-align: left;
+  transition: transform .12s ease, border-color .2s ease;
+}
+.home-wc-block:active { transform: scale(.98); }
+.home-wc-logo {
+  width: 46px; height: 46px; flex-shrink: 0;
+  border-radius: 11px; object-fit: cover;
+}
+.home-wc-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.home-wc-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 19px; letter-spacing: 1px; line-height: 1;
+  color: var(--gold-primary);
+}
+.home-wc-sub { font-size: 11px; color: var(--text2); font-weight: 600; }
+.home-wc-chevron { flex-shrink: 0; color: var(--text3); font-size: 22px; line-height: 1; }

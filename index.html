@@ -425,6 +425,18 @@
         <div class="home-rewards-scroll" id="rewards-home"></div>
       </section>
 
+      <!-- ═══ 5. COUPE DU MONDE → RÉSULTATS ═══ -->
+      <!-- Point d'entrée vers la page Résultats (#page-groupes) depuis que
+           l'onglet Résultats a été retiré de la bottom-nav. -->
+      <button class="home-wc-block" onclick="switchTab('resultats')" aria-label="Voir les résultats de la Coupe du Monde">
+        <img class="home-wc-logo" src="icon-192.png" alt="" onerror="this.style.display='none'">
+        <span class="home-wc-info">
+          <span class="home-wc-title">COUPE DU MONDE 2026</span>
+          <span class="home-wc-sub">Résultats, groupes &amp; phases finales</span>
+        </span>
+        <span class="home-wc-chevron">›</span>
+      </button>
+
     </div>
     <div id="page-classement" class="page">
       <div class="stripe"></div>
@@ -623,14 +635,8 @@
       </div>
       <span>Arène</span>
     </button>
-    <button class="nav-tab" onclick="switchTab('resultats',this)" id="tab-resultats" aria-label="Résultats">
-      <div class="nav-icon-wrap">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
-        </svg>
-      </div>
-      <span>Résultats</span>
-    </button>
+    <!-- Onglet Résultats retiré de la bottom-nav (accessible via le bloc
+         Coupe du Monde sur l'accueil). Route 'resultats' conservée dans TAB_MAP. -->
     <button class="nav-tab" onclick="switchTab('club',this)" id="tab-club" aria-label="Club">
       <div class="nav-icon-wrap">
         <span class="nav-icon" data-icon="nav-club" data-icon-size="24"></span>
