@@ -30,7 +30,7 @@
     <div class="notif-handle"></div>
     <div class="notif-title-row">
       <div class="notif-title">Notifications</div>
-      <button onclick="closeNotifPanel()" style="background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;padding:4px">×</button>
+      <button class="btn-icon btn-icon--ghost" onclick="closeNotifPanel()" aria-label="Fermer">×</button>
     </div>
     <div id="notif-list"></div>
   </div>
@@ -45,8 +45,8 @@
   <div id="badge-unlock-reward" class="badge-unlock-reward" style="display:none;"></div>
   <div id="badge-unlock-rarete" style="display:none;font-size:11px;font-family:'Oswald',sans-serif;letter-spacing:2px;text-transform:uppercase;"></div>
   <div style="display:flex;gap:10px;margin-top:6px" onclick="event.stopPropagation()">
-    <button id="badge-equip-btn" style="display:none;background:rgba(168,85,247,0.2);border:1px solid rgba(168,85,247,0.5);color:var(--royal-purple);border-radius:10px;padding:9px 20px;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;cursor:pointer;">ÉQUIPER COMME TITRE</button>
-    <button onclick="closeBadgeUnlock()" style="background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.3);color:var(--gold-primary);border-radius:10px;padding:9px 28px;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;cursor:pointer;">SUPER !</button>
+    <button id="badge-equip-btn" class="btn-secondary" style="display:none;width:auto;padding:9px 20px;font-size:14px;letter-spacing:1px">ÉQUIPER COMME TITRE</button>
+    <button class="btn-ghost" onclick="closeBadgeUnlock()" style="width:auto;color:var(--gold-primary);border-color:rgba(244,197,66,.3);background:rgba(244,197,66,.1)">SUPER !</button>
   </div>
 </div>
 
@@ -126,12 +126,12 @@
     </div>
 
     <!-- Onglets -->
-    <div id="av-tabs-nav" style="flex-shrink:0;display:flex;gap:6px;padding:0 16px 10px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--border)">
-      <button class="av-tab-btn av-tab-active" onclick="switchAvatarTab('emoji',this)">Avatars</button>
-      <button class="av-tab-btn" onclick="switchAvatarTab('frame',this)">Cadres</button>
-      <button class="av-tab-btn" onclick="switchAvatarTab('bg',this)">Fonds</button>
-      <button class="av-tab-btn" onclick="switchAvatarTab('title',this)">Titres</button>
-    </div>
+    <nav id="av-tabs-nav" class="tab-bar tab-bar--pill" style="flex-shrink:0;padding:0 16px 10px;border-bottom:1px solid var(--border)">
+      <button class="tab-bar__tab is-active" onclick="switchAvatarTab('emoji',this)">Avatars</button>
+      <button class="tab-bar__tab" onclick="switchAvatarTab('frame',this)">Cadres</button>
+      <button class="tab-bar__tab" onclick="switchAvatarTab('bg',this)">Fonds</button>
+      <button class="tab-bar__tab" onclick="switchAvatarTab('title',this)">Titres</button>
+    </nav>
 
     <!-- Contenu scrollable -->
     <div style="flex:1;overflow-y:auto;scrollbar-width:none">
@@ -161,15 +161,7 @@
 
     <!-- Bouton Save -->
     <div style="flex-shrink:0;padding:12px 16px 20px;border-top:1px solid var(--border)">
-      <button id="av-save-btn" onclick="saveAvatarConfig()" style="
-        width:100%;padding:14px;
-        background:linear-gradient(135deg, var(--gold-light), var(--gold-primary));
-        border:none;border-radius:16px;
-        font-family:'Oswald',sans-serif;font-size:16px;font-weight:700;letter-spacing:1px;
-        color:#050816;cursor:pointer;
-        display:flex;align-items:center;justify-content:center;gap:8px;
-        transition:transform 0.15s,filter 0.15s
-      ">
+      <button id="av-save-btn" class="btn-primary" onclick="saveAvatarConfig()">
         <span data-icon="check" data-icon-size="14"></span> SAUVEGARDER
       </button>
     </div>
@@ -1084,7 +1076,7 @@ function showLeaguePromotionModal(league, rewards) {
       <div id="lp-rewards" style="background:${color}14;border:1px solid ${color}33;border-radius:14px;padding:12px 14px;font-size:13px;color:var(--text);margin:14px 0 22px;display:flex;flex-direction:column;gap:8px">
         ${rewardsHtml}
       </div>
-      <button id="lp-btn" onclick="closeLeaguePromotionModal()" style="width:100%;background:linear-gradient(180deg,var(--gold-light),var(--gold-dark));color:var(--bg-primary);border:none;border-radius:14px;padding:14px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;cursor:pointer;box-shadow:0 6px 20px rgba(244,197,66,.4)">${isLegend ? 'LÉGENDE !' : 'FÉLICITATIONS !'}</button>
+      <button id="lp-btn" class="btn-primary btn-platform" onclick="closeLeaguePromotionModal()" style="font-size:20px;letter-spacing:3px">${isLegend ? 'LÉGENDE !' : 'FÉLICITATIONS !'}</button>
     </div>`;
   document.body.appendChild(modal);
 
@@ -4076,7 +4068,7 @@ function showCoffresModal() {
         </div>
         <div style="font-size:24px">▶</div>
       </div>`).join('')}
-    <button onclick="closeCoffresModal()" style="margin-top:8px;background:transparent;border:1px solid var(--border2);color:var(--text2);border-radius:12px;padding:12px 28px;font-size:13px;cursor:pointer">Fermer</button>`;
+    <button class="btn-ghost" onclick="closeCoffresModal()" style="margin-top:8px;width:auto">Fermer</button>`;
   document.body.appendChild(modal);
   requestAnimationFrame(() => { modal.style.opacity = '1'; });
 }

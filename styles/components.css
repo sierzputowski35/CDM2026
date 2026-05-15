@@ -601,6 +601,75 @@
 .nav-btn:hover { color: var(--text2); }
 
 /* ══════════════════════════════════
+   TAB BAR UNIFIÉ (T16)
+   Remplace .sub-tab, .nav-btn, .av-tab-btn, .av-cat-pill, .profil-tab.
+   2 variantes via modificateur :
+     .tab-bar--pill      → pilules scrollables (avatar modal, filters)
+     .tab-bar--underline → sub-section underline (profil, paris filtres)
+   État actif : .is-active (évite collision avec .page.active générique)
+   Markup :
+     <nav class="tab-bar tab-bar--pill">
+       <button class="tab-bar__tab is-active">…</button>
+     </nav>
+
+   NB : le bottom nav (.nav-tab) reste séparé car c'est un navigation
+   DOCK (persistant, icône+badge+glow+rebond) — distinct d'un tab
+   contextuel. Cf. UITabBar (dock Apple) vs UISegmentedControl (tab).
+══════════════════════════════════ */
+.tab-bar {
+  display: flex;
+}
+.tab-bar__tab {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  color: var(--text3);
+  transition: color .2s, background .2s, border-color .2s, transform .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── Variant: PILL (scrollable filters/categories) ── */
+.tab-bar--pill {
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tab-bar--pill::-webkit-scrollbar { display: none; }
+.tab-bar--pill .tab-bar__tab {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border2);
+  background: var(--surface);
+  font-size: 12px; font-weight: 600;
+  color: var(--text2);
+}
+.tab-bar--pill .tab-bar__tab.is-active {
+  background: var(--gold-primary);
+  border-color: var(--gold-primary);
+  color: var(--bg-primary);
+}
+
+/* ── Variant: UNDERLINE (sub-section) ── */
+.tab-bar--underline {
+  gap: 4px;
+}
+.tab-bar--underline .tab-bar__tab {
+  flex: 1;
+  padding: 13px 6px;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: .04em; text-transform: uppercase;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+}
+.tab-bar--underline .tab-bar__tab:hover { color: var(--text2); }
+.tab-bar--underline .tab-bar__tab.is-active {
+  color: var(--gold-primary);
+  border-bottom-color: var(--gold-primary);
+}
+
+/* ══════════════════════════════════
    PAGES
 ══════════════════════════════════ */
 .page { display: none; padding: 16px; padding-bottom: 90px; animation: fadeUp .25s ease; }
