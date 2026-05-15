@@ -87,6 +87,28 @@ body {
   color: var(--text);
   min-height: 100vh;
   overflow-x: hidden;
+  /* Comportement « app » : pas de sélection de texte ni de menu
+     long-press sur le contenu non interactif. */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+/* La sélection reste possible là où elle est utile (saisie). */
+input, textarea, [contenteditable="true"] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* ── Verrouillage du scroll sur l'accueil ──
+   L'écran d'accueil tient entièrement sur un écran : on bloque le scroll
+   (et le rebond) quand la page Accueil est active. Les autres pages
+   (listes longues) gardent leur scroll normal. Classe posée par
+   updateScrollLock() dans index.html. */
+html.home-locked,
+html.home-locked body {
+  overflow: hidden;
+  height: 100%;
+  overscroll-behavior: none;
 }
 
 /* ── SCROLLBAR ── */

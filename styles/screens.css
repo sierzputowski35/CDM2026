@@ -1700,9 +1700,14 @@
   font-variant-numeric: tabular-nums;
 }
 /* pastille de notification : déborde le coin haut-droit de la cellule
-   (au-dessus du bloc) — Missions, Récompenses, Shop */
+   (au-dessus du bloc) — Missions, Récompenses, Shop.
+   z-index élevé : la pastille se promeut dans le contexte d'empilement
+   parent et passe ainsi au-dessus des cellules voisines. Les cellules
+   .home-grid-card NE doivent PAS avoir de z-index (sinon elles créent
+   un contexte d'empilement qui emprisonnerait la pastille). */
 .hgc-badge {
   position: absolute; top: -7px; right: -7px;
+  z-index: 20;
   min-width: 21px; height: 21px; padding: 0 6px;
   border-radius: 11px;
   background: #FF4D5A; color: #fff;
