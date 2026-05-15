@@ -210,3 +210,44 @@
   .ahv2-xp-fill.xp-fill-scale { transition: none; }
 }
 
+/* ══════════════════════════════════
+   SPRINT 3 — XP BAR PREMIUM
+   Shine pass diagonal + milestone pulse (25/50/75/100%).
+   Particules dorées sur le bord du fill = spawn JS (cf. index.html).
+   GPU-only : transform + opacity + filter. Aucun reflow.
+══════════════════════════════════ */
+.ahv2-xp-fill { position: relative; }
+
+.ahv2-xp-fill.is-shining::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg,
+    transparent 35%,
+    rgba(255, 255, 255, .75) 50%,
+    transparent 65%);
+  animation: xp-shine-pass 1.4s ease-in-out infinite;
+  pointer-events: none;
+  border-radius: inherit;
+  will-change: transform;
+}
+@keyframes xp-shine-pass {
+  0%   { transform: translateX(-120%); }
+  100% { transform: translateX(220%); }
+}
+
+.ahv2-xp-bar.is-milestone {
+  animation: xp-milestone-pulse 320ms cubic-bezier(.34, 1.56, .64, 1);
+  will-change: transform, filter;
+}
+@keyframes xp-milestone-pulse {
+  0%   { transform: scaleY(1);   filter: brightness(1)   drop-shadow(0 0 0 transparent); }
+  45%  { transform: scaleY(1.8); filter: brightness(1.7) drop-shadow(0 0 8px rgba(244, 197, 66, .85)); }
+  100% { transform: scaleY(1);   filter: brightness(1)   drop-shadow(0 0 0 transparent); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ahv2-xp-fill.is-shining::after { animation: none; opacity: 0; }
+  .ahv2-xp-bar.is-milestone { animation: none; }
+}
+
