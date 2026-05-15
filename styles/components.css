@@ -54,7 +54,7 @@
 /* ── APP HEADER V2 ── */
 .app-header-v2 {
   position: sticky; top: 0; z-index: 200;
-  background: linear-gradient(180deg, rgba(6,8,15,.98) 0%, rgba(11,16,32,.94) 100%);
+  background: linear-gradient(180deg, rgba(21,27,45,.98) 0%, rgba(28,35,57,.94) 100%);
   backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
   border-bottom: 1px solid rgba(244,197,66,.15);
   padding: 10px 16px 12px;
@@ -528,7 +528,7 @@
   position: fixed;
   bottom: 0; left: 0; right: 0;
   z-index: 1000;
-  background: rgba(6,8,15,.96);
+  background: rgba(21,27,45,.96);
   border-top: 1px solid rgba(244,197,66,.15);
   backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
   display: flex;
@@ -1076,31 +1076,43 @@
    MATCH CARDS
 ══════════════════════════════════ */
 /* ── MATCH CARD PREMIUM ───────────────────────────────────── */
+/* Carte de match — alignée sur la hero card de l'accueil :
+   dégradé bleu nuit + fine bordure dorée + halo discret. */
 .match-card {
   position: relative;
-  background: linear-gradient(145deg, #141926 0%, #1A2235 100%);
-  border: 1px solid rgba(255,215,0,.18);
-  border-radius: 20px;
+  background: linear-gradient(160deg, #0C1E40 0%, var(--bg) 55%);
+  border: 1px solid rgba(244,197,66,.18);
+  border-radius: 22px;
   padding: 16px;
   margin-bottom: 10px;
   overflow: hidden;
-  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
-  box-shadow:
-    0 4px 24px rgba(0,0,0,.45),
-    0 0 0 1px rgba(255,255,255,.03),
-    inset 0 1px 0 rgba(255,255,255,.05);
+  transition: transform .2s ease, border-color .2s ease;
+  box-shadow: 0 4px 18px rgba(0,0,0,.35);
 }
-.match-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0; height: 3px;
-  background: linear-gradient(90deg, var(--crimson) 0%, var(--crimson) 33%, var(--gold-primary) 33%, var(--gold-primary) 66%, #003189 66%, #003189 100%);
-  border-radius: 20px 20px 0 0;
-}
+/* halo bleu discret en haut à droite (comme .hero-card__glow) */
 .match-card::after {
   content: '';
-  position: absolute; inset: 0; border-radius: 20px; pointer-events: none;
-  background: radial-gradient(ellipse at 50% 0%, rgba(255,215,0,.06), transparent 65%);
+  position: absolute; top: -40px; right: -40px;
+  width: 160px; height: 160px; pointer-events: none;
+  background: radial-gradient(circle, rgba(88,200,250,.10), transparent 70%);
+}
+/* Drapeaux ronds dans les cartes de match (comme la hero card).
+   !important : flagHTML pose des dimensions rectangulaires en inline. */
+.match-card .flag-wrap {
+  width: 54px !important;
+  height: 54px !important;
+  border-radius: 50% !important;
+  border: 2px solid rgba(255,255,255,.14);
+  box-shadow: 0 2px 10px rgba(0,0,0,.45);
+}
+.match-card .flag-wrap .flag-shine,
+.match-card .flag-wrap .flag-gloss { display: none; }
+/* « VS » identique à celui de la hero card de l'accueil (or, Bebas) */
+.match-card .vs-text {
+  font-size: 26px;
+  letter-spacing: normal;
+  line-height: 1;
+  color: var(--gold-primary);
 }
 .match-card:hover, .match-card:focus-within {
   transform: translateY(-3px);
