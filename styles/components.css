@@ -1464,19 +1464,87 @@
 .btn-sm:active { background: rgba(255,255,255,.10); }
 
 /* ══════════════════════════════════
-   TOAST
+   TOAST — SPRINT 7.5
+   Slide-in depuis le haut, icône + couleur selon type
+   (success/info/danger/warning), barre de progression auto-dismiss 3s.
 ══════════════════════════════════ */
 .toast {
-  position: fixed; bottom: 80px; left: 50%;
-  transform: translateX(-50%) translateY(20px);
-  background: var(--surface2); border: 1px solid rgba(255,215,0,.25);
-  color: var(--text); padding: 10px 22px; border-radius: 8px;
-  font-size: 13px; font-weight: 600; z-index: 300;
-  opacity: 0; transition: all .25s; pointer-events: none;
-  white-space: nowrap; box-shadow: 0 8px 30px rgba(0,0,0,.5);
+  position: fixed;
+  top: calc(20px + env(safe-area-inset-top, 0px));
+  left: 50%;
+  transform: translateX(-50%) translateY(-120%);
+  background: var(--surface2);
+  border: 1px solid rgba(244, 197, 66, .25);
+  color: var(--text);
+  padding: 10px 18px 10px 14px;
+  border-radius: 10px;
+  font-size: 13px; font-weight: 600;
   letter-spacing: .03em;
+  z-index: 300;
+  opacity: 0;
+  transition: transform 280ms cubic-bezier(.34, 1.56, .64, 1), opacity 180ms ease;
+  pointer-events: none;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, .5);
+  display: inline-flex; align-items: center; gap: 8px;
+  max-width: calc(100vw - 32px);
+  overflow: hidden;
 }
-.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.toast-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  width: 18px; height: 18px;
+}
+.toast-msg {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: calc(100vw - 80px);
+}
+.toast-progress {
+  position: absolute;
+  bottom: 0; left: 0;
+  height: 2px;
+  width: 100%;
+  background: currentColor;
+  transform-origin: left center;
+  transform: scaleX(0);
+  border-radius: 0 0 10px 10px;
+  opacity: .65;
+}
+.toast.show .toast-progress {
+  animation: toast-progress-shrink 3000ms linear forwards;
+}
+@keyframes toast-progress-shrink {
+  from { transform: scaleX(1); }
+  to   { transform: scaleX(0); }
+}
+
+/* Types : couleur de la bordure, de l'icône et de la progress bar. */
+.toast--info     { border-color: rgba(244, 197, 66, .35); color: #FFE680; }
+.toast--info .toast-icon, .toast--info .toast-progress { color: #F4C542; }
+
+.toast--success  { border-color: rgba(34, 209, 107, .4); color: #6FE6A0; }
+.toast--success .toast-icon, .toast--success .toast-progress { color: #22D16B; }
+
+.toast--danger   { border-color: rgba(239, 68, 68, .4); color: #FCA5A5; }
+.toast--danger .toast-icon, .toast--danger .toast-progress { color: #EF4444; }
+
+.toast--warning  { border-color: rgba(255, 138, 61, .4); color: #FFC890; }
+.toast--warning .toast-icon, .toast--warning .toast-progress { color: #FF8A3D; }
+
+/* Restaure la couleur du texte (le .toast--type pose color: pour icon+progress,
+   mais .toast-msg doit rester en blanc/clair pour la lisibilité). */
+.toast .toast-msg { color: var(--text); }
+
+@media (prefers-reduced-motion: reduce) {
+  .toast { transition: opacity 100ms linear; transform: translateX(-50%) translateY(0); }
+  .toast.show .toast-progress { animation: none; transform: scaleX(0); }
+}
 
 /* ══════════════════════════════════
    MODALS

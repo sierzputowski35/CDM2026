@@ -6138,9 +6138,38 @@ function closeProfil(){
   const pm2=document.getElementById('profil-modal');if(pm2)pm2.classList.add('hidden');
 }
 
-// ══ TOAST ══
+// ══ TOAST — SPRINT 7.5 ══
+// Signature : showToast(msg) ou showToast(msg, type)
+// type ∈ {'success', 'info', 'danger', 'warning'} (défaut: 'info')
+// Slide-in depuis le top + icône colorée + progress bar 3s auto-dismiss.
+// Backwards-compat : tous les call sites historiques showToast(msg) marchent.
 let toastTimer;
-function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2500);}
+const TOAST_ICONS = {
+  success: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+  info:    '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
+  danger:  '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+  warning: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
+};
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  if (!t) return;
+  if (!type || !TOAST_ICONS[type]) type = 'info';
+  const icon = TOAST_ICONS[type];
+  // Si un toast est déjà affiché : on retire .show, force un reflow, puis
+  // re-show. Ça relance l'animation CSS du progress bar (scaleX 1→0) à zéro.
+  t.classList.remove('show');
+  void t.offsetHeight;
+  t.className = 'toast toast--' + type;
+  // Échappe le HTML du message (les call sites historiques passent juste du texte).
+  const safeMsg = String(msg).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  t.innerHTML = '<span class="toast-icon">' + icon + '</span><span class="toast-msg">' + safeMsg + '</span><div class="toast-progress"></div>';
+  // Reflow puis show pour que la transition slide-in joue à coup sûr.
+  void t.offsetHeight;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+window.showToast = showToast;
 
 // ══ BOOTSTRAP ══
 // L'appel init() était auparavant dans la section PWA INSTALL ;
