@@ -239,7 +239,7 @@
         <label for="login-code">Ton mot de passe <span style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0">(choisis-le toi-même)</span></label>
         <div style="position:relative">
           <input type="password" id="login-code" placeholder="Minimum 4 caractères" maxlength="20" style="padding-right:44px"/>
-          <button type="button" onclick="togglePwd('login-code',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;padding:4px;display:inline-flex;align-items:center"><span data-icon="eye" data-icon-size="18"></span></button>
+          <button type="button" onclick="togglePwd('login-code',this)" aria-label="Afficher le mot de passe" aria-pressed="false" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;padding:4px;display:inline-flex;align-items:center"><span data-icon="eye" data-icon-size="18"></span></button>
         </div>
         <div style="font-size:11px;color:var(--text3);margin-top:5px">Note-le bien — il te sera demandé à chaque connexion</div>
       </div>
@@ -2937,10 +2937,14 @@ function togglePwd(inputId,btn){
     inp.type='text';
     host.innerHTML=window.icon('eye',18);
     host.style.opacity='0.5';
+    btn.setAttribute('aria-pressed','true');
+    btn.setAttribute('aria-label','Masquer le mot de passe');
   } else {
     inp.type='password';
     host.innerHTML=window.icon('eye',18);
     host.style.opacity='1';
+    btn.setAttribute('aria-pressed','false');
+    btn.setAttribute('aria-label','Afficher le mot de passe');
   }
 }
 
