@@ -86,7 +86,8 @@ Un seul composant remplace les 4 systèmes legacy de tabs (`.sub-tab`, `.nav-btn
 | Modificateur            | Usage                                          | Look                                              |
 | ----------------------- | ---------------------------------------------- | ------------------------------------------------- |
 | `.tab-bar--pill`        | Filtres scrollables (modal avatar, catégories) | Pilule 20px radius, actif = bg or                 |
-| `.tab-bar--underline`   | Sub-section (profil tabs, paris filtres)       | Texte 11px caps, actif = underline + color or     |
+| `.tab-bar--underline`   | Sub-section (profil tabs, admin nav)           | Texte 11px caps, actif = underline + color or     |
+| `.tab-bar--filled`      | Toggle 2-3 onglets pleine largeur (pronos, résultats) | Radius 8px, actif = bg or pleine + texte sombre |
 
 Tous : couleur inactive `--text3`, transition .2s, état actif via `.is-active`. Couleur active = `--gold-primary`.
 

@@ -1343,25 +1343,7 @@
 .badge-rarete-epique.unlocked  { border-color: rgba(168,85,247,0.35); background: rgba(168,85,247,0.04); }
 .badge-rarete-rare.unlocked    { border-color: rgba(88,200,250,0.35); background: rgba(88,200,250,0.04); }
 
-/* Profil tabs */
-.profil-tabs {
-  display: flex;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 14px;
-}
-.profil-tab {
-  flex: 1;
-  text-align: center;
-  padding: 10px 4px;
-  font-family: 'Oswald', sans-serif;
-  font-size: 13px;
-  color: var(--text3);
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-  transition: all 150ms;
-}
-.profil-tab.active { color: var(--gold-primary); border-bottom-color: var(--gold-primary); }
+/* .profil-tabs et .profil-tab supprimés (T19) — utiliser .tab-bar.tab-bar--underline */
 
 /* Enhanced badge unlock overlay */
 .badge-unlock-reward { font-size: 14px; color: var(--gold-primary); font-family: 'Oswald', sans-serif; letter-spacing: 1px; }
