@@ -1462,3 +1462,164 @@
   padding: 6px 10px 10px;
   letter-spacing: .3px;
 }
+
+/* ══════════════════════════════════
+   SPRINT 1 — REFONTE ACCUEIL (mise en page)
+   Hero profil · grid 2 cols · zone récompenses
+══════════════════════════════════ */
+
+/* ── Bloc générique ── */
+.home-section { margin: 0 16px 16px; }
+.home-section--hero-profil {
+  padding: 14px;
+  border-radius: 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border2);
+  margin-top: 16px;
+}
+
+/* ── 1. Header hero profil ── */
+.hero-profil-row { display: flex; align-items: center; gap: 12px; }
+.hero-profil-avatar { flex-shrink: 0; }
+.hero-profil-info { flex: 1; min-width: 0; }
+.hero-profil-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px; color: var(--text);
+  letter-spacing: 1px; line-height: 1.1;
+}
+.hero-profil-rank { margin: 4px 0 6px; }
+.hero-profil-chip {
+  display: inline-block;
+  font-family: 'Inter', sans-serif;
+  font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+  padding: 3px 10px; border-radius: 999px;
+  background: rgba(168,85,247,0.15); color: #A855F7;
+}
+.hero-profil-xp { margin-top: 6px; }
+.hero-profil-xp-bar {
+  height: 6px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 3px; overflow: hidden;
+}
+.hero-profil-xp-fill {
+  height: 100%;
+  background: var(--gold-primary);
+  border-radius: 3px;
+  transition: width 800ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hero-profil-xp-label {
+  font-size: 10px; color: var(--text3);
+  margin-top: 4px; font-weight: 600; letter-spacing: 0.5px;
+}
+.hero-profil-stats {
+  display: flex; gap: 16px;
+  margin-top: 12px; padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.hero-profil-stat { display: flex; flex-direction: column; gap: 2px; }
+.hero-profil-stat-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 9px; color: var(--text3);
+  letter-spacing: 1px; font-weight: 700;
+}
+.hero-profil-stat-value {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px; color: var(--text); font-weight: 700;
+}
+
+/* ── 3. Grid Ma Ligue + Série ── */
+.home-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 0 16px 16px;
+}
+.home-mini-card {
+  padding: 14px;
+  border-radius: 18px;
+  background: var(--bg-card);
+  border: 1px solid var(--border2);
+  min-height: 92px;
+}
+.home-mini-card-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 9px; font-weight: 700; letter-spacing: 1.5px;
+  margin-bottom: 8px;
+}
+.home-mini-card--ligue .home-mini-card-label { color: var(--gold-primary); }
+.home-mini-card--streak .home-mini-card-label { color: #FF8A3D; }
+.home-mini-card-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px; letter-spacing: 1px; line-height: 1.1;
+}
+.home-mini-card-sub {
+  font-size: 11px; color: var(--text2);
+  margin: 4px 0 8px;
+}
+.home-mini-card-bar {
+  height: 4px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px; overflow: hidden;
+}
+.home-mini-card-bar-fill { height: 100%; transition: width 600ms ease-out; }
+.home-mini-card-big {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px; line-height: 1; letter-spacing: 1px;
+}
+
+/* ── 5. Zone récompenses (fallback badges) ── */
+/* margin horizontal remis à 0 : l'inset 16px est géré par le padding
+   interne du head et du scroll (sinon double inset avec .home-section). */
+.home-section--rewards { background: transparent; padding: 0; margin: 0 0 16px; }
+.home-section-head {
+  display: flex; align-items: center; gap: 8px;
+  padding: 0 16px 8px;
+}
+.home-section-title {
+  flex: 1;
+  font-family: 'Inter', sans-serif;
+  font-size: 10px; color: var(--text3);
+  font-weight: 700; letter-spacing: 1.5px;
+}
+.home-section-badge {
+  min-width: 18px; height: 18px; padding: 0 5px;
+  border-radius: 9px;
+  background: #FF4D5A; color: #fff;
+  font-size: 10px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.home-section-badge:empty,
+.home-section-badge.hidden { display: none; }
+.home-section-link {
+  background: none; border: none;
+  color: var(--gold-primary);
+  font-family: 'Inter', sans-serif;
+  font-size: 10px; font-weight: 700;
+  cursor: pointer; padding: 0;
+}
+.home-rewards-scroll {
+  display: flex; gap: 10px;
+  padding: 0 16px 4px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.home-rewards-scroll::-webkit-scrollbar { display: none; }
+.home-rewards-scroll > * { scroll-snap-align: start; flex-shrink: 0; }
+.home-badge-item {
+  width: 72px; padding: 10px 6px;
+  text-align: center;
+  border-radius: 14px;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border2);
+}
+.home-badge-icon { font-size: 24px; line-height: 1; }
+.home-badge-name {
+  font-family: 'Inter', sans-serif;
+  font-size: 9px; color: var(--text2);
+  margin-top: 4px; font-weight: 700; letter-spacing: 0.3px;
+}
+.home-badge-item.rarete-rare { border-color: #58C8FA; }
+.home-badge-item.rarete-epique { border-color: #A855F7; }
+.home-badge-item.rarete-legende { border-color: var(--gold-primary); }

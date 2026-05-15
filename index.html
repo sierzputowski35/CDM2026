@@ -308,13 +308,54 @@
   <div class="main">
     <div id="page-home" class="page active">
 
-      <!-- 1. DAILY REWARD + MISSION (V2 dopamine) -->
-      <div id="daily-reward-home"></div>
-      <div id="mission-home"></div>
-      <div id="coffres-home"></div>
-      <div id="shop-home"></div>
+      <!-- ═══════════════════════════════════════════════════════
+           PAGE ACCUEIL — refonte Sprint 1 (mise en page)
+           Layout : 1.Hero Profil · 2.Hero Card Match · 3.Grid Ligue+Série
+                    4.Missions · 5.Récompenses · 6.Boutique
+           Blocs masqués (DOM conservé, JS ne plante pas) :
+                    #daily-reward-home, #coffres-home
+           Blocs legacy RETIRÉS de l'accueil : Matchs du Jour, Streak card,
+           League card, Actus. Pour restaurer : index.html.bak.sprint1,
+           ou « git revert » du commit Sprint 1, puis décommenter les 4
+           appels render*() marqués SPRINT1 dans initHomePage().
+      ═══════════════════════════════════════════════════════════ -->
 
-      <!-- 2. HERO CARD MATCH DU JOUR -->
+      <!-- Conteneurs JS conservés mais masqués (renderDailyRewardCard / renderCoffresCard) -->
+      <div id="daily-reward-home" style="display:none"></div>
+      <div id="coffres-home" style="display:none"></div>
+
+      <!-- ═══ 1. HEADER HERO PROFIL ═══ -->
+      <section id="home-hero-profil" class="home-section home-section--hero-profil">
+        <div class="hero-profil-row">
+          <div class="hero-profil-avatar" id="home-avatar"></div>
+          <div class="hero-profil-info">
+            <div class="hero-profil-name" id="home-username">—</div>
+            <div class="hero-profil-rank">
+              <span class="hero-profil-chip" id="home-league-chip">—</span>
+            </div>
+            <div class="hero-profil-xp">
+              <div class="hero-profil-xp-bar"><div class="hero-profil-xp-fill" id="home-xp-fill"></div></div>
+              <div class="hero-profil-xp-label" id="home-xp-label">—</div>
+            </div>
+          </div>
+        </div>
+        <div class="hero-profil-stats">
+          <div class="hero-profil-stat">
+            <span class="hero-profil-stat-label">POINTS</span>
+            <span class="hero-profil-stat-value" id="home-coins">—</span>
+          </div>
+          <div class="hero-profil-stat">
+            <span class="hero-profil-stat-label">RANG</span>
+            <span class="hero-profil-stat-value" id="home-gems">—</span>
+          </div>
+          <div class="hero-profil-stat">
+            <span class="hero-profil-stat-label">SÉRIE</span>
+            <span class="hero-profil-stat-value" id="home-streak">—</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══ 2. HERO CARD MATCH DU JOUR ═══ -->
       <div class="hero-card" id="home-hero-card">
         <div class="hero-card__glow"></div>
         <div class="hero-card__body">
@@ -365,64 +406,31 @@
         </div>
       </div>
 
-      <!-- 3. MATCHS RAPIDES -->
-      <div class="section-header-home">
-        <h2 class="section-title-home">Matchs du Jour</h2>
-        <button class="section-link-home" onclick="switchTab('pronos',document.getElementById('tab-pronos'))">
-          Voir tous
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-            <path d="M9 18l6-6-6-6"/>
-          </svg>
-        </button>
-      </div>
-      <div class="quick-matches" id="home-quick-matches"></div>
-
-      <!-- 4. STREAK CARD -->
-      <div class="streak-card-home" id="home-streak-card">
-        <div class="streak-card-home__glow"></div>
-        <div class="streak-card-home__top">
-          <div class="streak-card-home__label">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="#FF8A3D">
-              <path d="M12 2C9 7 4 8 4 14a8 8 0 0016 0c0-5-5-8-8-12z"/>
-            </svg>
-            <span>Serie en cours</span>
-          </div>
-          <div class="streak-flames" id="streak-flames"></div>
+      <!-- ═══ 3. GRID MA LIGUE + SÉRIE ═══ -->
+      <section class="home-grid-2">
+        <div id="home-card-ligue" class="home-mini-card home-mini-card--ligue">
+          <div class="home-mini-card-label">MA LIGUE</div>
         </div>
-        <div class="streak-card-home__body">
-          <div class="streak-num-home" id="streak-num">0</div>
-          <div>
-            <span class="streak-desc-home">pronostics corrects d'affilee</span>
-            <div class="streak-bonus-home" id="streak-bonus">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="#FF8A3D">
-                <polygon points="12,2 15,9 22,9 17,14 19,21 12,17 5,21 7,14 2,9 9,9"/>
-              </svg>
-              <span id="streak-bonus-text">Bonus +50% XP</span>
-            </div>
-          </div>
+        <div id="home-card-streak" class="home-mini-card home-mini-card--streak">
+          <div class="home-mini-card-label">SÉRIE</div>
         </div>
-      </div>
+      </section>
 
-      <!-- 5. LIGUE ACTUELLE -->
-      <div class="league-card-home" id="home-league-card"
-           onclick="switchTab('arene',document.getElementById('tab-arene'))">
-        <div class="league-card-home__icon" id="league-icon"></div>
-        <div style="flex:1">
-          <div class="league-name-home" id="league-name">Bronze</div>
-          <div class="league-rank-home" id="league-rank">Rang #— · — pts</div>
-          <div class="league-bar-home">
-            <div class="league-bar-home__fill" id="league-bar-fill"></div>
-          </div>
-          <div class="league-pts-next-home" id="league-pts-next">— pts pour la ligue suivante</div>
+      <!-- ═══ 4. MISSIONS DU JOUR ═══ -->
+      <div id="mission-home"></div>
+
+      <!-- ═══ 5. RÉCOMPENSES À RÉCUPÉRER (fallback badges si vide) ═══ -->
+      <section class="home-section home-section--rewards">
+        <div class="home-section-head">
+          <span class="home-section-title" id="rewards-title">RÉCOMPENSES À RÉCUPÉRER</span>
+          <span class="home-section-badge" id="rewards-count">0</span>
+          <button class="home-section-link" id="rewards-link" onclick="claimAllRewards()">TOUT RÉCUPÉRER ›</button>
         </div>
-      </div>
+        <div class="home-rewards-scroll" id="rewards-home"></div>
+      </section>
 
-      <!-- 6. NEWS FEED -->
-      <div class="section-header-home">
-        <h2 class="section-title-home">Actus</h2>
-      </div>
-      <div class="home-news" id="home-news-feed"></div>
+      <!-- ═══ 6. BOUTIQUE ═══ -->
+      <div id="shop-home"></div>
 
     </div>
     <div id="page-classement" class="page">
@@ -4088,17 +4096,139 @@ function renderMissionCard() {
   if (typeof renderMissionsCard === 'function') renderMissionsCard();
 }
 
+// ══ Sprint 1 — Accueil refonte : nouveaux blocs (mise en page) ══
+
+// Stub défensif : la vraie logique « tout récupérer » arrivera au sprint
+// Récompenses. renderRewardsHome() réassigne déjà le onclick du bouton,
+// mais ce stub évite toute ReferenceError si l'attribut HTML est déclenché.
+function claimAllRewards() {}
+
+// 7a — Chip ligue dans le hero profil
+function renderHomeLeagueChip() {
+  const joueur = allJoueurs.find(j => j.id === currentUser);
+  if (!joueur) return;
+  const chipEl = document.getElementById('home-league-chip');
+  if (!chipEl) return;
+  const pts = calcPoints(joueur);
+  const lig = getLeagueForPoints(pts);
+  const col = lig.color || '#A855F7';
+  chipEl.textContent = '✦ ' + lig.name.toUpperCase();
+  chipEl.style.color = col;
+  // lig.color peut être un hex (#…) ou une var CSS (var(--…)). Le « +26 »
+  // (alpha ~15%) n'est valide que sur un hex → fallback neutre sinon.
+  chipEl.style.background = col.charAt(0) === '#' ? col + '26' : 'rgba(255,255,255,0.08)';
+}
+
+// 7b — Stat « série » dans le hero profil
+function renderHomeStreak() {
+  const joueur = allJoueurs.find(j => j.id === currentUser);
+  if (!joueur) return;
+  const el = document.getElementById('home-streak');
+  if (!el) return;
+  const streak = getStreak(joueur);
+  el.textContent = streak > 0 ? streak + 'J 🔥' : '—';
+  el.style.color = streak >= 3 ? '#FF8A3D' : 'var(--text)';
+}
+
+// 7c — Card « Ma Ligue » (grid gauche)
+function renderHomeLigueCard() {
+  const container = document.getElementById('home-card-ligue');
+  if (!container) return;
+  const joueur = allJoueurs.find(j => j.id === currentUser);
+  if (!joueur) return;
+  const board = getLeaderboard();
+  const rank = board.findIndex(p => p.id === currentUser) + 1;
+  const pts = calcPoints(joueur);
+  const lig = getLeagueForPoints(pts);
+  const nextIdx = LEAGUES.indexOf(lig) + 1;
+  const next = LEAGUES[nextIdx];
+  const pct = next ? Math.min(100, ((pts - lig.min) / (next.min - lig.min)) * 100) : 100;
+  container.innerHTML = `
+    <div class="home-mini-card-label">MA LIGUE</div>
+    <div class="home-mini-card-content">
+      <div class="home-mini-card-title" style="color:${lig.color}">${lig.name.toUpperCase()}</div>
+      <div class="home-mini-card-sub">${rank > 0 ? '#' + rank : '—'} · ${pts} pts</div>
+      <div class="home-mini-card-bar"><div class="home-mini-card-bar-fill" style="width:${pct}%;background:${lig.color}"></div></div>
+    </div>`;
+}
+
+// 7d — Card « Série » (grid droite)
+function renderHomeStreakCard() {
+  const container = document.getElementById('home-card-streak');
+  if (!container) return;
+  const joueur = allJoueurs.find(j => j.id === currentUser);
+  if (!joueur) return;
+  const streak = getStreak(joueur);
+  container.innerHTML = `
+    <div class="home-mini-card-label">SÉRIE</div>
+    <div class="home-mini-card-content">
+      <div class="home-mini-card-big" style="color:#FF8A3D">${streak}J 🔥</div>
+      <div class="home-mini-card-sub">${streak >= 5 ? 'Continue ta lancée !' : 'Pronostique pour grimper'}</div>
+    </div>`;
+}
+
+// 7e — Zone récompenses (STUB Sprint 1 : toujours fallback badges).
+// La vraie détection des récompenses à récupérer arrivera au sprint dédié.
+function renderRewardsHome() {
+  const container = document.getElementById('rewards-home');
+  const titleEl   = document.getElementById('rewards-title');
+  const countEl   = document.getElementById('rewards-count');
+  const linkEl    = document.getElementById('rewards-link');
+  if (!container) return;
+
+  const pendingRewards = []; // STUB — vide pour ce sprint
+
+  if (pendingRewards.length > 0) {
+    if (titleEl) titleEl.textContent = 'RÉCOMPENSES À RÉCUPÉRER';
+    if (countEl) { countEl.textContent = pendingRewards.length; countEl.classList.remove('hidden'); }
+    if (linkEl) linkEl.style.display = '';
+    // renderRewardCards(container, pendingRewards) — sprint suivant
+  } else {
+    if (titleEl) titleEl.textContent = 'MES BADGES';
+    if (countEl) countEl.classList.add('hidden');
+    if (linkEl) {
+      linkEl.textContent = 'VOIR PLUS ›';
+      linkEl.onclick = () => switchTab('profil', document.getElementById('tab-profil'));
+    }
+    renderHomeBadgesFallback(container);
+  }
+}
+
+async function renderHomeBadgesFallback(container) {
+  let earnedIds;
+  try { earnedIds = await getEarnedBadgeIds(currentUser); }
+  catch (_) { earnedIds = new Set(); }
+  const defs = (typeof BADGES !== 'undefined') ? BADGES : [];
+  const earned = defs.filter(b => earnedIds.has(b.id)).slice(0, 5);
+  if (earned.length === 0) {
+    container.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:8px 0">Aucun badge encore — gagne ton premier pronostic !</div>';
+    return;
+  }
+  container.innerHTML = earned.map(b => `
+    <div class="home-badge-item rarete-${b.rarete}">
+      <div class="home-badge-icon">${window.icon ? window.icon(b.icon || 'gold-medal', 24) : ''}</div>
+      <div class="home-badge-name">${b.name}</div>
+    </div>`).join('');
+}
+
 function initHomePage() {
   initHomeHeader();
+  renderHomeLeagueChip();   // SPRINT1 — chip ligue (hero profil)
+  renderHomeStreak();       // SPRINT1 — stat série (hero profil)
+  renderHomeLigueCard();    // SPRINT1 — card Ma Ligue (grid)
+  renderHomeStreakCard();   // SPRINT1 — card Série (grid)
   renderDailyRewardCard();
   renderMissionCard();
   renderCoffresCard();
   if (typeof renderShopHomeCard === 'function') renderShopHomeCard();
   renderHeroCard();
-  renderQuickMatches();
-  renderStreakCard();
-  renderLeagueCard();
-  renderNewsFeed();
+  renderRewardsHome();      // SPRINT1 — zone récompenses (stub fallback badges)
+  // SPRINT1 — blocs legacy retirés de l'accueil. Décommenter pour restaurer
+  // (penser aussi à restaurer leur HTML : voir index.html.bak.sprint1) :
+  // renderQuickMatches();
+  // renderStreakCard();
+  // renderLeagueCard();
+  // renderNewsFeed();
 }
 
 function renderHomePage() { initHomePage(); }
