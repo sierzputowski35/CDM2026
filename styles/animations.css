@@ -136,17 +136,20 @@
    Placeholder shimmer pour la latence Supabase.
    GPU-safe : on n'anime que background-position.
 ══════════════════════════════════ */
+/* SPRINT 7.4 — Shimmer affiné : highlight central plus contrasté
+   (rgba blanche au lieu de --surface3 qui pouvait se perdre selon
+   la palette), vitesse 1.2s pour un effet plus dynamique. */
 .skeleton {
   background: linear-gradient(
     90deg,
-    var(--surface) 0%,
-    var(--surface2) 40%,
-    var(--surface3) 50%,
-    var(--surface2) 60%,
-    var(--surface) 100%
+    var(--surface)        0%,
+    var(--surface2)      35%,
+    rgba(255,255,255,.07) 50%,
+    var(--surface2)      65%,
+    var(--surface)       100%
   );
   background-size: 200% 100%;
-  animation: skeleton-shimmer 1.4s linear infinite;
+  animation: skeleton-shimmer 1.2s linear infinite;
 }
 @keyframes skeleton-shimmer {
   0%   { background-position: 200% 0; }

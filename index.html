@@ -4337,6 +4337,18 @@ function getAwards(joueur){
 }
 
 function renderClassement(){
+  // SPRINT 7.4 — Skeleton tant que les données joueurs ne sont pas chargées.
+  // Évite d'afficher une page vide avant la 1ère réponse Supabase.
+  const rankListEl = document.getElementById('ranking-list');
+  if (!allJoueurs.length && window.Skeleton) {
+    if (rankListEl && !rankListEl.dataset.skeleton) {
+      Skeleton.into(rankListEl, 'classement-row', 6);
+      rankListEl.dataset.skeleton = '1';
+    }
+    return;
+  }
+  // Skeleton terminé : libère le flag pour les prochains renders normaux.
+  if (rankListEl && rankListEl.dataset.skeleton) delete rankListEl.dataset.skeleton;
   const board=getLeaderboard();
   const matchsJoues=Object.keys(allScores).length;
 
@@ -4678,12 +4690,24 @@ function renderBonusSection(m, p, isLocked) {
 }
 
 function renderMatchs(){
+  // SPRINT 7.4 — Skeleton tant que les données joueurs/matchs ne sont pas prêtes.
+  if (!allJoueurs.length && window.Skeleton) {
+    const list = document.getElementById('matchs-list');
+    if (list && !list.dataset.skeleton) {
+      Skeleton.into(list, 'match-card', 4);
+      list.dataset.skeleton = '1';
+    }
+    return;
+  }
   const joueur=allJoueurs.find(j=>j.id===currentUser);
   const prog=joueur?.pronostics||{};
   let lastPhase='',html='';
   const filtered=getFilteredMatchs();
+  // Skeleton terminé : libère le flag.
+  const matchsList = document.getElementById('matchs-list');
+  if (matchsList && matchsList.dataset.skeleton) delete matchsList.dataset.skeleton;
   if(!filtered.length){
-    document.getElementById('matchs-list').innerHTML='<div style="text-align:center;color:var(--text3);padding:40px">Aucun match dans ce filtre</div>';
+    matchsList.innerHTML='<div style="text-align:center;color:var(--text3);padding:40px">Aucun match dans ce filtre</div>';
     return;
   }
   for(const m of filtered){
