@@ -306,6 +306,10 @@
           <div class="hero-profil-id">
             <div class="hero-profil-name" id="home-username">—</div>
           </div>
+          <div class="hero-profil-wallet">
+            <span class="hero-wallet-item hero-wallet-item--coins"><span class="hero-wallet-ico">🪙</span><b id="home-wallet-coins">0</b></span>
+            <span class="hero-wallet-item hero-wallet-item--gems"><span class="hero-wallet-ico">💎</span><b id="home-wallet-gems">0</b></span>
+          </div>
         </div>
 
         <div class="hero-gauges">
@@ -3193,6 +3197,10 @@ function renderHomeProfil() {
   if (ligFill) ligFill.style.background = lig.color;
   const ligNum = $('home-league-num');
   if (ligNum) ligNum.style.color = lig.color;
+
+  // ── Porte-monnaie (or + gemmes) ──
+  txt('home-wallet-coins', (joueur.coins || 0).toLocaleString('fr-FR'));
+  txt('home-wallet-gems', (joueur.gems || 0).toLocaleString('fr-FR'));
 
   // ── Stats POINTS / RANG / SÉRIE ──
   txt('home-coins', pts.toLocaleString('fr-FR'));

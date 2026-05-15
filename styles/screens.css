@@ -1699,13 +1699,17 @@
   font-size: 11px; color: var(--text2); font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
+/* pastille de notification : déborde le coin haut-droit de la cellule
+   (au-dessus du bloc) — Missions, Récompenses, Shop */
 .hgc-badge {
-  position: absolute; top: 9px; right: 9px;
-  min-width: 20px; height: 20px; padding: 0 6px;
-  border-radius: 10px;
+  position: absolute; top: -7px; right: -7px;
+  min-width: 21px; height: 21px; padding: 0 6px;
+  border-radius: 11px;
   background: #FF4D5A; color: #fff;
-  font-size: 11px; font-weight: 700;
+  font-size: 11px; font-weight: 800;
   display: flex; align-items: center; justify-content: center;
+  border: 2px solid var(--bg-primary, #0a0e1a);
+  box-shadow: 0 2px 6px rgba(0,0,0,.45);
 }
 /* accents par cellule */
 #mission-home.home-grid-card { border-color: rgba(168,85,247,.28); }
@@ -1915,3 +1919,23 @@
 .rw-badge.rarete-epique { border-color: #A855F7; }
 .rw-badge.rarete-legende { border-color: var(--gold-primary); }
 .rw-empty { font-size: 12px; color: var(--text3); padding: 6px 0; }
+
+/* ══════════════════════════════════
+   SPRINT 1g — PORTE-MONNAIE DANS LE HERO PROFIL (or + gemmes)
+══════════════════════════════════ */
+.hero-profil-wallet {
+  flex-shrink: 0;
+  display: flex; flex-direction: column; gap: 5px;
+  align-self: flex-start;
+}
+.hero-wallet-item {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 9px; border-radius: 999px;
+  font-size: 11px; font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.hero-wallet-item b { font-weight: 800; }
+.hero-wallet-ico { font-size: 11px; }
+.hero-wallet-item--coins { background: rgba(244,197,66,.12); color: var(--gold-primary); }
+.hero-wallet-item--gems  { background: rgba(168,85,247,.16); color: #C99BF7; }

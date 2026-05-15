@@ -244,7 +244,28 @@ async function rerollOneDailyMission(joueurId) {
 
 let _shopActiveTab = 'chests';
 
+// ── Notifications « nouveaux objets shop » ────────────────────
+// Suivi local (localStorage) des objets déjà vus par le joueur. Un objet
+// du catalogue dont l'id n'a jamais été vu compte comme « nouveau » →
+// pastille rouge sur la cellule Shop de l'accueil. Ouvrir le shop marque
+// tout le catalogue courant comme vu (la pastille retombe à 0).
+function _shopSeenKey() {
+  return 'cdm2026_shop_seen_' + (typeof currentUser !== 'undefined' && currentUser ? currentUser : 'anon');
+}
+function getNewShopItemsCount() {
+  let seen = [];
+  try { seen = JSON.parse(localStorage.getItem(_shopSeenKey()) || '[]'); } catch (_) {}
+  const seenSet = new Set(seen);
+  return SHOP_ALL.filter(i => !seenSet.has(i.id)).length;
+}
+function markShopItemsSeen() {
+  try { localStorage.setItem(_shopSeenKey(), JSON.stringify(SHOP_ALL.map(i => i.id))); } catch (_) {}
+}
+
 function openShop() {
+  // Le joueur consulte le shop → plus de « nouveaux » objets en attente.
+  markShopItemsSeen();
+  if (typeof renderShopHomeCard === 'function') renderShopHomeCard();
   const modal = document.getElementById('shop-modal');
   if (modal) { modal.remove(); }
   const bg = document.createElement('div');
@@ -338,9 +359,11 @@ function renderShopHomeCard() {
   // Petits indicateurs : boosters actifs
   const activeBoosts = ['boost_double_xp_until','boost_double_coins_until','boost_streak_until']
     .filter(f => joueur[f] && new Date(joueur[f]).getTime() > Date.now()).length;
+  const newCount = (typeof getNewShopItemsCount === 'function') ? getNewShopItemsCount() : 0;
   container.innerHTML = `
     <span class="hgc-icon">🏪</span>
     <span class="hgc-title">SHOP</span>
-    <span class="hgc-sub">${joueur.coins || 0} 🪙 · ${joueur.gems || 0} 💎${activeBoosts > 0 ? ` · ⚡${activeBoosts}` : ''}</span>`;
+    <span class="hgc-sub">${joueur.coins || 0} 🪙 · ${joueur.gems || 0} 💎${activeBoosts > 0 ? ` · ⚡${activeBoosts}` : ''}</span>
+    ${newCount > 0 ? `<span class="hgc-badge">${newCount}</span>` : ''}`;
 }
 
