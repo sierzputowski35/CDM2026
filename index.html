@@ -1437,6 +1437,26 @@ function screenShake(intensity, duration) {
 window.flashOverlay = flashOverlay;
 window.screenShake = screenShake;
 
+// SPRINT 7.7 — Small floating popup "+X" qui monte avec trail.
+// Helper générique : pour les gains discrets (mission claim, +1 streak, etc.)
+// Différent de showFloatingXP (qui est gros, +XP au header). Ici c'est petit,
+// discret, positionné à un endroit précis (souvent le bouton qui a été tap).
+function spawnFloatingNumber(x, y, label, color) {
+  if (__reducedMotion()) return;
+  color = color || '#FFE680';
+  const el = document.createElement('div');
+  el.textContent = label;
+  el.style.cssText = 'position:fixed;left:' + x + 'px;top:' + y + 'px;color:' + color + ";font-family:'Bebas Neue',sans-serif;font-size:15px;font-weight:700;letter-spacing:1px;text-shadow:0 0 8px " + color + ',0 2px 4px rgba(0,0,0,.6);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);will-change:transform,opacity';
+  document.body.appendChild(el);
+  el.animate([
+    { transform: 'translate(-50%, -50%) scale(.6)',   opacity: 0 },
+    { transform: 'translate(-50%, -120%) scale(1)',   opacity: 1, offset: 0.3 },
+    { transform: 'translate(-50%, -180%) scale(.85)', opacity: 0 }
+  ], { duration: 900, easing: 'cubic-bezier(.25,.46,.45,.94)', fill: 'forwards' }).onfinish = () => el.remove();
+}
+
+window.spawnFloatingNumber = spawnFloatingNumber;
+
 // Drapeaux premium flagcdn — utiliser PARTOUT à la place des emojis
 function flagImg(country, size) {
   size = size || 'md';
@@ -1460,7 +1480,9 @@ function flagImg(country, size) {
   return `<div class="flag-wrap" style="width:${w};height:${w};border-radius:50%;overflow:hidden;border:2px solid rgba(244,197,66,.3);box-shadow:0 4px 16px rgba(0,0,0,.4);flex-shrink:0"><img src="https://flagcdn.com/w160/${code}.png" srcset="https://flagcdn.com/w320/${code}.png 2x" alt="${country}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block"></div>`;
 }
 
-// Reward animation après action récompensée
+// Reward animation après action récompensée (confetti + pop central +PTS/+XP)
+// SPRINT 7.7 — Exposée à window pour pouvoir l'étendre aux futures réussites
+// majeures non couvertes (actuellement utilisée seulement sur save globaux).
 function showRewardPop(pts, xp) {
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reduced) { showToast('+' + pts + ' pts · +' + xp + ' XP'); return; }
@@ -1480,6 +1502,7 @@ function showRewardPop(pts, xp) {
   document.body.appendChild(pop);
   setTimeout(() => { c.remove(); pop.remove(); }, 2800);
 }
+window.showRewardPop = showRewardPop;
 
 // Countdown J/H/M/S
 function formatCountdown(targetTimestamp) {
@@ -3032,15 +3055,24 @@ function switchTab(tab, btn) {
   const current = document.querySelector('#app-screen .page.active');
   const target = document.getElementById('page-' + t.page);
   if (current && target && current !== target) {
-    current.style.animation = 'page-exit 150ms ease forwards';
+    // SPRINT 7.1 — Slide horizontal 300ms : aligné avec la nouvelle durée
+    // de page-exit pour éviter un cut visuel entre exit et enter.
+    current.style.animation = 'page-exit 220ms cubic-bezier(.4,0,.2,1) forwards';
     setTimeout(() => {
       current.style.animation = '';
       current.classList.remove('active');
       target.classList.add('active');
       target.classList.add('entering');
-      target.addEventListener('animationend', () => target.classList.remove('entering'), { once: true });
+      // L'événement animationend bubble depuis les enfants staggered.
+      // On retire 'entering' à la fin de l'anim parente (page-enter).
+      const handler = (e) => {
+        if (e.target !== target || e.animationName !== 'page-enter') return;
+        target.classList.remove('entering');
+        target.removeEventListener('animationend', handler);
+      };
+      target.addEventListener('animationend', handler);
       t.render?.();
-    }, 150);
+    }, 220);
   } else {
     document.querySelectorAll('#app-screen .page').forEach(p => p.classList.remove('active'));
     target?.classList.add('active');

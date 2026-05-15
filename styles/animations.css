@@ -41,16 +41,43 @@
 
 /* ══════════════════════════════════
    TÂCHE 6 — PAGE TRANSITIONS
+   SPRINT 7.1 — Slide horizontal smooth + stagger des cards à l'arrivée.
 ══════════════════════════════════ */
 @keyframes page-enter {
-  from { opacity: 0; transform: translateY(10px) scale(0.99); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+  from { opacity: 0; transform: translateX(24px); }
+  to   { opacity: 1; transform: translateX(0); }
 }
 @keyframes page-exit {
-  from { opacity: 1; transform: translateY(0); }
-  to   { opacity: 0; transform: translateY(-6px); }
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(-18px); }
 }
-.page.entering { animation: page-enter 220ms cubic-bezier(.4,0,.2,1) both; }
+.page.entering { animation: page-enter 300ms cubic-bezier(.4, 0, .2, 1) both; }
+
+/* Stagger des enfants directs (cards) à l'arrivée d'une page.
+   nth-child jusqu'à 10 pour couvrir la plupart des pages Home.
+   Chaque card monte légèrement avec un delay incrémental. */
+@keyframes card-stagger-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.page.entering > * {
+  animation: card-stagger-in 360ms cubic-bezier(.34, 1.56, .64, 1) both;
+}
+.page.entering > *:nth-child(1) { animation-delay:  60ms; }
+.page.entering > *:nth-child(2) { animation-delay: 110ms; }
+.page.entering > *:nth-child(3) { animation-delay: 160ms; }
+.page.entering > *:nth-child(4) { animation-delay: 210ms; }
+.page.entering > *:nth-child(5) { animation-delay: 260ms; }
+.page.entering > *:nth-child(6) { animation-delay: 310ms; }
+.page.entering > *:nth-child(7) { animation-delay: 360ms; }
+.page.entering > *:nth-child(8) { animation-delay: 410ms; }
+.page.entering > *:nth-child(9) { animation-delay: 460ms; }
+.page.entering > *:nth-child(n+10) { animation-delay: 510ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .page.entering,
+  .page.entering > * { animation: none; }
+}
 
 /* ══════════════════════════════════
    TÂCHE 8 — BADGE UNLOCK

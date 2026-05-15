@@ -302,6 +302,15 @@ async function claimMission(missionRowId) {
   try {
     await sb.from('missions_progress').update({ claimed: true }).eq('id', missionRowId);
   } catch(e) { console.warn('[missions] claim update failed:', e); }
+  // SPRINT 7.7 — Small "+X XP" floating popup depuis le bouton tapé.
+  // Discret (15px), monte avec trail, complète les particules juicyTap (Sprint 2).
+  if (joueur.id === currentUser && typeof spawnFloatingNumber === 'function') {
+    const btn = document.querySelector('button.mission-claim-btn[data-mission-id="' + missionRowId + '"]');
+    if (btn) {
+      const r = btn.getBoundingClientRect();
+      spawnFloatingNumber(r.left + r.width / 2, r.top + r.height / 2, '+' + def.xp + ' XP', '#FFE680');
+    }
+  }
   if (typeof gainXP === 'function' && joueur.id === currentUser) {
     await gainXP(def.xp, 'mission_' + def.id);
   } else if (typeof gainXPFor === 'function') {
@@ -364,7 +373,7 @@ async function renderMissionsCard() {
       const pct = Math.min(100, Math.round((progress / target) * 100));
       const claimed = !!row.claimed;
       const claimBtn = (done && !claimed)
-        ? `<button class="mission-claim-btn" onclick="juicyTap(event, 20); claimMission(${row.id})">Réclamer +${def.xp} XP</button>`
+        ? `<button class="mission-claim-btn" data-mission-id="${row.id}" onclick="juicyTap(event, 20); claimMission(${row.id})">Réclamer +${def.xp} XP</button>`
         : claimed
           ? `<div class="mission-claimed">✓ Réclamée</div>`
           : `<div class="mission-xp-pending">+${def.xp} XP</div>`;
