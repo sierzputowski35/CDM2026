@@ -54,7 +54,7 @@
 }
 
 .shimmer-gold {
-  background: linear-gradient(110deg,#C99812 0%,#F4C542 40%,#FFE680 50%,#F4C542 60%,#C99812 100%);
+  background: linear-gradient(110deg,var(--gold-dark) 0%,var(--gold-primary) 40%,#FFE680 50%,var(--gold-primary) 60%,var(--gold-dark) 100%);
   background-size: 200% 100%;
   animation: shimmer 3s linear infinite;
   -webkit-background-clip:text; background-clip:text; color:transparent;
@@ -70,7 +70,7 @@
    Surcouches blanches pour les surfaces or (sinon or sur or = invisible). */
 :focus { outline: none; }
 :focus-visible {
-  outline: 2px solid var(--gold-primary, #F4C542);
+  outline: 2px solid var(--gold-primary);
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -117,7 +117,7 @@ body {
 }
 .match-modal-title {
   font-family: 'Bebas Neue', sans-serif; font-size: 20px;
-  color: var(--gold); margin-bottom: 4px; letter-spacing: 2px;
+  color: var(--gold-primary); margin-bottom: 4px; letter-spacing: 2px;
 }
 .match-modal-score {
   font-family: 'Bebas Neue', sans-serif; font-size: 36px;

@@ -87,7 +87,7 @@ function spawnParticles(originEl, count) {
   const cy = rect.top + rect.height / 2;
   for (let i = 0; i < count; i++) {
     const p = document.createElement('div');
-    p.style.cssText = `position:fixed;left:${cx}px;top:${cy}px;width:6px;height:6px;border-radius:50%;background:${Math.random()>.5?'var(--gold)':'white'};pointer-events:none;z-index:9999;transform:translate(-50%,-50%)`;
+    p.style.cssText = `position:fixed;left:${cx}px;top:${cy}px;width:6px;height:6px;border-radius:50%;background:${Math.random()>.5?'var(--gold-primary)':'white'};pointer-events:none;z-index:9999;transform:translate(-50%,-50%)`;
     document.body.appendChild(p);
     const angle = (i / count) * Math.PI * 2;
     const dist = 40 + Math.random() * 60;

@@ -398,7 +398,7 @@ async function renderMissionsCard() {
     <div class="card-missions">
       <div class="missions-head">
         <div class="missions-label">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#A855F7" stroke-width="2">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--royal-purple)" stroke-width="2">
             <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
           </svg>
           MISSIONS

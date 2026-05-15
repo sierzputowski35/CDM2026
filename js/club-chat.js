@@ -30,7 +30,7 @@ function _chatAuthor() {
     ? allJoueurs.find(j => j.id === currentUser)
     : null;
   if (joueur) {
-    const colors = ['#F4C542','#22D16B','#58C8FA','#FF4D5A','#A855F7','#FF8A3D','#F472B6'];
+    const colors = ['var(--gold-primary)','var(--emerald)','var(--electric-blue)','var(--crimson)','var(--royal-purple)','#FF8A3D','#F472B6'];
     const color = colors[(joueur.pseudo || '?').charCodeAt(0) % colors.length];
     return { id: joueur.id, pseudo: joueur.pseudo || 'Anonyme', color };
   }
