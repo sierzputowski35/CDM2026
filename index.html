@@ -266,8 +266,11 @@
     <!-- Ligne 1 : Logo + actions -->
     <div class="ahv2-top">
       <div class="ahv2-logo">
-        <img src="icon-192.png" alt="" class="ahv2-logo-icon" onerror="this.outerHTML='⚽'">
-        <div class="ahv2-logo-text shimmer-gold">UNITED 2026</div>
+        <!-- Logo United 2026 — déposer le fichier dans assets/logo-united-2026.png.
+             Fallback automatique sur le texte si le fichier est absent. -->
+        <img src="assets/logo-united-2026.png" alt="United 2026" class="ahv2-logo-img"
+             onerror="this.style.display='none';this.nextElementSibling.style.display=''">
+        <div class="ahv2-logo-text shimmer-gold" style="display:none">UNITED 2026</div>
       </div>
       <div class="ahv2-actions">
         <span class="sync-dot" style="margin-right:2px"></span>

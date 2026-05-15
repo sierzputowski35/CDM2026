@@ -27,6 +27,7 @@ const STATIC_ASSETS = [
   '/index.html',
   '/icon-192.png',
   '/icon-512.png',
+  '/assets/logo-united-2026.png',
   // PR #2 : feuilles de style séparées
   '/styles/variables.css',
   '/styles/reset.css',
