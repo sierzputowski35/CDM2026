@@ -5160,10 +5160,22 @@ async function saveBonusPick(matchId) {
   const joueur = allJoueurs.find(j => j.id === currentUser);
   if (!joueur) return;
   const prog = joueur.pronostics || {};
+  // Capture des scores saisis mais pas encore enregistrés : renderMatchs()
+  // reconstruit les cartes depuis la DB et viderait ces champs sinon.
+  const scoreSnap = {};
+  document.querySelectorAll('#matchs-list .score-inp').forEach(inp => {
+    if (inp.value !== '') scoreSnap[inp.id] = inp.value;
+  });
   const { error } = await sb.from('joueurs').update({ pronostics: prog }).eq('id', currentUser);
   if (error) { showToast('Erreur sauvegarde bonus'); return; }
   await loadData();
   renderMatchs();
+  // Restaure les scores saisis là où la carte reconstruite est restée vide
+  // (= score non encore enregistré en DB).
+  Object.entries(scoreSnap).forEach(([id, val]) => {
+    const inp = document.getElementById(id);
+    if (inp && inp.value === '') inp.value = val;
+  });
 }
 
 // ══ RENDER GLOBAUX V2 ══
