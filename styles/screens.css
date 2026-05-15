@@ -756,6 +756,61 @@
   .level-up-glow { animation: none; }
 }
 
+/* ── SPRINT 4 : LEVEL UP CINEMATIC ──
+   .cinematic = la timeline JS pilote l'apparition (zoom-rotate du card,
+   reveal stagger des chips, shine sur le CTA). On désactive les
+   transitions CSS automatiques pour ne pas créer de double anim. */
+.level-up-modal.cinematic .level-up-card {
+  transform: scale(0.3) rotate(-5deg);
+  opacity: 0;
+  transition: none;
+}
+.level-up-modal.cinematic.show .level-up-card {
+  /* Le WAAPI prend le relais et pose les états via fill:forwards */
+  transform: scale(0.3) rotate(-5deg);
+}
+.level-up-modal.cinematic .level-up-number {
+  display: inline-block;
+  transform: scale(0.5);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+.level-up-modal.cinematic .level-up-reward {
+  opacity: 0;
+  transform: translateY(12px);
+  will-change: transform, opacity;
+}
+.level-up-modal.cinematic .level-up-btn {
+  opacity: 0;
+  transform: scale(0.9);
+  will-change: transform, opacity;
+}
+
+/* Shine permanent sur le bouton CTA une fois révélé. */
+.level-up-btn.cta-ready {
+  position: relative;
+  overflow: hidden;
+}
+.level-up-btn.cta-ready::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg,
+    transparent 35%,
+    rgba(255, 255, 255, .55) 50%,
+    transparent 65%);
+  animation: lu-cta-shine 2.4s ease-in-out infinite;
+  pointer-events: none;
+  will-change: transform;
+}
+@keyframes lu-cta-shine {
+  0%   { transform: translateX(-110%); }
+  100% { transform: translateX(210%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .level-up-btn.cta-ready::after { animation: none; opacity: 0; }
+}
+
 /* ── SPRINT 2 : DAILY REWARD MODAL ── */
 .dr-modal-bg {
   position: fixed; inset: 0; z-index: 10001;

@@ -1209,6 +1209,53 @@ window.spawnTapParticles = spawnTapParticles;
 window.vibrate = vibrate;
 window.juicyTap = juicyTap;
 
+// SPRINT 4 — Helpers cinematic (flash plein écran + screen shake).
+// Flash : overlay fixed qui pulse opacity 0→peak→0 (sans bloquer le clic).
+function flashOverlay(color, duration) {
+  if (__reducedMotion()) return;
+  color = color || 'rgba(255,255,255,0.7)';
+  duration = duration || 250;
+  const el = document.createElement('div');
+  el.style.cssText = 'position:fixed;inset:0;z-index:10005;background:' + color + ';pointer-events:none;will-change:opacity;opacity:0';
+  document.body.appendChild(el);
+  el.animate([
+    { opacity: 0 },
+    { opacity: 1, offset: 0.4 },
+    { opacity: 0 }
+  ], { duration: duration, easing: 'ease-out', fill: 'forwards' }).onfinish = () => el.remove();
+}
+
+// Screen shake — translate aléatoire avec decay. Cible .main (pas body)
+// pour éviter un reflow global du layout. La modal restant en position:fixed
+// hors de .main, elle ne tremble pas — c'est le fond qui tremble derrière.
+function screenShake(intensity, duration) {
+  if (__reducedMotion()) return;
+  intensity = intensity || 8;
+  duration = duration || 300;
+  const target = document.querySelector('.main') || document.body;
+  if (target.__shakeRAF) cancelAnimationFrame(target.__shakeRAF);
+  const start = performance.now();
+  target.style.willChange = 'transform';
+  function tick(now) {
+    const t = (now - start) / duration;
+    if (t >= 1) {
+      target.style.transform = '';
+      target.style.willChange = '';
+      target.__shakeRAF = null;
+      return;
+    }
+    const decay = 1 - t;
+    const dx = (Math.random() - 0.5) * 2 * intensity * decay;
+    const dy = (Math.random() - 0.5) * 2 * intensity * decay;
+    target.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+    target.__shakeRAF = requestAnimationFrame(tick);
+  }
+  target.__shakeRAF = requestAnimationFrame(tick);
+}
+
+window.flashOverlay = flashOverlay;
+window.screenShake = screenShake;
+
 // Drapeaux premium flagcdn — utiliser PARTOUT à la place des emojis
 function flagImg(country, size) {
   size = size || 'md';
@@ -2306,11 +2353,12 @@ function animateXPBar(oldXP, gain, sameLevel) {
 let _coinRainRAF = null;
 let _coinRainCoins = [];
 
-// Modal level-up enrichie : affiche TOUTES les récompenses gagnées
-// (cumul de tous les niveaux franchis dans le gainXP). Compatibilité
-// rétro : si on lui passe un nombre, on convertit en { coins: N }.
+// SPRINT 4 — Modal level-up cinematic.
+// Timeline 2.8s : flash 250ms (T+0) → shake 300ms (T+100) → vibrate (T+200)
+// → card zoom-rotate 500ms (T+400) → number count-up 400ms (T+600) →
+// coin rain (T+1000) → reward chips stagger (T+1400) → CTA shine (T+1800).
 function showLevelUpModal(level, agg) {
-  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const reduced = __reducedMotion();
   if (typeof agg === 'number') agg = { coins: agg, gems: 0, chests: [], avatars: [], frames: [], titles: [] };
   agg = agg || { coins: 0, gems: 0, chests: [], avatars: [], frames: [], titles: [] };
 
@@ -2332,12 +2380,10 @@ function showLevelUpModal(level, agg) {
   for (const t of (agg.titles || [])) {
     lines.push(`<div class="level-up-reward">${ic('gold-medal','#F4C542')}<strong>Titre «&nbsp;${t.label}&nbsp;»</strong></div>`);
   }
-  // Si rien à afficher (cas marginal d'un niveau sans reward dans LEVEL_UP_REWARDS),
-  // au moins indiquer la prouesse.
   if (!lines.length) lines.push(`<div class="level-up-reward" style="opacity:.65">Nouveau palier atteint !</div>`);
 
   const modal = document.createElement('div');
-  modal.className = 'level-up-modal';
+  modal.className = 'level-up-modal' + (reduced ? '' : ' cinematic');
   modal.innerHTML = `
     <div class="level-up-overlay"></div>
     <canvas class="level-up-particles" id="lu-particles"></canvas>
@@ -2350,10 +2396,75 @@ function showLevelUpModal(level, agg) {
     </div>
   `;
   document.body.appendChild(modal);
-  requestAnimationFrame(() => {
-    modal.classList.add('show');
-    if (!reduced) startCoinRain('lu-particles');
-  });
+
+  if (reduced) {
+    // Fallback simple : zoom-in CSS (transition existante), pas de cinematic.
+    requestAnimationFrame(() => modal.classList.add('show'));
+    return;
+  }
+
+  // Fade-in du modal (overlay/backdrop), puis on enchaîne la timeline JS.
+  requestAnimationFrame(() => modal.classList.add('show'));
+
+  const card     = modal.querySelector('.level-up-card');
+  const numberEl = modal.querySelector('.level-up-number');
+  const rewardEls = modal.querySelectorAll('.level-up-reward');
+  const btnEl    = modal.querySelector('.level-up-btn');
+
+  // T+0 : Flash blanc
+  flashOverlay('rgba(255,255,255,0.7)', 250);
+
+  // T+100 : Screen shake sur .main (le fond tremble, pas la modal)
+  setTimeout(() => screenShake(8, 300), 100);
+
+  // T+200 : Vibration séquencée
+  setTimeout(() => vibrate([50, 30, 100, 30, 150]), 200);
+
+  // T+400 : Card zoom-in scale(0.3 → 1.15 → 1) avec rotate(-5° → 5° → 0°)
+  setTimeout(() => {
+    card.animate([
+      { transform: 'scale(0.3) rotate(-5deg)', opacity: 0 },
+      { transform: 'scale(1.15) rotate(5deg)', opacity: 1, offset: 0.65 },
+      { transform: 'scale(1) rotate(0deg)',    opacity: 1 }
+    ], { duration: 500, easing: 'cubic-bezier(.34,1.56,.64,1)', fill: 'forwards' });
+  }, 400);
+
+  // T+600 : Number "LEVEL X" — count-up (X-1 → X) + scale grow 0.5→1.3→1
+  setTimeout(() => {
+    numberEl.animate([
+      { transform: 'scale(0.5)', opacity: 0 },
+      { transform: 'scale(1.3)', opacity: 1, offset: 0.5 },
+      { transform: 'scale(1)',   opacity: 1 }
+    ], { duration: 400, easing: 'cubic-bezier(.34,1.56,.64,1)', fill: 'forwards' });
+    if (window.countUp) {
+      countUp(numberEl, Math.max(1, level - 1), level, 400, v => Math.round(v));
+    } else {
+      numberEl.textContent = level;
+    }
+  }, 600);
+
+  // T+1000 : Coin rain amplifiée (50 coins au lieu de 30)
+  setTimeout(() => startCoinRain('lu-particles', 50), 1000);
+
+  // T+1400 : Reward chips reveal stagger (80ms entre chacun)
+  setTimeout(() => {
+    rewardEls.forEach((el, i) => {
+      el.animate([
+        { transform: 'translateY(12px)', opacity: 0 },
+        { transform: 'translateY(0)',    opacity: 1 }
+      ], { duration: 320, delay: i * 80, easing: 'cubic-bezier(.34,1.56,.64,1)', fill: 'forwards' });
+    });
+  }, 1400);
+
+  // T+1800 : Bouton CTA reveal + shine permanent (.cta-ready)
+  setTimeout(() => {
+    btnEl.animate([
+      { transform: 'scale(0.9)', opacity: 0 },
+      { transform: 'scale(1.05)', opacity: 1, offset: 0.6 },
+      { transform: 'scale(1)',    opacity: 1 }
+    ], { duration: 300, easing: 'cubic-bezier(.34,1.56,.64,1)', fill: 'forwards' });
+    btnEl.classList.add('cta-ready');
+  }, 1800);
 }
 
 function closeLevelUpModal() {
@@ -2364,17 +2475,19 @@ function closeLevelUpModal() {
   setTimeout(() => modal.remove(), 400);
 }
 
-function startCoinRain(canvasId) {
+function startCoinRain(canvasId, count) {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
-  _coinRainCoins = Array.from({ length: 30 }, () => ({
+  // SPRINT 4 — par défaut 50 coins (avant 30). Bornes de sécurité 10–80.
+  const n = Math.max(10, Math.min(80, count || 50));
+  _coinRainCoins = Array.from({ length: n }, () => ({
     x: Math.random() * canvas.width,
-    y: -50 - Math.random() * 200,
+    y: -50 - Math.random() * 300,
     r: 6 + Math.random() * 8,
-    vy: 2 + Math.random() * 3,
+    vy: 2.4 + Math.random() * 3.2,
     rot: 0, vr: -0.05 + Math.random() * 0.1
   }));
   function loop() {
