@@ -175,25 +175,8 @@
   display: flex; align-items: center; justify-content: center; gap: 4px;
   font-size: 10px; color: #718096; margin-bottom: 14px;
 }
-.hero-cta {
-  width: 100%; padding: 13px; border-radius: 14px;
-  background: linear-gradient(135deg, var(--gold-primary), #FF8A3D);
-  border: none;
-  font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 800; color: #050816;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  transition: transform .15s, opacity .15s;
-  -webkit-tap-highlight-color: transparent;
-  position: relative; overflow: hidden;
-}
-.hero-cta::before {
-  content: '';
-  position: absolute; inset: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,.18), transparent);
-  pointer-events: none;
-}
-.hero-cta:active { transform: scale(.97); }
-.hero-cta:disabled { background: var(--surface2); color: #718096; cursor: default; }
+/* .hero-cta supprimé (T11) — utiliser .btn-primary (cf. components.css)
+   .hero-pts-hint reste juste en-dessous pour la légende points/multiplicateur. */
 .hero-pts-hint {
   text-align: center; margin-top: 7px;
   font-size: 11px; color: var(--gold-primary); font-weight: 600;
@@ -637,24 +620,13 @@
 .gain-hint strong { color: var(--gold-primary); }
 
 /* ── SAVE BTN V2 ── */
-.save-btn-v2 {
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  width: 100%; padding: 13px 20px; margin-top: 4px;
-  background: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold-primary) 50%, #FFE680 100%);
-  color: #050816; border: none; border-radius: 14px;
-  font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 2px;
-  cursor: pointer;
-  box-shadow: 0 5px 0 #8A6A00, 0 8px 24px rgba(244,197,66,.45), inset 0 1px 0 rgba(255,255,255,.4);
-  transition: transform .08s ease, box-shadow .08s ease;
-  -webkit-tap-highlight-color: transparent;
-}
-.save-btn-v2:active { transform: translateY(4px); box-shadow: 0 1px 0 #8A6A00; }
-.save-btn-v2.saved-v2 {
-  background: rgba(34,209,107,.08);
-  color: var(--emerald); border: 1px solid rgba(34,209,107,.3);
-  box-shadow: none; font-size: 13px; letter-spacing: .5px;
-  font-family: 'Inter', sans-serif; font-weight: 600;
-}
+/* .save-btn-v2 base + :active + .saved-v2 (dead) supprimés (T13).
+   Le bouton est désormais .btn-primary.btn-platform (cf. components.css).
+   .save-btn-v2 reste comme classe marqueur pour :
+   - le state .modifier-btn (ci-dessous)
+   - le sweep ::after shared shop/eos (components.css 1585+)
+   - les sélecteurs .match-card[data-prono-state=...] (ci-dessous) */
+.save-btn-v2 { margin-top: 4px; } /* spacing spécifique pronostic save */
 
 /* ── PRONO LOCK : "Modifier" subtle button (saved state) ── */
 .save-btn-v2.modifier-btn {

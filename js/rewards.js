@@ -64,7 +64,10 @@ function renderFooterButton(matchId) {
   if (!card || !btn) return;
   const state = card.dataset.pronoState;
   btn.disabled = false;
-  btn.className = 'save-btn-v2';
+  // T13 : unification — .btn-primary.btn-platform pour base, .save-btn-v2 conservé
+  // comme classe marqueur pour les sélecteurs d'état (.saved / .modifier-btn) et
+  // la sweep ::after shared (cf. components.css 1585+).
+  btn.className = 'btn-primary btn-platform save-btn-v2';
   if (state === 'editing') {
     btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="#050816" stroke="#050816" stroke-width="0"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> SAUVEGARDER LA MODIFICATION';
     btn.setAttribute('onclick', 'savePronostic(' + matchId + ')');
