@@ -4090,10 +4090,78 @@ function closeCoffresModal() {
 
 // ── MISSIONS ──
 // Étape 7 — Le rendu détaillé (3 daily + 3 weekly + 5 tournament) vit
-// dans js/missions.js (renderMissionsCard). On garde un wrapper local
-// pour la compatibilité avec les appels existants d'initHomePage.
-function renderMissionCard() {
-  if (typeof renderMissionsCard === 'function') renderMissionsCard();
+// dans js/missions.js (renderMissionsCard).
+// Sprint 1b — l'accueil n'affiche plus la liste complète (trop haute pour
+// tenir sur un écran) : un bloc résumé chiffré, cliquable, ouvre une modale
+// avec le détail. renderMissionCard reste comme alias rétrocompatible.
+function renderMissionCard() { renderMissionsHomeSummary(); }
+
+// Bloc résumé compact dans #mission-home (accueil)
+async function renderMissionsHomeSummary() {
+  const container = document.getElementById('mission-home');
+  if (!container) return;
+  let s = null;
+  if (typeof getMissionsSummary === 'function') {
+    try { s = await getMissionsSummary(); } catch(_) {}
+  }
+  s = s || { active: 0, claimable: 0 };
+  const active = s.active || 0;
+  const claimable = s.claimable || 0;
+  const sub = active > 0
+    ? active + ' en cours' + (claimable > 0 ? ' · ' + claimable + ' à réclamer' : '')
+    : 'Aucune mission active';
+  container.innerHTML = `
+    <button class="home-missions-summary" onclick="openMissionsModal()" aria-label="Voir le détail des missions">
+      <span class="hms-icon">🎯</span>
+      <span class="hms-info">
+        <span class="hms-title">MISSIONS</span>
+        <span class="hms-sub">${sub}</span>
+      </span>
+      ${claimable > 0 ? `<span class="hms-badge">${claimable}</span>` : ''}
+      <span class="hms-chevron">›</span>
+    </button>`;
+}
+
+// Modale détail des missions (liste complète scrollable)
+function openMissionsModal() {
+  let modal = document.getElementById('missions-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'missions-modal';
+    modal.className = 'missions-modal';
+    modal.innerHTML = `
+      <div class="missions-modal-card" role="dialog" aria-modal="true" aria-label="Missions">
+        <div class="missions-modal-head">
+          <span class="missions-modal-title">MISSIONS</span>
+          <button class="missions-modal-close" onclick="closeMissionsModal()" aria-label="Fermer">✕</button>
+        </div>
+        <div class="missions-modal-body" id="missions-modal-body"></div>
+      </div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', e => { if (e.target === modal) closeMissionsModal(); });
+  }
+  modal.classList.remove('hidden');
+  const body = document.getElementById('missions-modal-body');
+  if (body) body.innerHTML = '<div style="text-align:center;padding:24px;color:var(--text3);font-size:13px">Chargement…</div>';
+  if (typeof renderMissionsCard === 'function') renderMissionsCard('missions-modal-body');
+  if (window.A11yModal) A11yModal.open(modal, { onClose: closeMissionsModal });
+}
+
+function closeMissionsModal() {
+  const modal = document.getElementById('missions-modal');
+  if (!modal) return;
+  if (window.A11yModal) A11yModal.close(modal);
+  modal.classList.add('hidden');
+}
+
+// Rafraîchit le résumé accueil + la modale si elle est ouverte
+// (appelé par claimMission dans js/missions.js après une réclamation).
+async function refreshMissionsViews() {
+  await renderMissionsHomeSummary();
+  const modal = document.getElementById('missions-modal');
+  if (modal && !modal.classList.contains('hidden') && typeof renderMissionsCard === 'function') {
+    await renderMissionsCard('missions-modal-body');
+  }
 }
 
 // ══ Sprint 1 — Accueil refonte : nouveaux blocs (mise en page) ══
