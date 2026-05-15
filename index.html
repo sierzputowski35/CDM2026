@@ -3288,8 +3288,23 @@ function renderStreakCard() {
   const joueur = currentUser ? allJoueurs.find(j => j.id === currentUser) : null;
   const streak = joueur ? getStreak(joueur) : 0;
 
+  // SPRINT 7.6 — Niveau d'intensité visuelle (low/mid/high) selon le streak.
+  // Pose la classe sur la card pour que le CSS active les keyframes flames
+  // + halo + num color/throb qui vont avec.
+  const card = document.getElementById('home-streak-card');
+  if (card) {
+    card.classList.remove('streak-card-home--low', 'streak-card-home--mid', 'streak-card-home--high');
+    const intensity = streak >= 7 ? 'high' : streak >= 3 ? 'mid' : 'low';
+    card.classList.add('streak-card-home--' + intensity);
+  }
+
+  // SPRINT 7.6 — Count-up sur le compteur quand le streak augmente
+  // (réutilise updateHeaderCount du Sprint 2 : skip si pas de delta numérique).
   const numEl = document.getElementById('streak-num');
-  if (numEl) numEl.textContent = streak;
+  if (numEl) {
+    if (window.updateHeaderCount) updateHeaderCount(numEl, streak);
+    else numEl.textContent = streak;
+  }
 
   const flamesEl = document.getElementById('streak-flames');
   if (flamesEl) {
