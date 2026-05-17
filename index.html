@@ -7,9 +7,9 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="M26">
+<meta name="apple-mobile-web-app-title" content="CROWNED">
 <meta name="theme-color" content="#0a0e1a">
-<title>Mondial 26 — Pronostics</title>
+<title>CROWNED — Pronostics</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -65,7 +65,7 @@
   <div id="loading-skeleton-body" style="flex:1;overflow:hidden"></div>
   <!-- Marque + spinner discret en bas (fallback identité) -->
   <div style="padding:16px 0 28px;display:flex;flex-direction:column;align-items:center;gap:10px">
-    <div class="loading-title" style="font-size:18px;letter-spacing:4px">MONDIAL 26</div>
+    <div class="loading-title" style="font-size:18px;letter-spacing:4px">CROWNED</div>
     <div class="loading-spinner" style="width:18px;height:18px"></div>
   </div>
 </div>
@@ -204,10 +204,10 @@
 
 <!-- PWA BANNIÈRE -->
 <div class="pwa-banner hidden" id="pwa-banner">
-  <div class="pwa-icon"><img src="icon-192.png" alt="M26" onerror="this.parentElement.innerHTML='⚽'"></div>
+  <div class="pwa-icon"><img src="icon-192.png" alt="CROWNED" onerror="this.parentElement.innerHTML='⚽'"></div>
   <div class="pwa-text">
     <div class="pwa-title">Installer l'app</div>
-    <div class="pwa-sub" id="pwa-sub">Ajoute M26 sur ton écran d'accueil</div>
+    <div class="pwa-sub" id="pwa-sub">Ajoute CROWNED sur ton écran d'accueil</div>
   </div>
   <button class="pwa-btn" id="pwa-install-btn" onclick="handleInstall()">Installer</button>
   <button class="pwa-close" onclick="closePwaBanner()">✕</button>
@@ -216,7 +216,7 @@
 <!-- PWA MODALE iPhone -->
 <div class="pwa-modal hidden" id="pwa-modal">
   <div class="pwa-modal-box">
-    <div class="pwa-modal-title">⚽ Installer M26</div>
+    <div class="pwa-modal-title">⚽ Installer CROWNED</div>
     <div class="pwa-modal-sub">Suis ces étapes pour ajouter l'app sur ton iPhone</div>
     <div class="pwa-step"><div class="pwa-step-num">1</div><div class="pwa-step-text">Appuie sur le bouton <strong>Partager</strong> ⬆️ en bas de Safari</div></div>
     <div class="pwa-step"><div class="pwa-step-num">2</div><div class="pwa-step-text">Appuie sur <strong>"Sur l'écran d'accueil"</strong> ➕</div></div>
@@ -230,41 +230,9 @@
   <div class="login-wrap">
     <div class="login-card">
       <div class="login-trophy">
-        <svg viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg"
-             style="width:140px;height:auto;display:block;margin:0 auto;
-                    filter:drop-shadow(0 8px 24px rgba(244,197,66,0.5));"
-             aria-label="Trophée">
-          <defs>
-            <linearGradient id="trophyGold" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stop-color="#FFE066"/>
-              <stop offset="50%" stop-color="#F4C542"/>
-              <stop offset="100%" stop-color="#C99812"/>
-            </linearGradient>
-          </defs>
-          <!-- Anses -->
-          <path d="M25 50 Q10 55 15 80 Q20 95 35 90" fill="none"
-                stroke="url(#trophyGold)" stroke-width="6" stroke-linecap="round"/>
-          <path d="M95 50 Q110 55 105 80 Q100 95 85 90" fill="none"
-                stroke="url(#trophyGold)" stroke-width="6" stroke-linecap="round"/>
-          <!-- Coupe -->
-          <path d="M30 30 L90 30 L85 85 Q60 100 35 85 Z" fill="url(#trophyGold)"
-                stroke="#8B6914" stroke-width="1.5"/>
-          <!-- Reflet -->
-          <path d="M40 38 L48 38 L46 75 L42 75 Z" fill="#FFF4D6" opacity="0.4"/>
-          <!-- Pied -->
-          <rect x="48" y="100" width="24" height="15" fill="url(#trophyGold)"
-                stroke="#8B6914" stroke-width="1.5"/>
-          <rect x="38" y="115" width="44" height="10" rx="2" fill="url(#trophyGold)"
-                stroke="#8B6914" stroke-width="1.5"/>
-          <!-- Base -->
-          <rect x="30" y="125" width="60" height="18" rx="3" fill="#2A1A00"
-                stroke="#8B6914" stroke-width="1.5"/>
-          <!-- Étoile centrale -->
-          <text x="60" y="68" font-size="22" text-anchor="middle" fill="#FFF4D6"
-                opacity="0.7" font-family="Arial">★</text>
-        </svg>
+        <img src="assets/logo-crowned.png" alt="CROWNED — Football Predictions 2026" class="login-logo-img"
+             style="width:min(290px,86%);height:auto;display:block;margin:0 auto;filter:drop-shadow(0 8px 26px rgba(244,197,66,0.45))">
       </div>
-      <div class="login-title">MONDIAL 26</div>
       <div class="login-flags"><span data-flag="us" data-flag-size="xs"></span> USA &nbsp;·&nbsp; <span data-flag="mx" data-flag-size="xs"></span> MEXICO &nbsp;·&nbsp; <span data-flag="ca" data-flag-size="xs"></span> CANADA</div>
       <div class="field">
         <label for="login-pseudo">Ton pseudo</label>
@@ -309,11 +277,11 @@
     <!-- Ligne 1 : Logo + actions -->
     <div class="ahv2-top">
       <div class="ahv2-logo">
-        <!-- Logo United 2026 — déposer le fichier dans assets/logo-united-2026.png.
+        <!-- Logo CROWNED — fichier dans assets/logo-crowned.png.
              Fallback automatique sur le texte si le fichier est absent. -->
-        <img src="assets/logo-united-2026.png" alt="Mondial 26" class="ahv2-logo-img"
+        <img src="assets/logo-crowned.png" alt="CROWNED" class="ahv2-logo-img"
              onerror="this.style.display='none';this.nextElementSibling.style.display=''">
-        <div class="ahv2-logo-text shimmer-gold" style="display:none">MONDIAL 26</div>
+        <div class="ahv2-logo-text shimmer-gold" style="display:none">CROWNED</div>
       </div>
       <div class="ahv2-actions">
         <span class="sync-dot" style="margin-right:2px"></span>
@@ -673,7 +641,7 @@
         opacity: 0.55;
         margin-top: 24px;
       ">
-        Mondial 26 est un jeu de pronostics amateur et gratuit.<br>
+        CROWNED est un jeu de pronostics amateur et gratuit.<br>
         Les noms des joueurs et équipes sont mentionnés à titre informatif.<br>
         Aucune affiliation avec la FIFA ou les fédérations nationales.<br>
         Aucune somme d'argent n'est collectée par cette application.<br><br>
@@ -733,7 +701,7 @@
     <div class="logo">
       <div class="logo-flags"><img src="icon-192.png" alt="" style="width:32px;height:32px;border-radius:9px;display:block" onerror="this.outerHTML='<span style=&quot;color:var(--gold-primary);display:inline-flex&quot;>'+(window.icon?window.icon('trophy',32):'')+'</span>'"></div>
       <div>
-        <div class="logo-text">MONDIAL 26</div>
+        <div class="logo-text">CROWNED</div>
         <div class="logo-sub">Mode organisateur</div>
       </div>
     </div>
@@ -827,7 +795,7 @@ const MISE = 10;
 
 
 // ══════════════════════════════════════════
-// VRAIS MATCHS M26
+// VRAIS MATCHS CROWNED
 // ══════════════════════════════════════════
 const PHASES = {'Groupes':1,'16es de finale':1.5,'8es de finale':2,'Quarts de finale':2,'Demi-finales':3,'Finale':4};
 
@@ -1352,7 +1320,7 @@ const LEAGUES_HOME = [
 
 const NEWS_FEED_DATA = [
   { id:'n1', type:'badge',  title:'Badge "Nostradamus" disponible',  sub:'3 scores exacts en 24h — objectif actif',              time:'Objectif en cours' },
-  { id:'n2', type:'event',  title:'Saison M26 — en cours',      sub:'48 matchs — phases de groupes',                        time:'Phase de groupes'  },
+  { id:'n2', type:'event',  title:'Saison 2026 — en cours',      sub:'48 matchs — phases de groupes',                        time:'Phase de groupes'  },
   { id:'n3', type:'alert',  title:'Cloture des pronostics',           sub:'Verifiez vos pronos avant le coup d\'envoi',           time:'Avant chaque match'},
   { id:'n4', type:'social', title:'Classement mis a jour',            sub:'Les points sont calcules en temps reel via Supabase',  time:'Temps reel'        },
 ];
@@ -1846,7 +1814,7 @@ const STANDARD_PARIS_BONUS = [
 const PARIS_BONUS_PAR_MATCH = {};
 MATCHS.forEach(m => { PARIS_BONUS_PAR_MATCH[m.id] = STANDARD_PARIS_BONUS; });
 
-// 48 ÉQUIPES qualifiées M26
+// 48 ÉQUIPES qualifiées CROWNED
 const EQUIPES = [
   {nom:'Espagne',flag:'es',pts:5},{nom:'France',flag:'fr',pts:5},
   {nom:'Argentine',flag:'ar',pts:6},{nom:'Brésil',flag:'br',pts:6},
@@ -2968,7 +2936,7 @@ Base de données : Supabase Inc., USA`},
   cgu:{title:'CGU',body:`CONDITIONS GÉNÉRALES D'UTILISATION
 
 1. OBJET
-Mondial 26 est un jeu de pronostics footballistique amateur, gratuit et récréatif. Aucune somme d'argent n'est en jeu.
+CROWNED est un jeu de pronostics footballistique amateur, gratuit et récréatif. Aucune somme d'argent n'est en jeu.
 
 2. INSCRIPTION
 L'inscription est libre via un pseudo et un mot de passe choisis par l'utilisateur. Aucune donnée personnelle obligatoire n'est demandée.
@@ -3493,7 +3461,7 @@ function renderQuickMatches() {
         <div class="empty-state">
           <div class="empty-state-icon">🏆</div>
           <div class="empty-state-msg">Tournoi terminé</div>
-          <div class="empty-state-sub">Merci d'avoir joué la M26 !</div>
+          <div class="empty-state-sub">Merci d'avoir joué !</div>
         </div>`;
       return;
     }
@@ -4705,7 +4673,7 @@ function switchArenaMode(mode){
 }
 
 // ARÈNE V3 · 1.2 — Hero Ligue + countdown saison.
-// Fin de saison = finale M26, 20 juil. 2026 à 00 h 30 (heure locale).
+// Fin de saison = finale CROWNED, 20 juil. 2026 à 00 h 30 (heure locale).
 const SEASON_END = new Date(2026, 6, 20, 0, 30, 0).getTime();
 // Composantes RGB par ligue, pour le fond teinté (rgba(var(--lg-rgb),…)).
 const LEAGUE_HERO_RGB = {
@@ -5711,7 +5679,7 @@ function renderBracket(){
     return t?'<span>'+t.flag+'</span> '+t.name:'<span style="color:var(--text3)">À déterminer</span>';
   }
 
-  // Matchs officiels Round of 32 (Wikipedia M26)
+  // Matchs officiels Round of 32 (Wikipedia)
   // Match 73: 2A vs 2B | Match 74: 1E vs Meilleur 3e A/B/C/D/F
   // etc.
   const r32=[
@@ -5749,7 +5717,7 @@ function renderBracket(){
 
   let html='<div class="card card-gold" style="margin-bottom:16px">'
     +'<div style="font-family:Bebas Neue,sans-serif;font-size:20px;letter-spacing:2px;color:var(--gold-primary);margin-bottom:4px">PHASES FINALES</div>'
-    +'<div style="font-size:11px;color:var(--text3);margin-bottom:14px">Bracket officiel M26 · Se met à jour automatiquement</div>';
+    +'<div style="font-size:11px;color:var(--text3);margin-bottom:14px">Bracket officiel CROWNED · Se met à jour automatiquement</div>';
 
   // Afficher info meilleurs 3èmes
   if(best8.length>0){
@@ -6201,7 +6169,7 @@ function renderAdminGlobaux(){
   eosCard.innerHTML = `
     <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:var(--royal-purple);margin-bottom:6px">🏆 PACK FIN DE TOURNOI</div>
     <div style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.5">
-      Distribue à <strong>chaque joueur</strong> son pack commémoratif M26 selon sa ligue finale (basée sur ses PTS actuels).<br>
+      Distribue à <strong>chaque joueur</strong> son pack commémoratif CROWNED selon sa ligue finale (basée sur ses PTS actuels).<br>
       <span style="color:#FF8A3D;font-weight:600">⚠️ À ne déclencher qu'APRÈS la finale et tous les globaux validés.</span>
     </div>
     <div style="font-size:11px;color:var(--text3);margin-bottom:10px">État : ${alreadyDist > 0 ? `<span style="color:var(--emerald);font-weight:700">${alreadyDist}/${allJoueurs.length} joueurs déjà servis</span> (idempotent — relancer ne re-distribue pas)` : `Non distribué`}</div>
