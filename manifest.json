@@ -1,7 +1,7 @@
 {
-  "name": "World Cup 2026",
-  "short_name": "CDM 2026",
-  "description": "Jeu de pronostics Coupe du Monde 2026",
+  "name": "Mondial 26",
+  "short_name": "M26",
+  "description": "Jeu de pronostics foot entre potes",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0a0e1a",
